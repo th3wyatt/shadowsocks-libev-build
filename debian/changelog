@@ -1,0 +1,5 @@
+shadowsocks-libev (2.4.7+20160630+ds-1) unstable; urgency=medium
+
+  * Initial release (Closes: #824268)
+
+ -- Roger Shimizu <rogershimizu@gmail.com>  Sat, 02 Jul 2016 10:18:59 +0200
