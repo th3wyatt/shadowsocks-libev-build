@@ -2,6 +2,11 @@ shadowsocks-libev (2.4.7+20160630+ds-2) UNRELEASED; urgency=medium
 
   * debian/control
     - Move to git repo to collab-maint on alioth
+  * Change way to handle config file
+    Install config.json file to /usr/share/<pkg>, instead of /etc, and then
+    generate a config file under /etc, because conffile (under /etc) cannot
+    be modified by maintainer script according to Debian Policy.
+    Thanks help from Andreas Beckmann. (Closes: #829478)
 
  -- Roger Shimizu <rogershimizu@gmail.com>  Tue, 05 Jul 2016 21:02:32 +0200
 
