@@ -3,6 +3,8 @@ shadowsocks-libev (2.4.7+20160630+ds-3) UNRELEASED; urgency=medium
   * debian/rules:
     - Add param "--disable-ssp" to dh_auto_configure command.
       Thanks to Aaron M. Ucko and Boyuan Yang. (Closes: #829498)
+  * debian/patches:
+    - Add 0003 patch, to fix PATH_MAX for GNU/Hurd.
 
  -- Roger Shimizu <rogershimizu@gmail.com>  Mon, 18 Jul 2016 00:12:26 +0900
 
