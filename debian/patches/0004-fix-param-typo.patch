@@ -1,0 +1,22 @@
+From bdef06618dea35fa40f2af9a57dd50f4ee80d7f2 Mon Sep 17 00:00:00 2001
+From: Max Lv <max.c.lv@gmail.com>
+Date: Wed, 6 Jul 2016 11:09:59 +0800
+Subject: [PATCH] Fix #708
+
+---
+ src/manager.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/manager.c b/src/manager.c
+index b161855..59bb2de 100644
+--- a/src/manager.c
++++ b/src/manager.c
+@@ -152,7 +152,7 @@ static char *construct_command_line(struct manager_ctx *manager, struct server *
+     }
+     if (manager->fast_open) {
+         int len = strlen(cmd);
+-        snprintf(cmd + len, BUF_SIZE - len, " --fast_open");
++        snprintf(cmd + len, BUF_SIZE - len, " --fast-open");
+     }
+     for (i = 0; i < manager->nameserver_num; i++) {
+         int len = strlen(cmd);
