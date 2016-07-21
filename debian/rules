@@ -14,9 +14,11 @@ override_dh_auto_install:
 	dh_auto_install
 
 override_dh_auto_configure:
-	dh_auto_configure -- --disable-ssp \
-		--with-crypto-library=mbedtls \
-        --enable-shared --enable-system-shared-lib
+	dh_auto_configure -- \
+        --enable-shared \
+        --disable-ssp \
+        --enable-system-shared-lib \
+        --with-crypto-library=mbedtls
 
 %:
 	dh $@ --with systemd

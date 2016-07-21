@@ -1,5 +1,2 @@
 0001-use-system-library-libcork-libcorkipset-libev-libsod.patch
 0002-use-libcorkipset-library-in-system.patch
-0003-fix-of-PATH_MAX-for-GNU-Hurd.patch
-0004-fix-param-typo.patch
-0005-fix-bugs-with-when-ss-server-bind_address-enabled-72.patch

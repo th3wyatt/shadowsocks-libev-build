@@ -1,3 +1,14 @@
+shadowsocks-libev (2.4.8+ds-1) UNRELEASED; urgency=medium
+
+  * Update to upstream v2.4.8
+    - Remove patches merged by upstream: 0003 0004 0005
+    - Update patch 0001: make it appliable to this version
+    - Update debian/control to add newly appended build-dep
+    - Update debian/rulesi to adjust param ordering as close as upstream
+    - Update debian/copyright to remove man/, which merged into doc/ folder
+
+ -- Roger Shimizu <rogershimizu@gmail.com>  Fri, 22 Jul 2016 02:49:04 +0900
+
 shadowsocks-libev (2.4.7+20160630+ds-3) unstable; urgency=low
 
   * debian/rules:
