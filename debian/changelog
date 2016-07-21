@@ -2,14 +2,10 @@ shadowsocks-libev (2.4.7+20160630+ds-3) unstable; urgency=low
 
   * debian/rules:
     - Add param "--disable-ssp" to dh_auto_configure command.
-      So it turns off the broken hardening by upstream, and only use
-      hardening by Debian, which comes from dpkg-buildflags.
       Thanks to Aaron M. Ucko and Boyuan Yang. (Closes: #829498)
   * debian/patches:
     - Add 0003 patch, to fix PATH_MAX for GNU/Hurd.
-    - Cherry-Pick two patch from upstream:
-      + 0004: Fix typo in argument passed to ss-manager command.
-      + 0005: Use SO_REUSEADDR for remote socket.
+    - Cherry-Pick two patch from upstream as 0004 and 0005
 
  -- Roger Shimizu <rogershimizu@gmail.com>  Mon, 18 Jul 2016 23:26:20 +0900
 
