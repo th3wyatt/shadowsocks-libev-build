@@ -1,4 +1,4 @@
-shadowsocks-libev (2.4.8+ds-1) UNRELEASED; urgency=medium
+shadowsocks-libev (2.4.8+ds-1) unstable; urgency=medium
 
   * Update to upstream v2.4.8
     - Remove patches merged by upstream: 0003 0004 0005
@@ -10,7 +10,7 @@ shadowsocks-libev (2.4.8+ds-1) UNRELEASED; urgency=medium
     - Cherry-Pick upstream patch 0003: add a few spaces to asciidoc to make
       lintian happy. Thanks to Max Lv for fixing this.
 
- -- Roger Shimizu <rogershimizu@gmail.com>  Fri, 22 Jul 2016 02:49:04 +0900
+ -- Roger Shimizu <rogershimizu@gmail.com>  Fri, 22 Jul 2016 23:10:14 +0900
 
 shadowsocks-libev (2.4.7+20160630+ds-3) unstable; urgency=low
 
