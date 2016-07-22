@@ -6,6 +6,9 @@ shadowsocks-libev (2.4.8+ds-1) UNRELEASED; urgency=medium
     - Update debian/control to add newly appended build-dep
     - Update debian/rulesi to adjust param ordering as close as upstream
     - Update debian/copyright to remove man/, which merged into doc/ folder
+  * debian/patches:
+    - Cherry-Pick upstream patch 0003: add a few spaces to asciidoc to make
+      lintian happy. Thanks to Max Lv for fixing this.
 
  -- Roger Shimizu <rogershimizu@gmail.com>  Fri, 22 Jul 2016 02:49:04 +0900
 
