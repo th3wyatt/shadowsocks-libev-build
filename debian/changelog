@@ -1,3 +1,12 @@
+shadowsocks-libev (2.5.3+ds-1) UNRELEASED; urgency=low
+
+  * Update to upstream v2.5.3
+    - Remove patches merged by upstream: 0003
+    - Update patch 0001 0002: make it appliable to this version
+    - Update debian/copyright: remove .github/, add newly appended files
+
+ -- Roger Shimizu <rogershimizu@gmail.com>  Mon, 26 Sep 2016 01:03:32 +0900
+
 shadowsocks-libev (2.4.8+ds-1) unstable; urgency=medium
 
   * Update to upstream v2.4.8
