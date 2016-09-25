@@ -12,7 +12,7 @@ SYNOPSIS
  [-s <server_host>] [-p <server_port>] [-l <local_port>]
  [-k <password>] [-m <encrypt_method>] [-f <pid_file>] [-t <timeout>]
  [-c <config_file>] [-b <interface>] [-a <user_name>]
- [-n <nofile>] [--fast-open] [--acl <acl_config>]
+ [-n <nofile>] [--fast-open] [--acl <acl_config>] [--mtu <MTU>]
 
 DESCRIPTION
 -----------
@@ -43,9 +43,10 @@ Set the password. The server and the client should use the same password.
 -m <encrypt_method>::
 Set the cipher.
 +
-*Shadowsocks-libev* accepts 18 different ciphers:
+*Shadowsocks-libev* accepts 21 different ciphers:
 +
-table, rc4, rc4-md5, aes-128-cfb, aes-192-cfb, aes-256-cfb, bf-cfb,
+table, rc4, rc4-md5, aes-128-cfb, aes-192-cfb, aes-256-cfb,
+aes-128-ctr, aes-192-ctr, aes-256-ctr, bf-cfb,
 camellia-128-cfb, camellia-192-cfb, camellia-256-cfb, cast5-cfb, des-cfb,
 idea-cfb, rc2-cfb, seed-cfb, salsa20, chacha20 and chacha20-ietf.
 +
@@ -88,6 +89,9 @@ Specify local address to bind.
 -u::
 Enable UDP relay.
 
+-U::
+Enable UDP relay and disable TCP relay.
+
 -A::
 Enable onetime authentication.
 
@@ -98,6 +102,14 @@ Only available with Linux kernel > 3.7.0.
 
 --acl <acl_config>::
 Enable ACL (Access Control List) and specify config file.
+
+--mtu <MTU>::
+Specify the MTU of your network interface.
+
+--mptcp::
+Enable Multipath TCP.
++
+Only available with MPTCP enabled Linux kernel.
 
 -v::
 Enable verbose mode.

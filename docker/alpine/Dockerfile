@@ -5,20 +5,20 @@
 FROM alpine
 MAINTAINER kev <noreply@datageek.info>
 
-ENV SS_VER 2.4.6
-ENV SS_URL https://github.com/shadowsocks/shadowsocks-libev/archive/v$SS_VER.tar.gz
-ENV SS_DIR shadowsocks-libev-$SS_VER
-ENV SS_DEP autoconf build-base curl libtool linux-headers openssl-dev
+ENV SS_URL https://github.com/shadowsocks/shadowsocks-libev.git
+ENV SS_DIR shadowsocks-libev
+ENV SS_DEP pcre
+ENV SS_BUILD_DEP git autoconf build-base curl libtool linux-headers openssl-dev asciidoc xmlto pcre-dev
 
 RUN set -ex \
-    && apk add --update $SS_DEP \
-    && curl -sSL $SS_URL | tar xz \
+    && apk add --update $SS_DEP $SS_BUILD_DEP\
+    && git clone $SS_URL \
     && cd $SS_DIR \
         && ./configure \
         && make install \
         && cd .. \
         && rm -rf $SS_DIR \
-    && apk del --purge $SS_DEP \
+    && apk del --purge $SS_BUILD_DEP \
     && rm -rf /var/cache/apk/*
 
 ENV SERVER_ADDR 0.0.0.0
@@ -27,6 +27,7 @@ ENV PASSWORD=
 ENV METHOD      aes-256-cfb
 ENV TIMEOUT     300
 ENV DNS_ADDR    8.8.8.8
+ENV DNS_ADDR_2  8.8.4.4
 
 EXPOSE $SERVER_PORT
 EXPOSE $SERVER_PORT/udp
@@ -38,4 +39,5 @@ CMD ss-server -s $SERVER_ADDR \
               -t $TIMEOUT \
               --fast-open \
               -d $DNS_ADDR \
-              -u
+              -d $DNS_ADDR_2 \
+-u
