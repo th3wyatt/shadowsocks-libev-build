@@ -4,7 +4,9 @@ shadowsocks-libev (2.5.3+ds-1) UNRELEASED; urgency=low
     - Remove patches merged by upstream: 0003
     - Update patch 0001 0002: make it appliable to this version
     - Update debian/copyright: remove .github/, add newly appended files
-  * debian/control: update based on upstream's change
+  * debian/control:
+    - update based on upstream's change
+    - add Replaces and Breaks for lib version up
 
  -- Roger Shimizu <rogershimizu@gmail.com>  Mon, 26 Sep 2016 01:03:32 +0900
 
