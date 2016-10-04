@@ -1,4 +1,4 @@
-shadowsocks-libev (2.5.3+ds-1) UNRELEASED; urgency=low
+shadowsocks-libev (2.5.3+ds-1) experimental; urgency=low
 
   * Update to upstream v2.5.3
     - Remove patches merged by upstream: 0003
@@ -12,7 +12,7 @@ shadowsocks-libev (2.5.3+ds-1) UNRELEASED; urgency=low
   * debian/copyright:
     - Add license information for m4/ files
 
- -- Roger Shimizu <rogershimizu@gmail.com>  Mon, 26 Sep 2016 01:03:32 +0900
+ -- Roger Shimizu <rogershimizu@gmail.com>  Tue, 04 Oct 2016 23:05:55 +0900
 
 shadowsocks-libev (2.4.8+ds-1) unstable; urgency=medium
 
