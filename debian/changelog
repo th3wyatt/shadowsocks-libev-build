@@ -9,6 +9,8 @@ shadowsocks-libev (2.5.3+ds-1) UNRELEASED; urgency=low
     - Add Replaces and Breaks for lib version up
   * debian/maint-tools/:
     - Add two script to make life easier for new upstream release
+  * debian/copyright:
+    - Add license information for m4/ files
 
  -- Roger Shimizu <rogershimizu@gmail.com>  Mon, 26 Sep 2016 01:03:32 +0900
 
