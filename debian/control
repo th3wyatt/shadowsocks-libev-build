@@ -3,7 +3,7 @@ Section: net
 Priority: extra
 Maintainer: Roger Shimizu <rogershimizu@gmail.com>
 Uploaders: Max Lv <max.c.lv@gmail.com>, Boyuan Yang <073plan@gmail.com>
-Build-Depends: debhelper (>=9.20160403), dh-systemd, pkg-config, asciidoc,
+Build-Depends: debhelper (>=9.20160403~), dh-systemd, pkg-config, asciidoc,
                xmlto, libmbedtls-dev, libev-dev, libudns-dev, libsodium-dev,
                libcork-dev, libcorkipset-dev
 Standards-Version: 3.9.8
