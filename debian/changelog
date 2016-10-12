@@ -1,3 +1,9 @@
+shadowsocks-libev (2.5.5+ds-1) unstable; urgency=medium
+
+  * Update to upstream v2.5.5
+
+ -- Roger Shimizu <rogershimizu@gmail.com>  Thu, 13 Oct 2016 00:57:07 +0900
+
 shadowsocks-libev (2.5.3+ds-1) experimental; urgency=low
 
   * Update to upstream v2.5.3
