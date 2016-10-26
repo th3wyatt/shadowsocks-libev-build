@@ -5,9 +5,9 @@ Maintainer: Roger Shimizu <rogershimizu@gmail.com>
 Uploaders: Max Lv <max.c.lv@gmail.com>, Boyuan Yang <073plan@gmail.com>
 Build-Depends:
  asciidoc,
- debhelper (>=10),
+ debhelper (>= 10),
  dh-systemd,
- libcork-dev,
+ libcork-dev (>= 0.15.0+ds-8),
  libcorkipset-dev,
  libev-dev,
  libmbedtls-dev,
