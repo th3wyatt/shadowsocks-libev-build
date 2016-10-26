@@ -21,6 +21,23 @@ Homepage: https://www.shadowsocks.org
 Vcs-Git: https://anonscm.debian.org/git/collab-maint/shadowsocks-libev.git
 Vcs-Browser: https://anonscm.debian.org/cgit/collab-maint/shadowsocks-libev.git
 
+Package: shadowsocks-libev
+Replaces: shadowsocks (<< 1.5.3-2)
+Breaks: shadowsocks (<< 1.5.3-2)
+Architecture: any
+Depends:
+ apg,
+ lsb-base (>= 3.0-6),
+ ${misc:Depends},
+ ${shlibs:Depends}
+Description: lightweight and secure socks5 proxy
+ Shadowsocks-libev is a lightweight and secure socks5 proxy for
+ embedded devices and low end boxes.
+ .
+ Shadowsocks-libev was inspired by Shadowsock (in Python). It's rewritten
+ in pure C and only depends on libev, mbedTLS and a few other tiny
+ libraries. OpenSSL dependency is removed due to license issue.
+
 Package: libshadowsocks-libev-dev
 Architecture: any
 Section: libdevel
@@ -59,20 +76,3 @@ Description: lightweight and secure socks5 proxy (shared library)
  libraries. OpenSSL dependency is removed due to license issue.
  .
  This package provides shared libraries.
-
-Package: shadowsocks-libev
-Replaces: shadowsocks (<< 1.5.3-2)
-Breaks: shadowsocks (<< 1.5.3-2)
-Architecture: any
-Depends:
- apg,
- lsb-base (>= 3.0-6),
- ${misc:Depends},
- ${shlibs:Depends}
-Description: lightweight and secure socks5 proxy
- Shadowsocks-libev is a lightweight and secure socks5 proxy for
- embedded devices and low end boxes.
- .
- Shadowsocks-libev was inspired by Shadowsock (in Python). It's rewritten
- in pure C and only depends on libev, mbedTLS and a few other tiny
- libraries. OpenSSL dependency is removed due to license issue.

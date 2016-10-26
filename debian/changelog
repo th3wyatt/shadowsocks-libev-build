@@ -5,6 +5,9 @@ shadowsocks-libev (2.5.5+ds-2) UNRELEASED; urgency=medium
   * debian/control:
     - Add lsb-base as dependency to package shadowsocks-libev, since the init
       script sources /lib/lsb/init-functions utility functions
+    - Change the order of binary packages.
+      Because README.Debian by default only installs on 1st binary package.
+      (Closes: #842039)
 
  -- Roger Shimizu <rogershimizu@gmail.com>  Fri, 21 Oct 2016 01:44:35 +0900
 
