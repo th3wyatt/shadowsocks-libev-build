@@ -1,0 +1,53 @@
+From: Kim <kimw@users.noreply.github.com>
+Date: Wed, 26 Oct 2016 08:14:01 +0800
+Subject: Friendlize init message while listen on an IPv6 address. (#901)
+
+Before,
+
+```bash
+$ ss-local -s::1 -p8388 -b::1 -l1080 -k123456 -v
+ ...
+ 2016-10-25 20:07:03 INFO: listening at ::1:1080
+ ...
+```
+
+After,
+
+```bash
+$ ss-local -s::1 -p8388 -b::1 -l1080 -k123456 -v
+ ...
+ 2016-10-25 20:07:49 INFO: listening at [::1]:1080
+ ...
+```
+---
+ src/local.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/src/local.c b/src/local.c
+index 109cccb..0b2a3e0 100644
+--- a/src/local.c
++++ b/src/local.c
+@@ -1428,7 +1428,10 @@ main(int argc, char **argv)
+                       get_sockaddr_len(listen_ctx.remote_addr[0]), mtu, m, auth, listen_ctx.timeout, iface);
+     }
+ 
+-    LOGI("listening at %s:%s", local_addr, local_port);
++    if (strcmp(local_addr, ":") > 0)
++        LOGI("listening at [%s]:%s", local_addr, local_port);
++    else
++        LOGI("listening at %s:%s", local_addr, local_port);
+ 
+     // setuid
+     if (user != NULL) {
+@@ -1580,7 +1583,10 @@ start_ss_local_server(profile_t profile)
+                       get_sockaddr_len(addr), mtu, m, auth, timeout, NULL);
+     }
+ 
+-    LOGI("listening at %s:%s", local_addr, local_port_str);
++    if (strcmp(local_addr, ":") > 0)
++        LOGI("listening at [%s]:%s", local_addr, local_port_str);
++    else
++        LOGI("listening at %s:%s", local_addr, local_port_str);
+ 
+     // Init connections
+     cork_dllist_init(&connections);

@@ -1,0 +1,25 @@
+From: Kim <kimw@users.noreply.github.com>
+Date: Tue, 25 Oct 2016 20:19:30 +0800
+Subject: Update server.c (#898)
+
+Friendlize init message while listen on an IPv6 address.
+---
+ src/server.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/src/server.c b/src/server.c
+index 23d0d09..a0eed31 100644
+--- a/src/server.c
++++ b/src/server.c
+@@ -1796,7 +1796,10 @@ main(int argc, char **argv)
+                           auth, atoi(timeout), iface);
+         }
+ 
+-        LOGI("listening at %s:%s", host ? host : "*", server_port);
++        if (host && strcmp(host, ":") > 0)
++            LOGI("listening at [%s]:%s", host, server_port);
++        else
++            LOGI("listening at %s:%s", host ? host : "*", server_port);
+     }
+ 
+     if (manager_address != NULL) {
