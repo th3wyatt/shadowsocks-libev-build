@@ -10,10 +10,12 @@ fi
 tag=$(git tag -l|grep ^v[0-9]|tail -n1)
 ver=$(echo $tag|sed s/^v//)
 dstag=upstream/${ver}+ds
-rmfiles=$(grep "Files-Excluded:" debian/copyright|sed s/Files-Excluded://)
+rmfiles=$(awk 'BEGIN{RS=ORS="\n\n";FS=OFS="\n"}/Files-Excluded:/' debian/copyright|sed -n -e '/^Files-Excluded:/,${p}'|sed s/Files-Excluded://|sed /^$/d)
 git merge $tag
 
+# remove all 'Files-Excluded' files listed in debian/copyright, except debian/ folder
 for i in $rmfiles; do if [ "$i" != "debian" ]; then git rm -rf "$i"; fi; done
+# restore the debian/ folder from previous commit
 git checkout HEAD debian/
 
 if git diff-index --quiet HEAD --; then
