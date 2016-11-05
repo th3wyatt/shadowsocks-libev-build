@@ -1,7 +1,2 @@
 0001-use-system-library-libcork-libcorkipset-libev-libsod.patch
 0002-use-libcorkipset-library-in-system.patch
-backport/Fix-881.patch
-backport/Add-instruction-to-install-from-official-deb-repo-89.patch
-backport/Switch-random-generator-to-libsodium-s-896.patch
-backport/Update-server.c-898.patch
-backport/Friendlize-init-message-while-listen-on-an-IPv6-addr.patch
