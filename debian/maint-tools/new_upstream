@@ -17,6 +17,10 @@ git merge $tag
 for i in $rmfiles; do if [ "$i" != "debian" ]; then git rm -rf "$i"; fi; done
 # restore the debian/ folder from previous commit
 git checkout HEAD debian/
+# since backported patches should be all included in the new release, remove them all here
+sed -i '/^backport\//d' debian/patches/series
+git add debian/patches/series
+git rm debian/patches/backport/*.patch
 
 if git diff-index --quiet HEAD --; then
 	git commit --amend -m "Merge upstream tag: $tag"
