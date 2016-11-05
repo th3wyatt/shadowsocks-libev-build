@@ -1,3 +1,13 @@
+shadowsocks-libev (2.5.6+ds-1) unstable; urgency=medium
+
+  * New upstream release 2.5.6
+  * debian/maint-tools:
+    - Remove backported patches when merge with upstream
+    - Fix typo and catch exception of tag existence
+    - Add README
+
+ -- Roger Shimizu <rogershimizu@gmail.com>  Sat, 05 Nov 2016 17:50:04 +0900
+
 shadowsocks-libev (2.5.5+ds-2) unstable; urgency=medium
 
   * debian/copyright:
