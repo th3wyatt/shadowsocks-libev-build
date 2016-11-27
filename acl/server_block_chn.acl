@@ -1,6 +1,12 @@
-[proxy_all]
+# All IPs listed here will be blocked while the ss-server try to outbound.
+# Only IP is allowed, *NOT* domain name.
+#
+# The IPs bellow are all IPs in CHN. It'll block ss-server to access all
+# CHN hosts by command
+# `ss-server -s:: -p 8388 -k 123456 --acl acl/server_block_chn.acl`
 
-[black_list]
+[outbound_block_list]
+103.235.44.0/22
 1.0.1.0/24
 1.0.2.0/23
 1.0.8.0/21
