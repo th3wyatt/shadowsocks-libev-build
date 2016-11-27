@@ -26,10 +26,10 @@ index 690af43..8c1ec59 100644
  if ENABLE_DOCUMENTATION
  SUBDIRS += doc
 diff --git a/configure.ac b/configure.ac
-index 79aeb6a..1b142f1 100755
+index 12eba66..6d9afd8 100755
 --- a/configure.ac
 +++ b/configure.ac
-@@ -75,11 +75,6 @@ AC_PROG_LIBTOOL
+@@ -77,11 +77,6 @@ AC_PROG_LIBTOOL
  AC_PROG_MAKE_SET
  AC_LANG_SOURCE
  
@@ -41,7 +41,7 @@ index 79aeb6a..1b142f1 100755
  dnl Add library for mingw
  case $host in
    *-mingw*)
-@@ -303,19 +298,9 @@ dnl Add define for libudns to enable IPv6 support
+@@ -305,19 +300,9 @@ dnl Add define for libudns to enable IPv6 support
  dnl This is an option defined in the origin configure script
  AC_DEFINE([HAVE_IPv6], [1], [Enable IPv6 support in libudns])
  

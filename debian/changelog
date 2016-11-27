@@ -3,6 +3,7 @@ shadowsocks-libev (2.5.6+ds-1~bpo8+1) UNRELEASED; urgency=medium
   * debian/patches:
     - Update 0003 patch, to disable cipher CHACHA20IETF,
       which it's not supported by libsodium in jessie
+    - Refresh patches
 
  -- Roger Shimizu <rogershimizu@gmail.com>  Mon, 28 Nov 2016 01:18:44 +0900
 
