@@ -98,7 +98,7 @@ build_config(char *prefix, struct server *server)
     char *path    = NULL;
     int path_size = strlen(prefix) + strlen(server->port) + 20;
 
-    path = malloc(path_size);
+    path = ss_malloc(path_size);
     snprintf(path, path_size, "%s/.shadowsocks_%s.conf", prefix, server->port);
     FILE *f = fopen(path, "w+");
     if (f == NULL) {
@@ -172,6 +172,10 @@ construct_command_line(struct manager_ctx *manager, struct server *server)
         int len = strlen(cmd);
         snprintf(cmd + len, BUF_SIZE - len, " --mtu %d", manager->mtu);
     }
+    if (manager->obfs) {
+        int len = strlen(cmd);
+        snprintf(cmd + len, BUF_SIZE - len, " --obfs %s", manager->obfs);
+    }
     for (i = 0; i < manager->nameserver_num; i++) {
         int len = strlen(cmd);
         snprintf(cmd + len, BUF_SIZE - len, " -d %s", manager->nameservers[i]);
@@ -243,7 +247,7 @@ get_server(char *buf, int len)
         return NULL;
     }
 
-    struct server *server = (struct server *)malloc(sizeof(struct server));
+    struct server *server = ss_malloc(sizeof(struct server));
     memset(server, 0, sizeof(struct server));
     if (obj->type == json_object) {
         int i = 0;
@@ -322,7 +326,7 @@ kill_server(char *prefix, char *pid_file)
 {
     char *path = NULL;
     int pid, path_size = strlen(prefix) + strlen(pid_file) + 2;
-    path = malloc(path_size);
+    path = ss_malloc(path_size);
     snprintf(path, path_size, "%s/%s", prefix, pid_file);
     FILE *f = fopen(path, "r");
     if (f == NULL) {
@@ -345,7 +349,7 @@ stop_server(char *prefix, char *port)
 {
     char *path = NULL;
     int pid, path_size = strlen(prefix) + strlen(port) + 20;
-    path = malloc(path_size);
+    path = ss_malloc(path_size);
     snprintf(path, path_size, "%s/.shadowsocks_%s.pid", prefix, port);
     FILE *f = fopen(path, "r");
     if (f == NULL) {
@@ -611,6 +615,7 @@ main(int argc, char **argv)
     char *conf_path       = NULL;
     char *iface           = NULL;
     char *manager_address = NULL;
+    char *obfs            = NULL;
 
     int auth      = 0;
     int fast_open = 0;
@@ -618,7 +623,7 @@ main(int argc, char **argv)
     int mtu       = 0;
 
 #ifdef HAVE_SETRLIMIT
-static int nofile = 0;
+    static int nofile = 0;
 #endif
 
     int server_num = 0;
@@ -636,6 +641,7 @@ static int nofile = 0;
         { "manager-address", required_argument, 0, 0 },
         { "executable",      required_argument, 0, 0 },
         { "mtu",             required_argument, 0, 0 },
+        { "obfs",            required_argument, 0, 0 },
         { "help",            no_argument,       0, 0 },
         {                 0,                 0, 0, 0 }
     };
@@ -658,8 +664,9 @@ static int nofile = 0;
                 executable = optarg;
             } else if (option_index == 4) {
                 mtu = atoi(optarg);
-                LOGI("set MTU to %d", mtu);
             } else if (option_index == 5) {
+                obfs = optarg;
+            } else if (option_index == 6) {
                 usage();
                 exit(EXIT_SUCCESS);
             }
@@ -744,6 +751,9 @@ static int nofile = 0;
         if (timeout == NULL) {
             timeout = conf->timeout;
         }
+        if (user == NULL) {
+            user = conf->user;
+        }
 #ifdef TCP_FASTOPEN
         if (fast_open == 0) {
             fast_open = conf->fast_open;
@@ -760,6 +770,9 @@ static int nofile = 0;
         }
         if (mtu == 0) {
             mtu = conf->mtu;
+        }
+        if (obfs == 0) {
+            obfs = conf->obfs;
         }
 #ifdef HAVE_SETRLIMIT
         if (nofile == 0) {
@@ -837,22 +850,29 @@ static int nofile = 0;
     manager.nameservers     = nameservers;
     manager.nameserver_num  = nameserver_num;
     manager.mtu             = mtu;
+    manager.obfs            = obfs;
 #ifdef HAVE_SETRLIMIT
-    manager.nofile          = nofile;
+    manager.nofile = nofile;
 #endif
 
     // initialize ev loop
     struct ev_loop *loop = EV_DEFAULT;
 
     // setuid
-    if (user != NULL) {
-        run_as(user);
+    if (user != NULL && ! run_as(user)) {
+        FATAL("failed to switch user");
     }
+
+#ifndef __MINGW32__
+    if (geteuid() == 0){
+        LOGI("running from root user");
+    }
+#endif
 
     struct passwd *pw   = getpwuid(getuid());
     const char *homedir = pw->pw_dir;
     working_dir_size = strlen(homedir) + 15;
-    working_dir      = malloc(working_dir_size);
+    working_dir      = ss_malloc(working_dir_size);
     snprintf(working_dir, working_dir_size, "%s/.shadowsocks", homedir);
 
     int err = mkdir(working_dir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
@@ -885,7 +905,8 @@ static int nofile = 0;
 
     if (conf != NULL) {
         for (i = 0; i < conf->port_password_num; i++) {
-            struct server *server = (struct server *)malloc(sizeof(struct server));
+            struct server *server = ss_malloc(sizeof(struct server));
+            memset(server, 0, sizeof(struct server));
             strncpy(server->port, conf->port_password[i].port, 8);
             strncpy(server->password, conf->port_password[i].password, 128);
             add_server(&manager, server);

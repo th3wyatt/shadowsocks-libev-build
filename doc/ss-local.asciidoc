@@ -8,11 +8,12 @@ ss-local - shadowsocks client as socks5 proxy, libev port
 SYNOPSIS
 --------
 *ss-local*
- [-Auv] [-h|--help]
+ [-Auv6] [-h|--help]
  [-s <server_host>] [-p <server_port>] [-l <local_port>]
- [-k <password>] [-m <encrypt_method>] [-f <pid_file>] [-t <timeout>]
- [-c <config_file>] [-b <interface>] [-a <user_name>]
- [-n <nofile>] [--fast-open] [--acl <acl_config>] [--mtu <MTU>]
+ [-k <password>] [-m <encrypt_method>] [-f <pid_file>]
+ [-t <timeout>] [-c <config_file>] [-i <interface>]
+ [-a <user_name>] [-b <local_address] [-n <nofile>]
+ [--fast-open] [--acl <acl_config>] [--mtu <MTU>]
 
 DESCRIPTION
 -----------
@@ -95,6 +96,9 @@ Enable UDP relay and disable TCP relay.
 -A::
 Enable onetime authentication.
 
+-6::
+Resovle hostname to IPv6 address first.
+
 --fast-open::
 Enable TCP fast open.
 +
@@ -110,6 +114,13 @@ Specify the MTU of your network interface.
 Enable Multipath TCP.
 +
 Only available with MPTCP enabled Linux kernel.
+
+--obfs <http|tls>::
+Enable HTTP or TLS obfuscating. (Experimental)
+
+--obfs-host <hostname>::
+Specify the hostname for obfuscating. (Experimental)
+
 
 -v::
 Enable verbose mode.

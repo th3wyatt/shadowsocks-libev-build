@@ -105,12 +105,18 @@ typedef struct {
 #endif
 
 typedef struct {
-    cipher_evp_t evp;
+    cipher_evp_t *evp;
 #ifdef USE_CRYPTO_APPLECC
     cipher_cc_t cc;
 #endif
     uint8_t iv[MAX_IV_LENGTH];
 } cipher_ctx_t;
+
+typedef struct {
+    cipher_kt_t *info;
+    size_t iv_len;
+    size_t key_len;
+} cipher_t;
 
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
@@ -158,7 +164,7 @@ typedef struct buffer {
     size_t idx;
     size_t len;
     size_t capacity;
-    char   *array;
+    char   *data;
 } buffer_t;
 
 typedef struct chunk {
@@ -194,5 +200,7 @@ int ss_gen_hash(buffer_t *buf, uint32_t *counter, enc_ctx_t *ctx, size_t capacit
 int balloc(buffer_t *ptr, size_t capacity);
 int brealloc(buffer_t *ptr, size_t len, size_t capacity);
 void bfree(buffer_t *ptr);
+
+int rand_bytes(void *output, int len);
 
 #endif // _ENCRYPT_H

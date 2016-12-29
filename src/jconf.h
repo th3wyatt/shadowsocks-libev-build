@@ -55,6 +55,9 @@ typedef struct {
     char *password;
     char *method;
     char *timeout;
+    char *user;
+    char *obfs;
+    char *obfs_host;
     int auth;
     int fast_open;
     int nofile;
@@ -63,6 +66,7 @@ typedef struct {
     int mode;
     int mtu;
     int mptcp;
+    int ipv6_first;
 } jconf_t;
 
 jconf_t *read_jconf(const char *file);
