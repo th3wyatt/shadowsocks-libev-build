@@ -30,8 +30,6 @@ Files-Excluded:
  libipset
  libsodium
  libudns
- openwrt
- rpm
 
 Files: *
 Copyright: 2013-2015, Clow Windy <clowwindy42@gmail.com>
