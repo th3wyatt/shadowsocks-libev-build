@@ -7,9 +7,9 @@ variable set yet.
 Currently remove all system library part for configure.ac and Makefile.am
 ---
  Makefile.am     |  6 +-----
- configure.ac    | 15 ---------------
+ configure.ac    | 20 --------------------
  src/Makefile.am | 10 ++++------
- 3 files changed, 5 insertions(+), 26 deletions(-)
+ 3 files changed, 5 insertions(+), 31 deletions(-)
 
 diff --git a/Makefile.am b/Makefile.am
 index 690af43..8c1ec59 100644
@@ -26,10 +26,10 @@ index 690af43..8c1ec59 100644
  if ENABLE_DOCUMENTATION
  SUBDIRS += doc
 diff --git a/configure.ac b/configure.ac
-index 79aeb6a..1b142f1 100755
+index 69a8055..d06e145 100755
 --- a/configure.ac
 +++ b/configure.ac
-@@ -75,11 +75,6 @@ AC_PROG_LIBTOOL
+@@ -76,11 +76,6 @@ AC_PROG_LIBTOOL
  AC_PROG_MAKE_SET
  AC_LANG_SOURCE
  
@@ -41,12 +41,15 @@ index 79aeb6a..1b142f1 100755
  dnl Add library for mingw
  case $host in
    *-mingw*)
-@@ -303,19 +298,9 @@ dnl Add define for libudns to enable IPv6 support
+@@ -304,24 +299,9 @@ dnl Add define for libudns to enable IPv6 support
  dnl This is an option defined in the origin configure script
  AC_DEFINE([HAVE_IPv6], [1], [Enable IPv6 support in libudns])
  
--AM_COND_IF([USE_SYSTEM_SHARED_LIB],
--  [],
+-AM_COND_IF([USE_SYSTEM_SHARED_LIB],[
+-    AC_CHECK_LIB([sodium], [sodium_init], ,[
+-       AC_MSG_ERROR([Couldn't find libsodium. Try installing libsodium-dev@<:@el@:>@.])
+-    ])
+-  ],
 -  [AC_CONFIG_SUBDIRS([libsodium])])
 -
  AC_CONFIG_FILES([ shadowsocks-libev.pc
@@ -54,15 +57,17 @@ index 79aeb6a..1b142f1 100755
 -                 libcork/Makefile
 -                 libipset/Makefile
                   src/Makefile])
--AM_COND_IF([USE_SYSTEM_SHARED_LIB],
--  [],
+-AM_COND_IF([USE_SYSTEM_SHARED_LIB],[
+-    AC_CHECK_LIB([udns], [dns_dnlen], ,[AC_MSG_ERROR([Couldn't find libudns. Try installing libudns-dev or udns-devel.])])
+-    AC_CHECK_LIB([ev], [ev_loop_destroy], ,[AC_MSG_ERROR([Couldn't find libev. Try installing libev-dev@<:@el@:>@.])])
+-  ],
 -  [AC_CONFIG_FILES([libudns/Makefile
 -                 libev/Makefile])])
  
  AM_COND_IF([ENABLE_DOCUMENTATION],
    [AC_CONFIG_FILES([doc/Makefile])
 diff --git a/src/Makefile.am b/src/Makefile.am
-index b08517d..2d311d8 100644
+index b3c43f1..b03f903 100644
 --- a/src/Makefile.am
 +++ b/src/Makefile.am
 @@ -6,16 +6,14 @@ if !USE_SYSTEM_SHARED_LIB
