@@ -1,3 +1,10 @@
+shadowsocks-libev (2.6.0+ds-1) UNRELEASED; urgency=medium
+
+  * debian/maint-tools:
+    - Update README and script
+
+ -- Roger Shimizu <rogershimizu@gmail.com>  Fri, 30 Dec 2016 03:19:51 +0900
+
 shadowsocks-libev (2.5.6+ds-1) unstable; urgency=medium
 
   * New upstream release 2.5.6

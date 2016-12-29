@@ -15,7 +15,9 @@ if git rev-parse -q --verify "refs/tags/${dstag}" >/dev/null; then
 	echo Upstream tag "${dstag}" exists already. Exiting.
 	exit 1
 fi
-git merge $tag
+if ! git merge $tag; then
+	git add -u
+fi
 
 # remove all 'Files-Excluded' files listed in debian/copyright, except debian/ folder
 for i in $rmfiles; do if [ "$i" != "debian" ]; then git rm -rf "$i"; fi; done
