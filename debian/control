@@ -30,6 +30,8 @@ Depends:
  lsb-base (>= 3.0-6),
  ${misc:Depends},
  ${shlibs:Depends}
+Suggests:
+ libcap2-bin
 Description: lightweight and secure socks5 proxy
  Shadowsocks-libev is a lightweight and secure socks5 proxy for
  embedded devices and low end boxes.
