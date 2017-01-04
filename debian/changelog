@@ -1,5 +1,6 @@
-shadowsocks-libev (2.6.0+ds-1) UNRELEASED; urgency=medium
+shadowsocks-libev (2.6.0+ds-1) experimental; urgency=medium
 
+  * New upstream release 2.6.0
   * debian/maint-tools:
     - Update README and script
   * debian/patches:
@@ -14,7 +15,7 @@ shadowsocks-libev (2.6.0+ds-1) UNRELEASED; urgency=medium
     - Set libshadowsocks-libev-dev as "Multi-Arch: same", based on wiki:
       https://wiki.debian.org/MultiArch/Hints
 
- -- Roger Shimizu <rogershimizu@gmail.com>  Fri, 30 Dec 2016 03:19:51 +0900
+ -- Roger Shimizu <rogershimizu@gmail.com>  Thu, 05 Jan 2017 01:40:09 +0900
 
 shadowsocks-libev (2.5.6+ds-1) unstable; urgency=medium
 
