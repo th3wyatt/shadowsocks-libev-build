@@ -11,6 +11,8 @@ shadowsocks-libev (2.6.0+ds-1) UNRELEASED; urgency=medium
       Zhengjun Zhang <siyanmao.sec@gmail.com>.
   * debian/control:
     - Build-Depends on asciidoc-base instead of asciidoc.
+    - Set libshadowsocks-libev-dev as "Multi-Arch: same", based on wiki:
+      https://wiki.debian.org/MultiArch/Hints
 
  -- Roger Shimizu <rogershimizu@gmail.com>  Fri, 30 Dec 2016 03:19:51 +0900
 
