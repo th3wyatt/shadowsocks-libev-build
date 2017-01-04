@@ -1,0 +1,21 @@
+From: Max Lv <max.c.lv@gmail.com>
+Date: Thu, 29 Dec 2016 12:43:51 +0800
+Subject: Fix a typo
+
+---
+ src/local.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/local.c b/src/local.c
+index c9a56ef..87925ef 100644
+--- a/src/local.c
++++ b/src/local.c
+@@ -1452,7 +1452,7 @@ main(int argc, char **argv)
+         LOGI("using tcp fast open");
+ #else
+         LOGE("tcp fast open is not supported by this environment");
+-        fast_open == 0;
++        fast_open = 0;
+ #endif
+     }
+ 

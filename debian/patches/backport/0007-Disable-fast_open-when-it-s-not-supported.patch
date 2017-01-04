@@ -1,0 +1,33 @@
+From: Max Lv <max.c.lv@gmail.com>
+Date: Thu, 29 Dec 2016 11:26:32 +0800
+Subject: Disable fast_open when it's not supported
+
+---
+ src/local.c  | 1 +
+ src/server.c | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/src/local.c b/src/local.c
+index 0499404..c9a56ef 100644
+--- a/src/local.c
++++ b/src/local.c
+@@ -1452,6 +1452,7 @@ main(int argc, char **argv)
+         LOGI("using tcp fast open");
+ #else
+         LOGE("tcp fast open is not supported by this environment");
++        fast_open == 0;
+ #endif
+     }
+ 
+diff --git a/src/server.c b/src/server.c
+index b97fd2d..70305fb 100644
+--- a/src/server.c
++++ b/src/server.c
+@@ -1835,6 +1835,7 @@ main(int argc, char **argv)
+         LOGI("using tcp fast open");
+ #else
+         LOGE("tcp fast open is not supported by this environment");
++        fast_open = 0;
+ #endif
+     }
+ 

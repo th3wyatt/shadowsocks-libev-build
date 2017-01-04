@@ -1,0 +1,21 @@
+From: VampireSH <sherlockya@gmail.com>
+Date: Tue, 27 Dec 2016 18:58:11 +0800
+Subject: update the README.md
+
+---
+ README.md | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/README.md b/README.md
+index 8d93f31..0708608 100644
+--- a/README.md
++++ b/README.md
+@@ -389,6 +389,8 @@ man pages of the applications, respectively.
+        [--executable <path>]      path to the executable of ss-server
+                                   only available in manager mode
+ 
++       [--obfs <http|tls>]        Enable obfuscating: HTTP or TLS (Experimental).
++
+        [-v]                       verbose mode
+ 
+ notes:

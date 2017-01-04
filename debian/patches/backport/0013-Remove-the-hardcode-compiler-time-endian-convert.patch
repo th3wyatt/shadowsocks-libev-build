@@ -1,0 +1,59 @@
+From: Max Lv <max.c.lv@gmail.com>
+Date: Thu, 29 Dec 2016 16:30:32 +0800
+Subject: Remove the hardcode compiler-time endian convert
+
+---
+ src/obfs_tls.c |  7 +++++++
+ src/utils.h    | 23 -----------------------
+ 2 files changed, 7 insertions(+), 23 deletions(-)
+
+diff --git a/src/obfs_tls.c b/src/obfs_tls.c
+index b723ba4..96e5cf1 100644
+--- a/src/obfs_tls.c
++++ b/src/obfs_tls.c
+@@ -26,6 +26,13 @@
+ 
+ #include <strings.h>
+ 
++#include <libcork/core.h>
++
++#define CT_HTONS(n) CORK_UINT16_HOST_TO_BIG(n)
++#define CT_NTOHS(n) CORK_UINT16_BIG_TO_HOST(n)
++#define CT_HTONL(n) CORK_UINT32_HOST_TO_BIG(n)
++#define CT_NTOHL(n) CORK_UINT32_BIG_TO_HOST(n)
++
+ #include "base64.h"
+ #include "utils.h"
+ #include "obfs_tls.h"
+diff --git a/src/utils.h b/src/utils.h
+index 654ab95..0fb7f5a 100644
+--- a/src/utils.h
++++ b/src/utils.h
+@@ -229,27 +229,4 @@ void *ss_realloc(void *ptr, size_t new_size);
+         ptr = NULL;      \
+     } while (0)
+ 
+-#if _BYTE_ORDER == _BIG_ENDIAN
+-
+-#define CT_HTONS(n) (n)
+-#define CT_NTOHS(n) (n)
+-#define CT_HTONL(n) (n)
+-#define CT_NTOHL(n) (n)
+-
+-#else
+-
+-#define CT_HTONS(n) (((((unsigned short)(n) & 0xFF)) << 8) | (((unsigned short)(n) & 0xFF00) >> 8))
+-#define CT_NTOHS(n) (((((unsigned short)(n) & 0xFF)) << 8) | (((unsigned short)(n) & 0xFF00) >> 8))
+-
+-#define CT_HTONL(n) (((((unsigned long)(n) & 0xFF)) << 24) | \
+-                          ((((unsigned long)(n) & 0xFF00)) << 8) | \
+-                          ((((unsigned long)(n) & 0xFF0000)) >> 8) | \
+-                          ((((unsigned long)(n) & 0xFF000000)) >> 24))
+-
+-#define CT_NTOHL(n) (((((unsigned long)(n) & 0xFF)) << 24) | \
+-                          ((((unsigned long)(n) & 0xFF00)) << 8) | \
+-                          ((((unsigned long)(n) & 0xFF0000)) >> 8) | \
+-                          ((((unsigned long)(n) & 0xFF000000)) >> 24))
+-#endif
+-
+ #endif // _UTILS_H

@@ -1,0 +1,21 @@
+From: Max Lv <max.c.lv@gmail.com>
+Date: Thu, 29 Dec 2016 14:32:47 +0800
+Subject: Use internal BIG_ENDIAN check
+
+---
+ src/utils.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/utils.h b/src/utils.h
+index 8fc0406..7c768f5 100644
+--- a/src/utils.h
++++ b/src/utils.h
+@@ -229,7 +229,7 @@ void *ss_realloc(void *ptr, size_t new_size);
+         ptr = NULL;      \
+     } while (0)
+ 
+-#if BYTE_ORDER == BIG_ENDIAN
++#ifdef WORDS_BIGENDIAN
+ 
+ #define CT_HTONS(n) (n)
+ #define CT_NTOHS(n) (n)

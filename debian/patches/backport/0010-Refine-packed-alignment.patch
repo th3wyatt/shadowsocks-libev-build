@@ -1,0 +1,134 @@
+From: Max Lv <max.c.lv@gmail.com>
+Date: Thu, 29 Dec 2016 14:06:23 +0800
+Subject: Refine packed alignment
+
+---
+ src/obfs_tls.h | 19 +++++++------------
+ src/socks5.h   | 13 ++++---------
+ 2 files changed, 11 insertions(+), 21 deletions(-)
+
+diff --git a/src/obfs_tls.h b/src/obfs_tls.h
+index 9f12017..943a8fb 100644
+--- a/src/obfs_tls.h
++++ b/src/obfs_tls.h
+@@ -25,9 +25,6 @@
+ 
+ #include "obfs.h"
+ 
+-#pragma pack(push)
+-#pragma pack(1)
+-
+ struct tls_client_hello {
+     char  content_type;
+     short version;
+@@ -47,7 +44,7 @@ struct tls_client_hello {
+     char  comp_methods_len;
+     char  comp_methods[1];
+     short ext_len;
+-};
++} __attribute__((packed));
+ 
+ struct tls_ext_server_name {
+     short ext_type;
+@@ -56,13 +53,13 @@ struct tls_ext_server_name {
+     char  server_name_type;
+     short server_name_len;
+     // char server_name[server_name_len];
+-};
++} __attribute__((packed));
+ 
+ struct tls_ext_session_ticket {
+     short session_ticket_type;
+     short session_ticket_ext_len;
+     // char  session_ticket[session_ticket_ext_len];
+-};
++} __attribute__((packed));
+ 
+ struct tls_ext_others {
+     short ec_point_formats_ext_type;
+@@ -85,7 +82,7 @@ struct tls_ext_others {
+ 
+     short extended_master_secret_type;
+     short extended_master_secret_ext_len;
+-};
++} __attribute__((packed));
+ 
+ struct tls_server_hello {
+     char  content_type;
+@@ -116,21 +113,21 @@ struct tls_server_hello {
+     short ec_point_formats_ext_len;
+     char  ec_point_formats_len;
+     char  ec_point_formats[1];
+-};
++} __attribute__((packed));
+ 
+ struct tls_change_cipher_spec {
+     char  content_type;
+     short version;
+     short len;
+     char  msg;
+-};
++} __attribute__((packed));
+ 
+ struct tls_encrypted_handshake {
+     char  content_type;
+     short version;
+     short len;
+     // char  msg[len];
+-};
++} __attribute__((packed));
+ 
+ typedef struct frame {
+     short idx;
+@@ -138,8 +135,6 @@ typedef struct frame {
+     char  buf[2];
+ } frame_t;
+ 
+-#pragma pack(pop)
+-
+ extern obfs_para_t *obfs_tls;
+ 
+ #endif
+diff --git a/src/socks5.h b/src/socks5.h
+index 901c685..984c09e 100644
+--- a/src/socks5.h
++++ b/src/socks5.h
+@@ -30,34 +30,29 @@
+ #define IPV6 0x04
+ #define CMD_NOT_SUPPORTED 0x07
+ 
+-#pragma pack(push)
+-#pragma pack(1)
+-
+ struct method_select_request {
+     char ver;
+     char nmethods;
+     char methods[255];
+-};
++} __attribute__((packed));
+ 
+ struct method_select_response {
+     char ver;
+     char method;
+-};
++} __attribute__((packed));
+ 
+ struct socks5_request {
+     char ver;
+     char cmd;
+     char rsv;
+     char atyp;
+-};
++} __attribute__((packed));
+ 
+ struct socks5_response {
+     char ver;
+     char rep;
+     char rsv;
+     char atyp;
+-};
+-
+-#pragma pack(pop)
++} __attribute__((packed));
+ 
+ #endif // _SOCKS5_H

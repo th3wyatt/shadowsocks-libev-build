@@ -4,6 +4,7 @@ shadowsocks-libev (2.6.0+ds-1) UNRELEASED; urgency=medium
     - Update README and script
   * debian/patches:
     - Rebase patches.
+    - Backport a few patches from upstream.
   * debian/control & debian/shadowsocks-libev.postinst:
     - Add capabilities for Debian, so it's able to run ss-* as non-root.
       Cherry-picked from upstream git repo, And thanks to
