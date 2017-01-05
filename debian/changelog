@@ -5,6 +5,8 @@ shadowsocks-libev (2.6.0+ds-2) UNRELEASED; urgency=medium
     supported in the future.
   * debian/patches:
     - Add revert patch and refresh patches.
+  * debian/copyright:
+    - Add new entry of copyright on src/base64.{c,h}
 
  -- Roger Shimizu <rogershimizu@gmail.com>  Thu, 05 Jan 2017 22:14:15 +0900
 
