@@ -1,4 +1,4 @@
-shadowsocks-libev (2.6.0+ds-2) UNRELEASED; urgency=medium
+shadowsocks-libev (2.6.0+ds-2) unstable; urgency=medium
 
   * Revert obfuscating function added since v2.6.0,
     due to it's already dropped by upstream, and won't be
@@ -9,7 +9,7 @@ shadowsocks-libev (2.6.0+ds-2) UNRELEASED; urgency=medium
     - Add new entry of copyright on src/base64.{c,h}
     - Update copyright year.
 
- -- Roger Shimizu <rogershimizu@gmail.com>  Thu, 05 Jan 2017 22:14:15 +0900
+ -- Roger Shimizu <rogershimizu@gmail.com>  Thu, 05 Jan 2017 23:55:09 +0900
 
 shadowsocks-libev (2.6.0+ds-1) experimental; urgency=medium
 
