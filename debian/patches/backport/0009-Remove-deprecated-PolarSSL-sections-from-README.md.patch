@@ -7,7 +7,7 @@ Subject: Remove deprecated PolarSSL sections from README.md
  1 file changed, 3 insertions(+), 33 deletions(-)
 
 diff --git a/README.md b/README.md
-index 0708608..766ed24 100644
+index 8d93f31..fb8e73e 100644
 --- a/README.md
 +++ b/README.md
 @@ -6,7 +6,7 @@

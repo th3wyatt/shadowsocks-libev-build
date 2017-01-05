@@ -1,3 +1,13 @@
+shadowsocks-libev (2.6.0+ds-2) UNRELEASED; urgency=medium
+
+  * Revert obfuscating function added since v2.6.0,
+    due to it's already dropped by upstream, and won't be
+    supported in the future.
+  * debian/patches:
+    - Add revert patch and refresh patches.
+
+ -- Roger Shimizu <rogershimizu@gmail.com>  Thu, 05 Jan 2017 22:14:15 +0900
+
 shadowsocks-libev (2.6.0+ds-1) experimental; urgency=medium
 
   * New upstream release 2.6.0

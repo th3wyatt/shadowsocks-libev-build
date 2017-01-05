@@ -7,7 +7,7 @@ Subject: Disable fast_open when setsockopt failed
  1 file changed, 1 insertion(+)
 
 diff --git a/src/server.c b/src/server.c
-index 70305fb..834aed7 100644
+index 636d52a..ec6d9c9 100644
 --- a/src/server.c
 +++ b/src/server.c
 @@ -360,6 +360,7 @@ setfastopen(int fd)
