@@ -3,6 +3,7 @@ shadowsocks-libev (3.0.2+ds-1~exp1) UNRELEASED; urgency=medium
   * New upstream release 3.0.2
   * debian/copyright:
     - Remove non-existing files from Files-Excluded list.
+    - Add entry of src/base64.{c,h} and scripts/deb4*.sh.
   * debian/patches:
     - Remove all debian specific patches (0001 & 0002), after backporting
       a new autotool related patch from upstream. Thanks to Max Lv.
