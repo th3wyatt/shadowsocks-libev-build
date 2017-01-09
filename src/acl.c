@@ -343,7 +343,7 @@ trimwhitespace(char *str)
     char *end;
 
     // Trim leading space
-    while (isspace(*str))
+    while (isspace((unsigned char)*str))
         str++;
 
     if (*str == 0)   // All spaces?
@@ -351,7 +351,7 @@ trimwhitespace(char *str)
 
     // Trim trailing space
     end = str + strlen(str) - 1;
-    while (end > str && isspace(*end))
+    while (end > str && isspace((unsigned char)*end))
         end--;
 
     // Write new null terminator
@@ -396,13 +396,12 @@ init_acl(const char *path)
                 buf[len - 1] = '\0';
             }
 
-            char *line = trimwhitespace(buf);
-
-            // Skip comments
-            if (line[0] == '#') {
-                continue;
+            char *comment = strchr(buf, '#');
+            if (comment) {
+                *comment = '\0';
             }
 
+            char *line = trimwhitespace(buf);
             if (strlen(line) == 0) {
                 continue;
             }

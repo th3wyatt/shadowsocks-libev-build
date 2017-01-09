@@ -44,13 +44,15 @@ struct manager_ctx {
     char *iface;
     char *acl;
     char *user;
-    char *obfs;
+    char *plugin;
+    char *plugin_args;
     char *manager_address;
     char **hosts;
     int host_num;
     char **nameservers;
     int nameserver_num;
     int mtu;
+    int ipv6first;
 #ifdef HAVE_SETRLIMIT
     int nofile;
 #endif
@@ -61,5 +63,12 @@ struct server {
     char password[128];
     uint64_t traffic;
 };
+
+typedef struct sock_lock {
+    char *port;
+    int *fds;
+    int fd_count;
+    ev_timer watcher;
+} sock_lock_t;
 
 #endif // _MANAGER_H

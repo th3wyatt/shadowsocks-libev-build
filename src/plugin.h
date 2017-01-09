@@ -1,5 +1,5 @@
 /*
- * obfs.h - Interfaces of obfuscating function
+ * acl.h - Define the ACL interface
  *
  * Copyright (C) 2013 - 2016, Max Lv <max.c.lv@gmail.com>
  *
@@ -20,35 +20,19 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifndef OBFS_H
-#define OBFS_H
+#ifndef _PLUGIN_H
+#define _PLUGIN_H
 
-#include "encrypt.h"
+#define PLUGIN_EXIT_ERROR  -2
+#define PLUGIN_EXIT_NORMAL -1
+#define PLUGIN_RUNNING      0
 
-#define OBFS_OK         0
-#define OBFS_NEED_MORE -1
-#define OBFS_ERROR     -2
+int start_plugin(const char *plugin,
+                 const char *remote_host,
+                 const char *remote_port,
+                 const char *local_host,
+                 const char *local_port);
+uint16_t get_local_port();
+void stop_plugin();
 
-typedef struct obfs {
-    int obfs_stage;
-    int deobfs_stage;
-    buffer_t *buf;
-    void *extra;
-} obfs_t;
-
-typedef struct obfs_para {
-    const char *name;
-    const char *host;
-    uint16_t port;
-
-    int(*const obfs_request)(buffer_t *, size_t, obfs_t *);
-    int(*const obfs_response)(buffer_t *, size_t, obfs_t *);
-    int(*const deobfs_request)(buffer_t *, size_t, obfs_t *);
-    int(*const deobfs_response)(buffer_t *, size_t, obfs_t *);
-    int(*const check_obfs)(buffer_t *);
-    void(*const disable)(obfs_t *);
-    int(*const is_enable)(obfs_t *);
-} obfs_para_t;
-
-
-#endif
+#endif // _PLUGIN_H

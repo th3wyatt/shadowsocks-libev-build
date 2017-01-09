@@ -2,7 +2,7 @@ dnl                                               -*- Autoconf -*-
 dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.67])
-AC_INIT([shadowsocks-libev], [2.6.0], [max.c.lv@gmail.com])
+AC_INIT([shadowsocks-libev], [2.6.1], [max.c.lv@gmail.com])
 AC_CONFIG_SRCDIR([src/encrypt.c])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_AUX_DIR(auto)
@@ -84,7 +84,11 @@ AM_COND_IF([USE_SYSTEM_SHARED_LIB],
 dnl Add library for mingw
 case $host in
   *-mingw*)
+    CFLAGS="$CFLAGS -mno-ms-bitfields"
     LIBS="$LIBS -ladvapi32 -lgdi32 -lws2_32 -lcrypt32"
+    ;;
+  *-cygwin*)
+    CFLAGS="$CFLAGS -mno-ms-bitfields"
     ;;
   *)
     ;;
