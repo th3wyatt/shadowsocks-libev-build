@@ -1,3 +1,12 @@
+shadowsocks-libev (2.6.1+ds-1) UNRELEASED; urgency=medium
+
+  * New upstream release 2.6.1
+  * debian/copyright:
+    - Remove entry of copyright on src/base64.{c,h}, because those two src
+      files has been removed from upstream.
+
+ -- Roger Shimizu <rogershimizu@gmail.com>  Mon, 09 Jan 2017 23:29:38 +0900
+
 shadowsocks-libev (2.6.0+ds-2) unstable; urgency=medium
 
   * Revert obfuscating function added since v2.6.0,
