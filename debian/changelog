@@ -30,6 +30,16 @@ shadowsocks-libev (2.6.0+ds-1) experimental; urgency=medium
 
  -- Roger Shimizu <rogershimizu@gmail.com>  Thu, 05 Jan 2017 01:40:09 +0900
 
+shadowsocks-libev (2.5.6+ds-1~bpo8+1) jessie-backports; urgency=medium
+
+  * Rebuild for jessie-backports.
+  * debian/patches:
+    - Update 0003 patch, to disable cipher CHACHA20IETF,
+      which it's not supported by libsodium in jessie
+    - Refresh patches
+
+ -- Roger Shimizu <rogershimizu@gmail.com>  Mon, 28 Nov 2016 01:18:44 +0900
+
 shadowsocks-libev (2.5.6+ds-1) unstable; urgency=medium
 
   * New upstream release 2.5.6
@@ -79,6 +89,15 @@ shadowsocks-libev (2.5.3+ds-1) experimental; urgency=low
     - Add license information for m4/ files
 
  -- Roger Shimizu <rogershimizu@gmail.com>  Tue, 04 Oct 2016 23:05:55 +0900
+
+shadowsocks-libev (2.4.8+ds-1~bpo8+1) jessie-backports; urgency=medium
+
+  * Rebuild for jessie-backports.
+  * debian/patches:
+    - Add patch to disable cipher CHACHA20IETF, which it's not supported
+      by libsodium in jessie
+
+ -- Roger Shimizu <rogershimizu@gmail.com>  Wed, 05 Oct 2016 02:51:35 +0900
 
 shadowsocks-libev (2.4.8+ds-1) unstable; urgency=medium
 
