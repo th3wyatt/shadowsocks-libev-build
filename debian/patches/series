@@ -1,2 +1,5 @@
 0001-use-system-library-libcork-libcorkipset-libev-libsod.patch
 0002-use-libcorkipset-library-in-system.patch
+backport/0003-fix-typo-in-src-manager.c.patch
+backport/0004-Fix-1050.patch
+backport/0005-Refine-SIGCHLD-handling.patch
