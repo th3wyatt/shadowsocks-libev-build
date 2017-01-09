@@ -1,4 +1,4 @@
-shadowsocks-libev (2.6.1+ds-1) UNRELEASED; urgency=medium
+shadowsocks-libev (2.6.1+ds-1) unstable; urgency=medium
 
   * New upstream release 2.6.1
   * debian/copyright:
@@ -7,7 +7,7 @@ shadowsocks-libev (2.6.1+ds-1) UNRELEASED; urgency=medium
   * debian/patches:
     - Backport a few patches from upstream.
 
- -- Roger Shimizu <rogershimizu@gmail.com>  Mon, 09 Jan 2017 23:29:38 +0900
+ -- Roger Shimizu <rogershimizu@gmail.com>  Tue, 10 Jan 2017 00:07:49 +0900
 
 shadowsocks-libev (2.6.0+ds-2) unstable; urgency=medium
 
