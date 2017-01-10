@@ -1,0 +1,22 @@
+From: Max Lv <max.c.lv@gmail.com>
+Date: Tue, 10 Jan 2017 09:55:05 +0800
+Subject: Fix #1051
+
+---
+ src/server.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/server.c b/src/server.c
+index ae8d8ad..e784965 100644
+--- a/src/server.c
++++ b/src/server.c
+@@ -1525,7 +1525,8 @@ accept_cb(EV_P_ ev_io *w, int revents)
+                 in_white_list = 1;
+             }
+         }
+-        if (!in_white_list && check_block_list(peer_name)) {
++        if (!in_white_list && plugin == NULL
++                && check_block_list(peer_name)) {
+             LOGE("block all requests from %s", peer_name);
+ #ifdef __linux__
+             set_linger(serverfd);

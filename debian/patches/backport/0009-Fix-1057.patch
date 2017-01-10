@@ -1,0 +1,21 @@
+From: Max Lv <max.c.lv@gmail.com>
+Date: Tue, 10 Jan 2017 12:57:06 +0800
+Subject: Fix #1057
+
+---
+ src/server.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/server.c b/src/server.c
+index 2969f59..1d8d439 100644
+--- a/src/server.c
++++ b/src/server.c
+@@ -1927,7 +1927,7 @@ main(int argc, char **argv)
+ 
+         // Setup UDP
+         if (mode != TCP_ONLY) {
+-            init_udprelay(server_host[0], server_port, mtu, m,
++            init_udprelay(server_host[i], server_port, mtu, m,
+                           auth, atoi(timeout), iface);
+         }
+ 

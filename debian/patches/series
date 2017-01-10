@@ -4,3 +4,7 @@ backport/0003-fix-typo-in-src-manager.c.patch
 backport/0004-Fix-1050.patch
 backport/0005-Refine-SIGCHLD-handling.patch
 backport/0006-Fix-FTBFS-of-PATH_MAX-on-GNU-Hurd.patch
+backport/0007-Fix-1051.patch
+backport/0008-Fix-1055.patch
+backport/0009-Fix-1057.patch
+backport/0010-Fix-1059.patch

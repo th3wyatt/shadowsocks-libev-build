@@ -1,0 +1,30 @@
+From: Max Lv <max.c.lv@gmail.com>
+Date: Tue, 10 Jan 2017 21:57:38 +0800
+Subject: Fix #1059
+
+---
+ src/manager.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/src/manager.c b/src/manager.c
+index 6f4c514..e32f43c 100644
+--- a/src/manager.c
++++ b/src/manager.c
+@@ -319,7 +319,7 @@ create_and_bind(const char *host, const char *port, int protocol)
+ {
+     struct addrinfo hints;
+     struct addrinfo *result, *rp, *ipv4v6bindall;
+-    int s, listen_sock, is_port_reuse;
++    int s, listen_sock = -1, is_port_reuse = 0;
+ 
+     memset(&hints, 0, sizeof(struct addrinfo));
+     hints.ai_family   = AF_UNSPEC;                  /* Return IPv4 and IPv6 choices */
+@@ -356,8 +356,6 @@ create_and_bind(const char *host, const char *port, int protocol)
+         }
+     }
+ 
+-    is_port_reuse = 0;
+-
+     for (/*rp = result*/; rp != NULL; rp = rp->ai_next) {
+         listen_sock = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+         if (listen_sock == -1) {
