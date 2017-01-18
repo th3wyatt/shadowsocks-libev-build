@@ -108,6 +108,13 @@ static int mode      = TCP_ONLY;
 static int ipv6first = 0;
 static int fast_open = 0;
 
+static struct ev_signal sigint_watcher;
+static struct ev_signal sigterm_watcher;
+#ifndef __MINGW32__
+static struct ev_signal sigchld_watcher;
+static struct ev_signal sigusr1_watcher;
+#endif
+
 #ifdef HAVE_SETRLIMIT
 #ifndef LIB_ONLY
 static int nofile = 0;
@@ -1118,26 +1125,29 @@ create_remote(listen_ctx_t *listener,
     return remote;
 }
 
-void
-resolve_int_cb(int dummy)
-{
-    keep_resolving = 0;
-}
-
 static void
 signal_cb(EV_P_ ev_signal *w, int revents)
 {
     if (revents & EV_SIGNAL) {
         switch (w->signum) {
-        case SIGCHLD:
-            LOGE("plugin service exit unexpectedly");
-        case SIGINT:
-        case SIGTERM:
 #ifndef __MINGW32__
+        case SIGCHLD:
+            if (!is_plugin_running())
+                LOGE("plugin service exit unexpectedly");
+            else
+                return;
         case SIGUSR1:
 #endif
+        case SIGINT:
+        case SIGTERM:
+            ev_signal_stop(EV_DEFAULT, &sigint_watcher);
+            ev_signal_stop(EV_DEFAULT, &sigterm_watcher);
+#ifndef __MINGW32__
+            ev_signal_stop(EV_DEFAULT, &sigchld_watcher);
+            ev_signal_stop(EV_DEFAULT, &sigusr1_watcher);
+#endif
+            keep_resolving = 0;
             ev_unloop(EV_A_ EVUNLOOP_ALL);
-            resolve_int_cb(revents);
         }
     }
 }
@@ -1183,6 +1193,7 @@ main(int argc, char **argv)
     char *iface      = NULL;
 
     char *plugin      = NULL;
+    char *plugin_opts = NULL;
     char *plugin_host = NULL;
     char *plugin_port = NULL;
     char tmp_port[8];
@@ -1200,6 +1211,7 @@ main(int argc, char **argv)
         { "mtu",         required_argument, 0, 0 },
         { "mptcp",       no_argument,       0, 0 },
         { "plugin",      required_argument, 0, 0 },
+        { "plugin-opts", required_argument, 0, 0 },
         { "help",        no_argument,       0, 0 },
         { 0,             0,                 0, 0 }
     };
@@ -1231,6 +1243,8 @@ main(int argc, char **argv)
             } else if (option_index == 4) {
                 plugin = optarg;
             } else if (option_index == 5) {
+                plugin_opts = optarg;
+            } else if (option_index == 6) {
                 usage();
                 exit(EXIT_SUCCESS);
             }
@@ -1352,6 +1366,9 @@ main(int argc, char **argv)
         if (plugin == NULL) {
             plugin = conf->plugin;
         }
+        if (plugin_opts == NULL) {
+            plugin_opts = conf->plugin_opts;
+        }
         if (auth == 0) {
             auth = conf->auth;
         }
@@ -1453,15 +1470,11 @@ main(int argc, char **argv)
             snprintf(remote_str + len, buf_size - len, "|%s", remote_addr[i].host);
             len = strlen(remote_str);
         }
-        int err = start_plugin(plugin, remote_str,
+        int err = start_plugin(plugin, plugin_opts, remote_str,
                 remote_port, plugin_host, plugin_port);
         if (err) {
             FATAL("failed to start the plugin");
         }
-
-        remote_num = 1;
-        remote_addr[0].host = plugin_host;
-        remote_addr[0].port = plugin_port;
     }
 
 #ifdef __MINGW32__
@@ -1485,12 +1498,18 @@ main(int argc, char **argv)
         char *host = remote_addr[i].host;
         char *port = remote_addr[i].port == NULL ? remote_port :
                      remote_addr[i].port;
+        if (plugin != NULL) {
+            host = plugin_host;
+            port = plugin_port;
+        }
         struct sockaddr_storage *storage = ss_malloc(sizeof(struct sockaddr_storage));
         memset(storage, 0, sizeof(struct sockaddr_storage));
         if (get_sockaddr(host, port, storage, 1, ipv6first) == -1) {
             FATAL("failed to resolve the provided hostname");
         }
         listen_ctx.remote_addr[i] = (struct sockaddr *)storage;
+
+        if (plugin != NULL) break;
     }
     listen_ctx.timeout = atoi(timeout);
     listen_ctx.iface   = iface;
@@ -1498,15 +1517,15 @@ main(int argc, char **argv)
     listen_ctx.mptcp   = mptcp;
 
     // Setup signal handler
-    struct ev_signal sigint_watcher;
-    struct ev_signal sigterm_watcher;
-    struct ev_signal sigchld_watcher;
     ev_signal_init(&sigint_watcher, signal_cb, SIGINT);
     ev_signal_init(&sigterm_watcher, signal_cb, SIGTERM);
-    ev_signal_init(&sigchld_watcher, signal_cb, SIGCHLD);
     ev_signal_start(EV_DEFAULT, &sigint_watcher);
     ev_signal_start(EV_DEFAULT, &sigterm_watcher);
+
+#ifndef __MINGW32__
+    ev_signal_init(&sigchld_watcher, signal_cb, SIGCHLD);
     ev_signal_start(EV_DEFAULT, &sigchld_watcher);
+#endif
 
     struct ev_loop *loop = EV_DEFAULT;
 
@@ -1535,8 +1554,16 @@ main(int argc, char **argv)
     // Setup UDP
     if (mode != TCP_ONLY) {
         LOGI("udprelay enabled");
-        init_udprelay(local_addr, local_port, listen_ctx.remote_addr[0],
-                      get_sockaddr_len(listen_ctx.remote_addr[0]), mtu, m, auth, listen_ctx.timeout, iface);
+        char *host = remote_addr[0].host;
+        char *port = remote_addr[0].port == NULL ? remote_port : remote_addr[0].port;
+        struct sockaddr_storage *storage = ss_malloc(sizeof(struct sockaddr_storage));
+        memset(storage, 0, sizeof(struct sockaddr_storage));
+        if (get_sockaddr(host, port, storage, 1, ipv6first) == -1) {
+            FATAL("failed to resolve the provided hostname");
+        }
+        struct sockaddr *addr = (struct sockaddr *)storage;
+        init_udprelay(local_addr, local_port, addr,
+                      get_sockaddr_len(addr), mtu, m, auth, listen_ctx.timeout, iface);
     }
 
 #ifdef HAVE_LAUNCHD
@@ -1592,10 +1619,6 @@ main(int argc, char **argv)
     winsock_cleanup();
 #endif
 
-    ev_signal_stop(EV_DEFAULT, &sigint_watcher);
-    ev_signal_stop(EV_DEFAULT, &sigterm_watcher);
-    ev_signal_stop(EV_DEFAULT, &sigchld_watcher);
-
     return 0;
 }
 
@@ -1647,19 +1670,15 @@ start_ss_local_server(profile_t profile)
     signal(SIGABRT, SIG_IGN);
 #endif
 
-    struct ev_signal sigint_watcher;
-    struct ev_signal sigterm_watcher;
-    struct ev_signal sigchld_watcher;
     ev_signal_init(&sigint_watcher, signal_cb, SIGINT);
     ev_signal_init(&sigterm_watcher, signal_cb, SIGTERM);
-    ev_signal_init(&sigchld_watcher, signal_cb, SIGCHLD);
     ev_signal_start(EV_DEFAULT, &sigint_watcher);
     ev_signal_start(EV_DEFAULT, &sigterm_watcher);
-    ev_signal_start(EV_DEFAULT, &sigchld_watcher);
 #ifndef __MINGW32__
-    struct ev_signal sigusr1_watcher;
     ev_signal_init(&sigusr1_watcher, signal_cb, SIGUSR1);
+    ev_signal_init(&sigchld_watcher, signal_cb, SIGCHLD);
     ev_signal_start(EV_DEFAULT, &sigusr1_watcher);
+    ev_signal_start(EV_DEFAULT, &sigchld_watcher);
 #endif
 
     // Setup keys
@@ -1744,13 +1763,6 @@ start_ss_local_server(profile_t profile)
 
 #ifdef __MINGW32__
     winsock_cleanup();
-#endif
-
-    ev_signal_stop(EV_DEFAULT, &sigint_watcher);
-    ev_signal_stop(EV_DEFAULT, &sigterm_watcher);
-    ev_signal_stop(EV_DEFAULT, &sigchld_watcher);
-#ifndef __MINGW32__
-    ev_signal_stop(EV_DEFAULT, &sigusr1_watcher);
 #endif
 
     // cannot reach here

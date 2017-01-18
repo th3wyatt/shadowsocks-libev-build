@@ -28,11 +28,13 @@
 #define PLUGIN_RUNNING      0
 
 int start_plugin(const char *plugin,
+                 const char *plugin_opts,
                  const char *remote_host,
                  const char *remote_port,
                  const char *local_host,
                  const char *local_port);
 uint16_t get_local_port();
 void stop_plugin();
+int is_plugin_running();
 
 #endif // _PLUGIN_H

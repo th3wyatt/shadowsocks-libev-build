@@ -80,6 +80,10 @@
 #define SSMAXCONN 1024
 #endif
 
+#ifndef MAX_FRAG
+#define MAX_FRAG 2
+#endif
+
 static void signal_cb(EV_P_ ev_signal *w, int revents);
 static void accept_cb(EV_P_ ev_io *w, int revents);
 static void server_send_cb(EV_P_ ev_io *w, int revents);
@@ -118,6 +122,7 @@ static int nofile = 0;
 static int remote_conn = 0;
 static int server_conn = 0;
 
+static char *plugin          = NULL;
 static char *bind_address    = NULL;
 static char *server_port     = NULL;
 static char *manager_address = NULL;
@@ -125,6 +130,10 @@ uint64_t tx                  = 0;
 uint64_t rx                  = 0;
 ev_timer stat_update_watcher;
 ev_timer block_list_watcher;
+
+static struct ev_signal sigint_watcher;
+static struct ev_signal sigterm_watcher;
+static struct ev_signal sigchld_watcher;
 
 static struct cork_dllist connections;
 
@@ -650,6 +659,13 @@ server_recv_cb(EV_P_ ev_io *w, int revents)
 
     tx += r;
 
+    if (server->frag >= MAX_FRAG) {
+        LOGE("fragmentation detected");
+        close_and_free_remote(EV_A_ remote);
+        close_and_free_server(EV_A_ server);
+        return;
+    }
+
     if (server->stage == STAGE_ERROR) {
         server->buf->len = 0;
         server->buf->idx = 0;
@@ -662,6 +678,7 @@ server_recv_cb(EV_P_ ev_io *w, int revents)
 
         if (buf->len <= enc_get_iv_len() + 1) {
             // wait for more
+            server->frag++;
             return;
         }
     } else {
@@ -714,6 +731,7 @@ server_recv_cb(EV_P_ ev_io *w, int revents)
         } else {
             if (ret == -1)
                 server->stage = STAGE_ERROR;
+            server->frag++;
             server->buf->len = 0;
             server->buf->idx = 0;
             return;
@@ -1392,6 +1410,7 @@ new_server(int fd, listen_ctx_t *listener)
     server->send_ctx->server    = server;
     server->send_ctx->connected = 0;
     server->stage               = STAGE_INIT;
+    server->frag                = 0;
     server->query               = NULL;
     server->listen_ctx          = listener;
     server->remote              = NULL;
@@ -1487,9 +1506,15 @@ signal_cb(EV_P_ ev_signal *w, int revents)
     if (revents & EV_SIGNAL) {
         switch (w->signum) {
         case SIGCHLD:
-            LOGE("plugin service exit unexpectedly");
+            if (!is_plugin_running())
+                LOGE("plugin service exit unexpectedly");
+            else
+                return;
         case SIGINT:
         case SIGTERM:
+            ev_signal_stop(EV_DEFAULT, &sigint_watcher);
+            ev_signal_stop(EV_DEFAULT, &sigterm_watcher);
+            ev_signal_stop(EV_DEFAULT, &sigchld_watcher);
             ev_unloop(EV_A_ EVUNLOOP_ALL);
         }
     }
@@ -1518,7 +1543,8 @@ accept_cb(EV_P_ ev_io *w, int revents)
                 in_white_list = 1;
             }
         }
-        if (!in_white_list && check_block_list(peer_name)) {
+        if (!in_white_list && plugin == NULL
+                && check_block_list(peer_name)) {
             LOGE("block all requests from %s", peer_name);
 #ifdef __linux__
             set_linger(serverfd);
@@ -1550,7 +1576,6 @@ main(int argc, char **argv)
     int i, c;
     int pid_flags   = 0;
     int mptcp       = 0;
-    int firewall    = 0;
     int mtu         = 0;
     char *user      = NULL;
     char *password  = NULL;
@@ -1560,7 +1585,7 @@ main(int argc, char **argv)
     char *conf_path = NULL;
     char *iface     = NULL;
 
-    char *plugin      = NULL;
+    char *plugin_opts = NULL;
     char *plugin_port = NULL;
     char tmp_port[8];
 
@@ -1578,9 +1603,9 @@ main(int argc, char **argv)
         { "mtu",             required_argument, 0, 0 },
         { "help",            no_argument,       0, 0 },
         { "plugin",          required_argument, 0, 0 },
+        { "plugin-opts",     required_argument, 0, 0 },
 #ifdef __linux__
         { "mptcp",           no_argument,       0, 0 },
-        { "firewall",        no_argument,       0, 0 },
 #endif
         {                 0,                 0, 0, 0 }
     };
@@ -1609,11 +1634,10 @@ main(int argc, char **argv)
             } else if (option_index == 5) {
                 plugin = optarg;
             } else if (option_index == 6) {
+                plugin_opts = optarg;
+            } else if (option_index == 7) {
                 mptcp = 1;
                 LOGI("enable multipath TCP");
-            } else if (option_index == 8) {
-                firewall = 1;
-                LOGI("enable firewall rules");
             }
             break;
         case 's':
@@ -1720,6 +1744,9 @@ main(int argc, char **argv)
         }
         if (plugin == NULL) {
             plugin = conf->plugin;
+        }
+        if (plugin_opts == NULL) {
+            plugin_opts = conf->plugin_opts;
         }
         if (auth == 0) {
             auth = conf->auth;
@@ -1833,9 +1860,6 @@ main(int argc, char **argv)
     signal(SIGABRT, SIG_IGN);
 #endif
 
-    struct ev_signal sigint_watcher;
-    struct ev_signal sigterm_watcher;
-    struct ev_signal sigchld_watcher;
     ev_signal_init(&sigint_watcher, signal_cb, SIGINT);
     ev_signal_init(&sigterm_watcher, signal_cb, SIGTERM);
     ev_signal_init(&sigchld_watcher, signal_cb, SIGCHLD);
@@ -1877,23 +1901,26 @@ main(int argc, char **argv)
             snprintf(server_str + len, buf_size - len, "|%s", server_host[i]);
             len = strlen(server_str);
         }
-        int err = start_plugin(plugin, server_str,
+
+        int err = start_plugin(plugin, plugin_opts, server_str,
                 plugin_port, server_host[0], server_port);
         if (err) {
             FATAL("failed to start the plugin");
         }
-
-        server_num = 1;
     }
 
     // initialize listen context
     listen_ctx_t listen_ctx_list[server_num];
 
     // bind to each interface
-    for (int i = 0; i < server_num; i++) {
-        const char *host = server_host[i];
+    if (mode != UDP_ONLY) {
+        for (int i = 0; i < server_num; i++) {
+            const char *host = server_host[i];
 
-        if (mode != UDP_ONLY) {
+            if (plugin != NULL) {
+                host = "127.0.0.1";
+            }
+
             // Bind to port
             int listenfd;
             listenfd = create_and_bind(host, server_port, mptcp);
@@ -1916,18 +1943,31 @@ main(int argc, char **argv)
 
             ev_io_init(&listen_ctx->io, accept_cb, listenfd, EV_READ);
             ev_io_start(loop, &listen_ctx->io);
-        }
 
-        // Setup UDP
-        if (mode != TCP_ONLY) {
-            init_udprelay(server_host[0], server_port, mtu, m,
-                          auth, atoi(timeout), iface);
-        }
+            if (host && strcmp(host, ":") > 0)
+                LOGI("tcp server listening at [%s]:%s", host, server_port);
+            else
+                LOGI("tcp server listening at %s:%s", host ? host : "*", server_port);
 
-        if (host && strcmp(host, ":") > 0)
-            LOGI("listening at [%s]:%s", host, server_port);
-        else
-            LOGI("listening at %s:%s", host ? host : "*", server_port);
+            if (plugin != NULL) break;
+        }
+    }
+
+    if (mode != TCP_ONLY) {
+        for (int i = 0; i < server_num; i++) {
+            const char *host = server_host[i];
+            const char *port = server_port;
+            if (plugin != NULL) {
+                port = plugin_port;
+            }
+            // Setup UDP
+            init_udprelay(host, port, mtu, m,
+                    auth, atoi(timeout), iface);
+            if (host && strcmp(host, ":") > 0)
+                LOGI("udp server listening at [%s]:%s", host, port);
+            else
+                LOGI("udp server listening at %s:%s", host ? host : "*", port);
+        }
     }
 
     if (manager_address != NULL) {
@@ -1946,14 +1986,11 @@ main(int argc, char **argv)
 #ifndef __MINGW32__
     if (geteuid() == 0) {
         LOGI("running from root user");
-    } else if (firewall) {
-        LOGE("firewall setup requires running from root user");
-        exit(-1);
     }
 #endif
 
     // init block list
-    init_block_list(firewall);
+    init_block_list();
 
     // Init connections
     cork_dllist_init(&connections);
@@ -1985,6 +2022,7 @@ main(int argc, char **argv)
             ev_io_stop(loop, &listen_ctx->io);
             close(listen_ctx->fd);
         }
+        if (plugin != NULL) break;
     }
 
     if (mode != UDP_ONLY) {
@@ -2000,10 +2038,6 @@ main(int argc, char **argv)
 #ifdef __MINGW32__
     winsock_cleanup();
 #endif
-
-    ev_signal_stop(EV_DEFAULT, &sigint_watcher);
-    ev_signal_stop(EV_DEFAULT, &sigterm_watcher);
-    ev_signal_stop(EV_DEFAULT, &sigchld_watcher);
 
     return 0;
 }

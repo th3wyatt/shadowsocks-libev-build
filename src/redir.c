@@ -96,6 +96,10 @@ static int auth      = 0;
 static int nofile    = 0;
 #endif
 
+static struct ev_signal sigint_watcher;
+static struct ev_signal sigterm_watcher;
+static struct ev_signal sigchld_watcher;
+
 int
 getdestaddr(int fd, struct sockaddr_storage *destaddr)
 {
@@ -435,7 +439,8 @@ remote_send_cb(EV_P_ ev_io *w, int revents)
             buffer_t *abuf = &ss_addr_to_send;
             balloc(abuf, BUF_SIZE);
 
-            if (server->hostname_len > 0) { // HTTP/SNI
+            if (server->hostname_len > 0
+                    && validate_hostname(server->hostname, server->hostname_len)) { // HTTP/SNI
                 uint16_t port;
                 if (AF_INET6 == server->destaddr.ss_family) { // IPv6
                     port = (((struct sockaddr_in6 *)&(server->destaddr))->sin6_port);
@@ -754,9 +759,16 @@ signal_cb(EV_P_ ev_signal *w, int revents)
     if (revents & EV_SIGNAL) {
         switch (w->signum) {
         case SIGCHLD:
-            LOGE("plugin service exit unexpectedly");
+            if (!is_plugin_running())
+                LOGE("plugin service exit unexpectedly");
+            else
+                return;
         case SIGINT:
         case SIGTERM:
+            ev_signal_stop(EV_DEFAULT, &sigint_watcher);
+            ev_signal_stop(EV_DEFAULT, &sigterm_watcher);
+            ev_signal_stop(EV_DEFAULT, &sigchld_watcher);
+
             keep_resolving = 0;
             ev_unloop(EV_A_ EVUNLOOP_ALL);
         }
@@ -782,6 +794,7 @@ main(int argc, char **argv)
     char *conf_path  = NULL;
 
     char *plugin      = NULL;
+    char *plugin_opts = NULL;
     char *plugin_host = NULL;
     char *plugin_port = NULL;
     char tmp_port[8];
@@ -795,6 +808,7 @@ main(int argc, char **argv)
         { "mtu",         required_argument, 0, 0 },
         { "mptcp",       no_argument,       0, 0 },
         { "plugin",      required_argument, 0, 0 },
+        { "plugin-opts", required_argument, 0, 0 },
         { "help",        no_argument,       0, 0 },
         { 0,             0,                 0, 0 }
     };
@@ -816,6 +830,8 @@ main(int argc, char **argv)
             } else if (option_index == 2) {
                 plugin = optarg;
             } else if (option_index == 3) {
+                plugin_opts = optarg;
+            } else if (option_index == 4) {
                 usage();
                 exit(EXIT_SUCCESS);
             }
@@ -927,6 +943,9 @@ main(int argc, char **argv)
         if (plugin == NULL) {
             plugin = conf->plugin;
         }
+        if (plugin_opts == NULL) {
+            plugin_opts = conf->plugin_opts;
+        }
         if (auth == 0) {
             auth = conf->auth;
         }
@@ -1009,24 +1028,17 @@ main(int argc, char **argv)
             snprintf(remote_str + len, buf_size - len, "|%s", remote_addr[i].host);
             len = strlen(remote_str);
         }
-        int err = start_plugin(plugin, remote_str,
+        int err = start_plugin(plugin, plugin_opts, remote_str,
                 remote_port, plugin_host, plugin_port);
         if (err) {
             FATAL("failed to start the plugin");
         }
-
-        remote_num = 1;
-        remote_addr[0].host = plugin_host;
-        remote_addr[0].port = plugin_port;
     }
 
     // ignore SIGPIPE
     signal(SIGPIPE, SIG_IGN);
     signal(SIGABRT, SIG_IGN);
 
-    struct ev_signal sigint_watcher;
-    struct ev_signal sigterm_watcher;
-    struct ev_signal sigchld_watcher;
     ev_signal_init(&sigint_watcher, signal_cb, SIGINT);
     ev_signal_init(&sigterm_watcher, signal_cb, SIGTERM);
     ev_signal_init(&sigchld_watcher, signal_cb, SIGCHLD);
@@ -1047,12 +1059,18 @@ main(int argc, char **argv)
         char *host = remote_addr[i].host;
         char *port = remote_addr[i].port == NULL ? remote_port :
                      remote_addr[i].port;
+        if (plugin != NULL) {
+            host = plugin_host;
+            port = plugin_port;
+        }
         struct sockaddr_storage *storage = ss_malloc(sizeof(struct sockaddr_storage));
         memset(storage, 0, sizeof(struct sockaddr_storage));
         if (get_sockaddr(host, port, storage, 1, ipv6first) == -1) {
             FATAL("failed to resolve the provided hostname");
         }
         listen_ctx.remote_addr[i] = (struct sockaddr *)storage;
+
+        if (plugin != NULL) break;
     }
     listen_ctx.timeout = atoi(timeout);
     listen_ctx.method  = m;
@@ -1081,8 +1099,16 @@ main(int argc, char **argv)
     // Setup UDP
     if (mode != TCP_ONLY) {
         LOGI("UDP relay enabled");
-        init_udprelay(local_addr, local_port, listen_ctx.remote_addr[0],
-                      get_sockaddr_len(listen_ctx.remote_addr[0]), mtu, m, auth, listen_ctx.timeout, NULL);
+        char *host = remote_addr[0].host;
+        char *port = remote_addr[0].port == NULL ? remote_port : remote_addr[0].port;
+        struct sockaddr_storage *storage = ss_malloc(sizeof(struct sockaddr_storage));
+        memset(storage, 0, sizeof(struct sockaddr_storage));
+        if (get_sockaddr(host, port, storage, 1, ipv6first) == -1) {
+            FATAL("failed to resolve the provided hostname");
+        }
+        struct sockaddr *addr = (struct sockaddr *)storage;
+        init_udprelay(local_addr, local_port, addr,
+                      get_sockaddr_len(addr), mtu, m, auth, listen_ctx.timeout, NULL);
     }
 
     if (mode == UDP_ONLY) {
@@ -1105,10 +1131,6 @@ main(int argc, char **argv)
     if (plugin != NULL) {
         stop_plugin();
     }
-
-    ev_signal_stop(EV_DEFAULT, &sigint_watcher);
-    ev_signal_stop(EV_DEFAULT, &sigterm_watcher);
-    ev_signal_stop(EV_DEFAULT, &sigchld_watcher);
 
     return 0;
 }

@@ -29,6 +29,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/socket.h>
+#include <sys/wait.h>
 #include <netinet/in.h>
 
 #include <libcork/core.h>
@@ -81,6 +82,7 @@ struct cork_stream_consumer plugin_log = {
 
 int
 start_plugin(const char *plugin,
+             const char *plugin_opts,
              const char *remote_host,
              const char *remote_port,
              const char *local_host,
@@ -101,11 +103,19 @@ start_plugin(const char *plugin,
     env = cork_env_clone_current();
     const char *path = cork_env_get(env, "PATH");
     if (path != NULL) {
+#ifdef __GLIBC__
+        char *cwd = get_current_dir_name();
+        if (cwd) {
+#else
         char cwd[PATH_MAX];
         if (!getcwd(cwd, PATH_MAX)) {
+#endif
             size_t path_len = strlen(path) + strlen(cwd) + 2;
             new_path = ss_malloc(path_len);
             snprintf(new_path, path_len, "%s:%s", cwd, path);
+#ifdef __GLIBC__
+            free(cwd);
+#endif
         }
     }
 
@@ -117,6 +127,9 @@ start_plugin(const char *plugin,
 
     cork_env_add(env, "SS_LOCAL_HOST", local_host);
     cork_env_add(env, "SS_LOCAL_PORT", local_port);
+
+    if (plugin_opts != NULL)
+        cork_env_add(env, "SS_PLUGIN_OPTIONS", plugin_opts);
 
     exec = cork_exec_new_with_params("sh", "-c", cmd, NULL);
 
@@ -135,7 +148,8 @@ start_plugin(const char *plugin,
 }
 
 uint16_t
-get_local_port() {
+get_local_port()
+{
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock < 0) {
         return 0;
@@ -162,14 +176,28 @@ get_local_port() {
 }
 
 void
-stop_plugin() {
+stop_plugin()
+{
     if (sub != NULL) {
         cork_subprocess_abort(sub);
         cork_subprocess_free(sub);
     }
 }
 
+int is_plugin_running()
+{
+    if (sub != NULL) {
+        return cork_subprocess_is_finished(sub);
+    }
+    return 0;
+}
+
 #else
+
+#include "stdint.h"
+
+#include "utils.h"
+#include "plugin.h"
 
 int
 start_plugin(const char *plugin,
@@ -179,18 +207,27 @@ start_plugin(const char *plugin,
              const char *local_port)
 {
     FATAL("Plugin is not supported on MinGW.");
+    return -1;
 }
 
 uint16_t
 get_local_port()
 {
     FATAL("Plugin is not supported on MinGW.");
-
+    return 0;
 }
 
-int stop_plugin()
+void
+stop_plugin()
 {
     FATAL("Plugin is not supported on MinGW.");
+}
+
+int
+is_plugin_running()
+{
+    FATAL("Plugin is not supported on MinGW.");
+    return 0;
 }
 
 #endif
