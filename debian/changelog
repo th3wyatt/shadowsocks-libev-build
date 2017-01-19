@@ -8,6 +8,8 @@ shadowsocks-libev (2.6.2+ds-1) UNRELEASED; urgency=medium
     - To make plugin stop working also.
   * debian/patches:
     - Refresh existing patches.
+  * debian/copyright:
+    - Update copyright year.
 
  -- Roger Shimizu <rogershimizu@gmail.com>  Thu, 19 Jan 2017 01:47:59 +0900
 
