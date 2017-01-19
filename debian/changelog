@@ -6,6 +6,8 @@ shadowsocks-libev (2.6.2+ds-1) UNRELEASED; urgency=medium
     - Move libcap2-bin from Suggests to Depends.
   * debian/shadowsocks-libev.init:
     - To make plugin stop working also.
+  * debian/patches:
+    - Refresh existing patches.
 
  -- Roger Shimizu <rogershimizu@gmail.com>  Thu, 19 Jan 2017 01:47:59 +0900
 
