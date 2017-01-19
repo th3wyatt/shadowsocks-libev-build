@@ -10,6 +10,8 @@ shadowsocks-libev (2.6.2+ds-1) UNRELEASED; urgency=medium
     - Refresh existing patches.
   * debian/copyright:
     - Update copyright year.
+    - Remove a few files and directory from Files-Excluded, because those
+      are already removed from upstream.
 
  -- Roger Shimizu <rogershimizu@gmail.com>  Thu, 19 Jan 2017 01:47:59 +0900
 
