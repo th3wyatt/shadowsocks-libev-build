@@ -1,4 +1,4 @@
-shadowsocks-libev (2.6.2+ds-1) UNRELEASED; urgency=medium
+shadowsocks-libev (2.6.2+ds-1) unstable; urgency=medium
 
   * debian/shadowsocks-libev.{default,init,service}:
     - Run service as non-root.
@@ -19,7 +19,7 @@ shadowsocks-libev (2.6.2+ds-1) UNRELEASED; urgency=medium
     - Remove a few files and directory from Files-Excluded, because those
       are already removed from upstream.
 
- -- Roger Shimizu <rogershimizu@gmail.com>  Thu, 19 Jan 2017 01:47:59 +0900
+ -- Roger Shimizu <rogershimizu@gmail.com>  Sat, 21 Jan 2017 15:22:27 +0900
 
 shadowsocks-libev (2.6.1+ds-2) unstable; urgency=medium
 
