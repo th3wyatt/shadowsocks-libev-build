@@ -1,2 +1,12 @@
 0001-use-system-library-libcork-libcorkipset-libev-libsod.patch
 0002-use-libcorkipset-library-in-system.patch
+backport/0003-Fix-typo-of-Changes.patch
+backport/0004-Fix-1078.patch
+backport/0005-Update-ss-manager.asciidoc.patch
+backport/0006-Update-Copyright-in-README.patch
+backport/0007-Update-README.patch
+backport/0008-Add-instruction-for-build-from-source-with-CentOS-7.patch
+backport/0009-Remove-firewall-param-in-completions-bash-ss-server-.patch
+backport/0010-Prefer-https-over-http-in-URL-1104.patch
+backport/0011-Update-debian-mirror-to-httpredir-1105.patch
+backport/0012-Fix-duplicate-text.patch

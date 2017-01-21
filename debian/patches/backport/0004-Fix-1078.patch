@@ -1,0 +1,21 @@
+From: Max Lv <max.c.lv@gmail.com>
+Date: Mon, 16 Jan 2017 13:23:07 +0800
+Subject: Fix #1078
+
+---
+ src/server.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/server.c b/src/server.c
+index 02a2f40..6e60b63 100644
+--- a/src/server.c
++++ b/src/server.c
+@@ -1903,7 +1903,7 @@ main(int argc, char **argv)
+         }
+ 
+         int err = start_plugin(plugin, plugin_opts, server_str,
+-                plugin_port, server_host[0], server_port);
++                plugin_port, "127.0.0.1", server_port);
+         if (err) {
+             FATAL("failed to start the plugin");
+         }

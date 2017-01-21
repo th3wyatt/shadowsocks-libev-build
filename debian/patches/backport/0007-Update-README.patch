@@ -1,0 +1,29 @@
+From: Max Lv <max.c.lv@gmail.com>
+Date: Thu, 19 Jan 2017 10:42:33 +0800
+Subject: Update README
+
+---
+ README.md | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/README.md b/README.md
+index bb3c5ae..f419314 100644
+--- a/README.md
++++ b/README.md
+@@ -28,6 +28,16 @@ refer to the [Wiki page](https://github.com/shadowsocks/shadowsocks/wiki/Feature
+ 
+ ## Installation
+ 
++### Get the latest source code
++
++To get the latest source code, you should also update the submodules as following:
++
++```bash
++git clone https://github.com/shadowsocks/shadowsocks-libev.git
++cd shadowsocks-libev
++git submodule update --init --recursive
++```
++
+ ### Distribution-specific guide
+ 
+ - [Debian & Ubuntu](#debian--ubuntu)

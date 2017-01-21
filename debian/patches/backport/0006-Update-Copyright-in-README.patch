@@ -1,0 +1,23 @@
+From: Max Lv <max.c.lv@gmail.com>
+Date: Wed, 18 Jan 2017 16:46:01 +0800
+Subject: Update Copyright in README
+
+---
+ README.md | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/README.md b/README.md
+index 646fd31..bb3c5ae 100644
+--- a/README.md
++++ b/README.md
+@@ -444,7 +444,9 @@ setting up your server's firewall rules to limit connections from each user:
+ 
+ ## License
+ 
+-Copyright (C) 2016 Max Lv <max.c.lv@gmail.com>
++Copyright: 2013-2015, Clow Windy <clowwindy42@gmail.com>
++           2013-2017, Max Lv <max.c.lv@gmail.com>
++           2014, Linus Yang <linusyang@gmail.com>
+ 
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by

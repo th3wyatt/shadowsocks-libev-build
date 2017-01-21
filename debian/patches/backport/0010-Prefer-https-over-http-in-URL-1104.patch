@@ -1,0 +1,53 @@
+From: Roger Shimizu <rogershimizu@gmail.com>
+Date: Thu, 19 Jan 2017 23:58:47 +0900
+Subject: Prefer https over http in URL (#1104)
+
+---
+ README.md               | 6 +++---
+ shadowsocks-libev.pc.in | 2 +-
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/README.md b/README.md
+index 9670923..9e5d025 100644
+--- a/README.md
++++ b/README.md
+@@ -2,7 +2,7 @@
+ 
+ ## Intro
+ 
+-[Shadowsocks-libev](http://shadowsocks.org) is a lightweight secured SOCKS5
++[Shadowsocks-libev](https://shadowsocks.org) is a lightweight secured SOCKS5
+ proxy for embedded devices and low-end boxes.
+ 
+ It is a port of [Shadowsocks](https://github.com/shadowsocks/shadowsocks)
+@@ -17,7 +17,7 @@ Travis CI: [![Travis CI](https://travis-ci.org/shadowsocks/shadowsocks-libev.svg
+ 
+ Shadowsocks-libev is written in pure C and only depends on
+ [libev](http://software.schmorp.de/pkg/libev.html) and
+-[OpenSSL](http://www.openssl.org/) or [mbedTLS](https://tls.mbed.org/).
++[OpenSSL](https://www.openssl.org/) or [mbedTLS](https://tls.mbed.org/).
+ 
+ In normal usage, the memory footprint is about 600KB and the CPU utilization is
+ no more than 5% on a low-end router (Buffalo WHR-G300N V2 with a 400MHz MIPS CPU,
+@@ -122,7 +122,7 @@ Ubuntu 14.04.
+ **Note for Debian 7.x users**:
+ To build packages on Debian 7 (Wheezy), you need to enable `debian-backports`
+ to install systemd-compatibility packages like `dh-systemd` or `init-system-helpers`.
+-Please follow the instructions on [Debian Backports](http://backports.debian.org).
++Please follow the instructions on [Debian Backports](https://backports.debian.org).
+ 
+ This also means that you can only install those built packages on systems that have
+ `init-system-helpers` installed.
+diff --git a/shadowsocks-libev.pc.in b/shadowsocks-libev.pc.in
+index 715ba87..e72df65 100644
+--- a/shadowsocks-libev.pc.in
++++ b/shadowsocks-libev.pc.in
+@@ -5,7 +5,7 @@ includedir=@includedir@
+ 
+ Name: shadowsocks-libev
+ Description: a lightweight secured socks5 proxy
+-URL: http://shadowsocks.org
++URL: https://shadowsocks.org
+ Version: @VERSION@
+ Requires:
+ Cflags: -I${includedir}

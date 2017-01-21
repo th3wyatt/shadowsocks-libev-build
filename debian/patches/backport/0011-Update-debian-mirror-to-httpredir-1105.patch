@@ -1,0 +1,23 @@
+From: Roger Shimizu <rogershimizu@gmail.com>
+Date: Fri, 20 Jan 2017 00:08:06 +0900
+Subject: Update debian mirror to httpredir (#1105)
+
+According to:
+  https://wiki.debian.org/DebianGeoMirror
+---
+ README.md | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/README.md b/README.md
+index 9e5d025..8437dbc 100644
+--- a/README.md
++++ b/README.md
+@@ -102,7 +102,7 @@ sudo apt install shadowsocks-libev
+ For Debian Jessie users, please install it from `jessie-backports`:
+ 
+ ```bash
+-sudo sh -c 'printf "deb http://ftp.debian.org/debian jessie-backports main" > /etc/apt/sources.list.d/jessie-backports.list'
++sudo sh -c 'printf "deb http://httpredir.debian.org/debian jessie-backports main" > /etc/apt/sources.list.d/jessie-backports.list'
+ sudo apt update
+ sudo apt -t jessie-backports install shadowsocks-libev
+ ```

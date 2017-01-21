@@ -8,6 +8,12 @@ shadowsocks-libev (2.6.2+ds-1) UNRELEASED; urgency=medium
     - To make plugin stop working also.
   * debian/patches:
     - Refresh existing patches.
+    - Backport a few patches from upstream:
+      + Fix typo of upstream changelog.
+      + Fix src/server.c (Patch 0004)
+      + Update manpage docs.
+      + Update README of upstream.
+      + Fix completions/bash/ss-server.
   * debian/copyright:
     - Update copyright year.
     - Remove a few files and directory from Files-Excluded, because those

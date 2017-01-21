@@ -1,0 +1,37 @@
+From: huzhifeng <huzhifeng@douyu.tv>
+Date: Thu, 19 Jan 2017 11:05:03 +0800
+Subject: Add instruction for build from source with CentOS 7
+
+Signed-off-by: huzhifeng <huzhifeng@douyu.tv>
+---
+ README.md | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/README.md b/README.md
+index f419314..9670923 100644
+--- a/README.md
++++ b/README.md
+@@ -45,6 +45,7 @@ git submodule update --init --recursive
+     + [Build deb package from source](#build-deb-package-from-source)
+     + [Configure and start the service](#configure-and-start-the-service)
+ - [Fedora & RHEL](#fedora--rhel)
++    + [Build from source](build-from-source-2)
+     + [Install from repository](#install-from-repository-1)
+ - [OpenSUSE](#opensuse)
+     + [Install from repository](#install-from-repository-2)
+@@ -158,6 +159,15 @@ Supported distributions include
+ - Fedora 22, 23, 24
+ - RHEL 6, 7 and derivatives (including CentOS, Scientific Linux)
+ 
++#### Build from source
++
++If you are using CentOS 7, you need to install these prequirement to build from source code
++
++```bash 
++yum install epel-release -y
++yum install gcc autoconf libtool automake make openssl-devel pcre-devel asciidoc xmlto zlib-devel openssl-devel libsodium-devel udns-devel libev-devel  -y
++```
++
+ #### Install from repository
+ 
+ Enable repo via `dnf`:
