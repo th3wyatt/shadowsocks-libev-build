@@ -6,88 +6,52 @@ autoreconf runs before configure, so it still doesn't have the condition
 variable set yet.
 Currently remove all system library part for configure.ac and Makefile.am
 ---
- Makefile.am     |  6 +-----
- configure.ac    | 20 --------------------
- src/Makefile.am | 10 ++++------
- 3 files changed, 5 insertions(+), 31 deletions(-)
+ Makefile.am     | 2 +-
+ configure.ac    | 2 --
+ src/Makefile.am | 8 ++------
+ 3 files changed, 3 insertions(+), 9 deletions(-)
 
 diff --git a/Makefile.am b/Makefile.am
-index 690af43..8c1ec59 100644
+index 4a25c0f..68dd896 100644
 --- a/Makefile.am
 +++ b/Makefile.am
-@@ -1,8 +1,4 @@
--if USE_SYSTEM_SHARED_LIB
+@@ -1,4 +1,4 @@
 -SUBDIRS = libcork libipset src
--else
--SUBDIRS = libsodium libcork libipset libudns libev src
--endif
 +SUBDIRS = src
  
  if ENABLE_DOCUMENTATION
  SUBDIRS += doc
 diff --git a/configure.ac b/configure.ac
-index 7240494..b4e796f 100755
+index 0669f97..1a34eb9 100755
 --- a/configure.ac
 +++ b/configure.ac
-@@ -76,11 +76,6 @@ AC_PROG_LIBTOOL
- AC_PROG_MAKE_SET
- AC_LANG_SOURCE
+@@ -283,8 +283,6 @@ AM_COND_IF([ENABLE_DOCUMENTATION],
  
--dnl Checks for libev
--AM_COND_IF([USE_SYSTEM_SHARED_LIB],
--  [],
--  [m4_include([libev/libev.m4])])
--
- dnl Add library for mingw
- case $host in
-   *-mingw*)
-@@ -308,24 +303,9 @@ dnl Add define for libudns to enable IPv6 support
- dnl This is an option defined in the origin configure script
- AC_DEFINE([HAVE_IPv6], [1], [Enable IPv6 support in libudns])
- 
--AM_COND_IF([USE_SYSTEM_SHARED_LIB],[
--    AC_CHECK_LIB([sodium], [sodium_init], ,[
--       AC_MSG_ERROR([Couldn't find libsodium. Try installing libsodium-dev@<:@el@:>@.])
--    ])
--  ],
--  [AC_CONFIG_SUBDIRS([libsodium])])
--
- AC_CONFIG_FILES([ shadowsocks-libev.pc
+ AC_CONFIG_FILES([shadowsocks-libev.pc
                   Makefile
 -                 libcork/Makefile
 -                 libipset/Makefile
                   src/Makefile])
--AM_COND_IF([USE_SYSTEM_SHARED_LIB],[
--    AC_CHECK_LIB([udns], [dns_dnlen], ,[AC_MSG_ERROR([Couldn't find libudns. Try installing libudns-dev or udns-devel.])])
--    AC_CHECK_LIB([ev], [ev_loop_destroy], ,[AC_MSG_ERROR([Couldn't find libev. Try installing libev-dev@<:@el@:>@.])])
--  ],
--  [AC_CONFIG_FILES([libudns/Makefile
--                 libev/Makefile])])
  
- AM_COND_IF([ENABLE_DOCUMENTATION],
-   [AC_CONFIG_FILES([doc/Makefile])
+ AC_OUTPUT
 diff --git a/src/Makefile.am b/src/Makefile.am
-index 1a34561..25a9ac7 100644
+index f890d97..da66d2f 100644
 --- a/src/Makefile.am
 +++ b/src/Makefile.am
-@@ -6,16 +6,14 @@ if !USE_SYSTEM_SHARED_LIB
- AM_CFLAGS += -I$(top_srcdir)/libev
- AM_CFLAGS += -I$(top_srcdir)/libudns
- AM_CFLAGS += -I$(top_srcdir)/libsodium/src/libsodium/include
--endif
+@@ -2,14 +2,10 @@ VERSION_INFO = 2:0:0
+ 
+ AM_CFLAGS = -g -O2 -Wall -Werror -Wno-deprecated-declarations -fno-strict-aliasing -std=gnu99 -D_GNU_SOURCE
+ AM_CFLAGS += $(PTHREAD_CFLAGS)
 -AM_CFLAGS += -I$(top_srcdir)/libipset/include
- AM_CFLAGS += -I$(top_srcdir)/libcork/include
-+AM_CFLAGS += -I$(top_srcdir)/libcorkipset/include
+-AM_CFLAGS += -I$(top_srcdir)/libcork/include
  AM_CFLAGS += $(LIBPCRE_CFLAGS)
-+endif
  
 -SS_COMMON_LIBS = $(top_builddir)/libipset/libipset.la \
 -                 $(top_builddir)/libcork/libcork.la \
 -                 $(INET_NTOP_LIB) $(LIBPCRE_LIBS)
-+SS_COMMON_LIBS = $(INET_NTOP_LIB) $(LIBPCRE_LIBS)
- if USE_SYSTEM_SHARED_LIB
 -SS_COMMON_LIBS += -lev -lsodium -lm
++SS_COMMON_LIBS = $(INET_NTOP_LIB) $(LIBPCRE_LIBS)
 +SS_COMMON_LIBS += -lev -lsodium -lm -lcork -lcorkipset
- else
- SS_COMMON_LIBS += $(top_builddir)/libev/libev.la \
-                   $(top_builddir)/libsodium/src/libsodium/libsodium.la
+ 
+ bin_PROGRAMS = ss-local ss-tunnel ss-server ss-manager
+ 
