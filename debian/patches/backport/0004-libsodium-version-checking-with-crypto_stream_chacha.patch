@@ -1,0 +1,27 @@
+From: ElTopo <ElTopo@users.noreply.github.com>
+Date: Tue, 24 Jan 2017 15:30:47 -0800
+Subject: libsodium version checking with crypto_stream_chacha20_ietf_xor_ic()
+ (#1133)
+
+* crypto_stream_chacha20_ietf_xor_ic() was first available when libsodium was bumpped to version major 8. Debian jessie still uses major 7 minor 2, so check SODIUM_LIBRARY_VERSION_MAJOR and keep backwards compatibility.
+
+* crypto_stream_chacha20_ietf_xor_ic() was first available when libsodium was bumped to version major 8. Debian jessie still uses major 7 minor 2, so check SODIUM_LIBRARY_VERSION_MAJOR and maintain backward compatibility.
+---
+ src/encrypt.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/encrypt.c b/src/encrypt.c
+index e83eb7c..c9fa5c1 100644
+--- a/src/encrypt.c
++++ b/src/encrypt.c
+@@ -278,8 +278,10 @@ crypto_stream_xor_ic(uint8_t *c, const uint8_t *m, uint64_t mlen,
+         return crypto_stream_salsa20_xor_ic(c, m, mlen, n, ic, k);
+     case CHACHA20:
+         return crypto_stream_chacha20_xor_ic(c, m, mlen, n, ic, k);
++#if SODIUM_LIBRARY_VERSION_MAJOR >= 8
+     case CHACHA20IETF:
+         return crypto_stream_chacha20_ietf_xor_ic(c, m, mlen, n, (uint32_t)ic, k);
++#endif
+     }
+     // always return 0
+     return 0;

@@ -1,0 +1,68 @@
+From: Max Lv <max.c.lv@gmail.com>
+Date: Wed, 25 Jan 2017 08:38:38 +0800
+Subject: Refine #1133
+
+---
+ src/encrypt.c | 12 ++++++++++++
+ src/encrypt.h |  1 -
+ 2 files changed, 12 insertions(+), 1 deletion(-)
+
+diff --git a/src/encrypt.c b/src/encrypt.c
+index c9fa5c1..96fb498 100644
+--- a/src/encrypt.c
++++ b/src/encrypt.c
+@@ -63,6 +63,12 @@
+ #include "encrypt.h"
+ #include "utils.h"
+ 
++#if SODIUM_LIBRARY_VERSION_MAJOR >= 8
++#define CIPHER_NUM          21
++#else
++#define CIPHER_NUM          20
++#endif
++
+ #define OFFSET_ROL(p, o) ((uint64_t)(*(p + o)) << (8 * o))
+ 
+ static uint8_t *enc_table;
+@@ -108,7 +114,9 @@ static const char *supported_ciphers[CIPHER_NUM] = {
+     "seed-cfb",
+     "salsa20",
+     "chacha20",
++#if SODIUM_LIBRARY_VERSION_MAJOR >= 8
+     "chacha20-ietf"
++#endif
+ };
+ 
+ #ifdef USE_CRYPTO_POLARSSL
+@@ -133,7 +141,9 @@ static const char *supported_ciphers_polarssl[CIPHER_NUM] = {
+     CIPHER_UNSUPPORTED,
+     "salsa20",
+     "chacha20",
++#if SODIUM_LIBRARY_VERSION_MAJOR >= 8
+     "chacha20-ietf"
++#endif
+ };
+ #endif
+ 
+@@ -159,7 +169,9 @@ static const char *supported_ciphers_mbedtls[CIPHER_NUM] = {
+     CIPHER_UNSUPPORTED,
+     "salsa20",
+     "chacha20",
++#if SODIUM_LIBRARY_VERSION_MAJOR >= 8
+     "chacha20-ietf"
++#endif
+ };
+ #endif
+ 
+diff --git a/src/encrypt.h b/src/encrypt.h
+index 0a37916..5e75477 100644
+--- a/src/encrypt.h
++++ b/src/encrypt.h
+@@ -112,7 +112,6 @@ typedef struct {
+ #endif
+ 
+ #define SODIUM_BLOCK_SIZE   64
+-#define CIPHER_NUM          21
+ 
+ #define NONE                -1
+ #define TABLE               0

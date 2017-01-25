@@ -1,0 +1,32 @@
+From: Max Lv <max.c.lv@gmail.com>
+Date: Wed, 25 Jan 2017 10:30:52 +0800
+Subject: Fix array size with old libsodium
+
+---
+ src/encrypt.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/src/encrypt.c b/src/encrypt.c
+index 96fb498..404b96d 100644
+--- a/src/encrypt.c
++++ b/src/encrypt.c
+@@ -226,11 +226,17 @@ static const CCMode supported_modes_applecc[CIPHER_NUM] = {
+ #endif
+ 
+ static const int supported_ciphers_iv_size[CIPHER_NUM] = {
+-    0, 0, 16, 16, 16, 16, 16, 16, 16, 8, 16, 16, 16, 8, 8, 8, 8, 16, 8, 8, 12
++    0, 0, 16, 16, 16, 16, 16, 16, 16, 8, 16, 16, 16, 8, 8, 8, 8, 16, 8, 8
++#if SODIUM_LIBRARY_VERSION_MAJOR >= 8
++    , 12
++#endif
+ };
+ 
+ static const int supported_ciphers_key_size[CIPHER_NUM] = {
+-    0, 16, 16, 16, 24, 32, 16, 24, 32, 16, 16, 24, 32, 16, 8, 16, 16, 16, 32, 32, 32
++    0, 16, 16, 16, 24, 32, 16, 24, 32, 16, 16, 24, 32, 16, 8, 16, 16, 16, 32, 32
++#if SODIUM_LIBRARY_VERSION_MAJOR >= 8
++    , 32
++#endif
+ };
+ 
+ static int
