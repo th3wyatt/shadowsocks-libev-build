@@ -5,11 +5,13 @@ Source: https://github.com/shadowsocks/shadowsocks-libev
 Files-Excluded:
  .github
  .gitignore
+ .gitmodules
  .travis.yml
  .uncrustify.cfg
  autogen.sh
  m4/inet_ntop.m4
  m4/openssl.m4
+ m4/lib-link.m4
  m4/polarssl.m4
  m4/zlib.m4
  debian
@@ -18,8 +20,8 @@ Files-Excluded:
 
 Files: *
 Copyright: 2013-2015, Clow Windy <clowwindy42@gmail.com>
-           2014, Linus Yang <linusyang@gmail.com>
            2013-2017, Max Lv <max.c.lv@gmail.com>
+           2014, Linus Yang <linusyang@gmail.com>
 License: GPL-3+
 
 Files: debian/*
