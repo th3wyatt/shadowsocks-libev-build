@@ -24,8 +24,6 @@
 #include "config.h"
 #endif
 
-#ifndef __MINGW32__
-
 #include <string.h>
 #include <unistd.h>
 #include <sys/socket.h>
@@ -93,6 +91,9 @@ start_plugin(const char *plugin,
 
     if (plugin == NULL)
         return -1;
+
+    if (strlen(plugin) == 0)
+        return 0;
 
     size_t plugin_len = strlen(plugin);
     size_t cmd_len = plugin_len + CMD_RESRV_LEN;
@@ -191,43 +192,3 @@ int is_plugin_running()
     }
     return 0;
 }
-
-#else
-
-#include "stdint.h"
-
-#include "utils.h"
-#include "plugin.h"
-
-int
-start_plugin(const char *plugin,
-             const char *remote_host,
-             const char *remote_port,
-             const char *local_host,
-             const char *local_port)
-{
-    FATAL("Plugin is not supported on MinGW.");
-    return -1;
-}
-
-uint16_t
-get_local_port()
-{
-    FATAL("Plugin is not supported on MinGW.");
-    return 0;
-}
-
-void
-stop_plugin()
-{
-    FATAL("Plugin is not supported on MinGW.");
-}
-
-int
-is_plugin_running()
-{
-    FATAL("Plugin is not supported on MinGW.");
-    return 0;
-}
-
-#endif
