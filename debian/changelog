@@ -6,6 +6,9 @@ shadowsocks-libev (2.6.3+ds-1) UNRELEASED; urgency=medium
   * debian/patches:
     - Rebase previous patches, because upstream modified autoconf
       files heavily.
+  * debian/rules:
+    - Remove --enable-system-shared-lib from configure param.
+    - Add note for --disable-ssp.
 
  -- Roger Shimizu <rogershimizu@gmail.com>  Wed, 25 Jan 2017 19:25:30 +0900
 
