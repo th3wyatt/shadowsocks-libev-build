@@ -8,13 +8,13 @@ ss-local - shadowsocks client as socks5 proxy, libev port
 SYNOPSIS
 --------
 *ss-local*
- [-Auv6] [-h|--help]
+ [-uv6] [-h|--help]
  [-s <server_host>] [-p <server_port>] [-l <local_port>]
  [-k <password>] [-m <encrypt_method>] [-f <pid_file>]
  [-t <timeout>] [-c <config_file>] [-i <interface>]
  [-a <user_name>] [-b <local_address] [-n <nofile>]
  [--fast-open] [--acl <acl_config>] [--mtu <MTU>]
- [--plugin <plugin_name>] [--plugin_opts <plugin_options]
+ [--plugin <plugin_name>] [--plugin-opts <plugin_options]
 
 DESCRIPTION
 -----------
@@ -94,9 +94,6 @@ Enable UDP relay.
 -U::
 Enable UDP relay and disable TCP relay.
 
--A::
-Enable onetime authentication.
-
 -6::
 Resovle hostname to IPv6 address first.
 
@@ -119,7 +116,7 @@ Only available with MPTCP enabled Linux kernel.
 --plugin <plugin_name>::
 Enable SIP003 plugin. (Experimental)
 
---plugin_opts <plugin_options>::
+--plugin-opts <plugin_options>::
 Set SIP003 plugin options. (Experimental)
 
 -v::

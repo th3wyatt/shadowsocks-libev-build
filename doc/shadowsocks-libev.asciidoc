@@ -52,10 +52,12 @@ Set the cipher.
 +
 *Shadowsocks-libev* accepts 21 different ciphers:
 +
-table, rc4, rc4-md5, aes-128-cfb, aes-192-cfb, aes-256-cfb,
+aes-128-gcm, aes-192-gcm, aes-256-gcm,
+chacha20-poly1305, chacha20-ietf-poly1305,
+rc4-md5, aes-128-cfb, aes-192-cfb, aes-256-cfb,
 aes-128-ctr, aes-192-ctr, aes-256-ctr, bf-cfb,
-camellia-128-cfb, camellia-192-cfb, camellia-256-cfb, cast5-cfb, des-cfb,
-idea-cfb, rc2-cfb, seed-cfb, salsa20, chacha20 and chacha20-ietf.
+camellia-128-cfb, camellia-192-cfb, camellia-256-cfb,
+salsa20, chacha20 and chacha20-ietf.
 +
 The default cipher is 'rc4-md5'.
 +
@@ -107,9 +109,6 @@ TPROXY is required in redir mode. You may need root permission.
 Enable UDP relay and disable TCP relay.
 +
 Not available in local mode.
-
--A::
-Enable onetime authentication.
 
 -L <addr:port>::
 Specify destination server address and port for local port forwarding.
@@ -170,7 +169,6 @@ The config file equivalent of command line options is listed as example below.
 | --plugin "obfs-server"              | "plugin": "obfs-server"
 | --plugin-opts "obfs=http"           | "plugin_opts": "obfs=http"
 | -6                                  | "ipv6_first": true
-| -A                                  | "auth": true
 | -n "/etc/nofile"                    | "nofile": "/etc/nofile"
 | -d "8.8.8.8"                        | "nameserver": "8.8.8.8"
 | -L "somedns.net:53"                 | "tunnel_address": "somedns.net:53"

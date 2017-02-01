@@ -1,8 +1,2 @@
 0001-use-system-library-libcork-libcorkipset-libev-libsod.patch
 0002-use-libcorkipset-library-in-system.patch
-backport/0003-Remove-_WIN32.patch
-backport/0004-libsodium-version-checking-with-crypto_stream_chacha.patch
-backport/0005-Refine-1133.patch
-backport/0006-Fix-array-size-with-old-libsodium.patch
-backport/0007-Add-missing-ss-nat.patch
-backport/0008-Refine-1133-second-time-1136.patch
