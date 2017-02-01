@@ -3,6 +3,8 @@ shadowsocks-libev (3.0.0+ds-1~exp1) UNRELEASED; urgency=medium
   * New upstream release 3.0.0
   * debian/copyright:
     - Remove non-existing files from Files-Excluded list.
+  * debian/patches:
+    - Refresh existing patches.
 
  -- Roger Shimizu <rogershimizu@gmail.com>  Thu, 02 Feb 2017 00:21:16 +0900
 

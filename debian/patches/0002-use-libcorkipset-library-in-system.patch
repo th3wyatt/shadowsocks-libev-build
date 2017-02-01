@@ -7,7 +7,7 @@ Subject: use libcorkipset library in system
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/acl.c b/src/acl.c
-index 84ec036..4b7698a 100644
+index 0851c03..ff759bc 100644
 --- a/src/acl.c
 +++ b/src/acl.c
 @@ -20,7 +20,7 @@

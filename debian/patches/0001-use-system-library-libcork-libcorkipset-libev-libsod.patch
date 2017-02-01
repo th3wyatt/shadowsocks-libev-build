@@ -22,10 +22,10 @@ index 4a25c0f..68dd896 100644
  if ENABLE_DOCUMENTATION
  SUBDIRS += doc
 diff --git a/configure.ac b/configure.ac
-index 0669f97..1a34eb9 100755
+index b91c297..132de4b 100755
 --- a/configure.ac
 +++ b/configure.ac
-@@ -283,8 +283,6 @@ AM_COND_IF([ENABLE_DOCUMENTATION],
+@@ -288,8 +288,6 @@ AM_COND_IF([ENABLE_DOCUMENTATION],
  
  AC_CONFIG_FILES([shadowsocks-libev.pc
                   Makefile
@@ -35,7 +35,7 @@ index 0669f97..1a34eb9 100755
  
  AC_OUTPUT
 diff --git a/src/Makefile.am b/src/Makefile.am
-index f890d97..da66d2f 100644
+index 5f44848..2a954ca 100644
 --- a/src/Makefile.am
 +++ b/src/Makefile.am
 @@ -2,14 +2,10 @@ VERSION_INFO = 2:0:0
