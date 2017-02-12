@@ -5,6 +5,10 @@ shadowsocks-libev (3.0.0+ds-1~exp1) UNRELEASED; urgency=medium
     - Remove non-existing files from Files-Excluded list.
   * debian/patches:
     - Refresh existing patches.
+  * debian/control:
+    - Add asciidoc as alternative Build-Depends. Although sbuild doesn't
+      support it, it's better to mention here, because there's no
+      asciidoc-base package in jessie-backports and ubuntu.
 
  -- Roger Shimizu <rogershimizu@gmail.com>  Thu, 02 Feb 2017 00:21:16 +0900
 

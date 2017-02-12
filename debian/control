@@ -4,7 +4,7 @@ Priority: extra
 Maintainer: Roger Shimizu <rogershimizu@gmail.com>
 Uploaders: Max Lv <max.c.lv@gmail.com>, Boyuan Yang <073plan@gmail.com>
 Build-Depends:
- asciidoc-base,
+ asciidoc-base | asciidoc,
  debhelper (>= 10),
  dh-systemd,
  libcork-dev (>= 0.15.0+ds-8),
