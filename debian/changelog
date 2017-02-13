@@ -1,10 +1,11 @@
-shadowsocks-libev (3.0.0+ds-1~exp1) UNRELEASED; urgency=medium
+shadowsocks-libev (3.0.2+ds-1~exp1) UNRELEASED; urgency=medium
 
-  * New upstream release 3.0.0
+  * New upstream release 3.0.2
   * debian/copyright:
     - Remove non-existing files from Files-Excluded list.
   * debian/patches:
     - Refresh existing patches.
+    - Update 0001 patch to match v3.0.2.
   * debian/control:
     - Add asciidoc as alternative Build-Depends. Although sbuild doesn't
       support it, it's better to mention here, because there's no
