@@ -87,6 +87,7 @@ static void free_server(server_t *server);
 static void close_and_free_server(EV_P_ server_t *server);
 
 int verbose        = 0;
+int reuse_port     = 0;
 int keep_resolving = 1;
 
 static crypto_t *crypto;
@@ -101,7 +102,7 @@ static struct ev_signal sigint_watcher;
 static struct ev_signal sigterm_watcher;
 static struct ev_signal sigchld_watcher;
 
-int
+static int
 getdestaddr(int fd, struct sockaddr_storage *destaddr)
 {
     socklen_t socklen = sizeof(*destaddr);
@@ -155,9 +156,11 @@ create_and_bind(const char *addr, const char *port)
 #ifdef SO_NOSIGPIPE
         setsockopt(listen_sock, SOL_SOCKET, SO_NOSIGPIPE, &opt, sizeof(opt));
 #endif
-        int err = set_reuseport(listen_sock);
-        if (err == 0) {
-            LOGI("tcp port reuse enabled");
+        if (reuse_port) {
+            int err = set_reuseport(listen_sock);
+            if (err == 0) {
+                LOGI("tcp port reuse enabled");
+            }
         }
 
         s = bind(listen_sock, rp->ai_addr, rp->ai_addrlen);
@@ -783,6 +786,7 @@ main(int argc, char **argv)
     char *local_port = NULL;
     char *local_addr = NULL;
     char *password   = NULL;
+    char *key        = NULL;
     char *timeout    = NULL;
     char *method     = NULL;
     char *pid_path   = NULL;
@@ -803,6 +807,9 @@ main(int argc, char **argv)
         { "mptcp",       no_argument,       NULL, GETOPT_VAL_MPTCP },
         { "plugin",      required_argument, NULL, GETOPT_VAL_PLUGIN },
         { "plugin-opts", required_argument, NULL, GETOPT_VAL_PLUGIN_OPTS },
+        { "reuse-port",  no_argument,       NULL, GETOPT_VAL_REUSE_PORT },
+        { "password",    required_argument, NULL, GETOPT_VAL_PASSWORD },
+        { "key",         required_argument, NULL, GETOPT_VAL_KEY },
         { "help",        no_argument,       NULL, GETOPT_VAL_HELP },
         { NULL,          0,                 NULL, 0 }
     };
@@ -828,6 +835,12 @@ main(int argc, char **argv)
         case GETOPT_VAL_PLUGIN_OPTS:
             plugin_opts = optarg;
             break;
+        case GETOPT_VAL_KEY:
+            key = optarg;
+            break;
+        case GETOPT_VAL_REUSE_PORT:
+            reuse_port = 1;
+            break;
         case 's':
             if (remote_num < MAX_REMOTE_NUM) {
                 remote_addr[remote_num].host   = optarg;
@@ -840,6 +853,7 @@ main(int argc, char **argv)
         case 'l':
             local_port = optarg;
             break;
+        case GETOPT_VAL_PASSWORD:
         case 'k':
             password = optarg;
             break;
@@ -921,6 +935,9 @@ main(int argc, char **argv)
         if (password == NULL) {
             password = conf->password;
         }
+        if (key == NULL) {
+            key = conf->key;
+        }
         if (method == NULL) {
             method = conf->method;
         }
@@ -936,11 +953,17 @@ main(int argc, char **argv)
         if (plugin_opts == NULL) {
             plugin_opts = conf->plugin_opts;
         }
+        if (mode == TCP_ONLY) {
+            mode = conf->mode;
+        }
         if (mtu == 0) {
             mtu = conf->mtu;
         }
         if (mptcp == 0) {
             mptcp = conf->mptcp;
+        }
+        if (reuse_port == 0) {
+            reuse_port = conf->reuse_port;
         }
 #ifdef HAVE_SETRLIMIT
         if (nofile == 0) {
@@ -949,8 +972,8 @@ main(int argc, char **argv)
 #endif
     }
 
-    if (remote_num == 0 || remote_port == NULL ||
-        local_port == NULL || password == NULL) {
+    if (remote_num == 0 || remote_port == NULL || local_port == NULL
+            || (password == NULL && key == NULL)) {
         usage();
         exit(EXIT_FAILURE);
     }
@@ -1031,16 +1054,17 @@ main(int argc, char **argv)
 
     // Setup keys
     LOGI("initializing ciphers... %s", method);
-    crypto = crypto_init(password, method);
+    crypto = crypto_init(password, key, method);
     if (crypto == NULL)
         FATAL("failed to initialize ciphers");
 
     // Setup proxy context
-    listen_ctx_t listen_ctx;
+    struct listen_ctx listen_ctx;
+    memset(&listen_ctx, 0, sizeof(struct listen_ctx));
     listen_ctx.remote_num  = remote_num;
     listen_ctx.remote_addr = ss_malloc(sizeof(struct sockaddr *) * remote_num);
     memset(listen_ctx.remote_addr, 0, sizeof(struct sockaddr *) * remote_num);
-    for (int i = 0; i < remote_num; i++) {
+    for (i = 0; i < remote_num; i++) {
         char *host = remote_addr[i].host;
         char *port = remote_addr[i].port == NULL ? remote_port :
                      remote_addr[i].port;

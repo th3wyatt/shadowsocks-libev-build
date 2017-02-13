@@ -85,6 +85,7 @@ int vpn = 0;
 #endif
 
 int verbose        = 0;
+int reuse_port     = 0;
 int keep_resolving = 1;
 
 static crypto_t *crypto;
@@ -137,9 +138,11 @@ create_and_bind(const char *addr, const char *port)
 #ifdef SO_NOSIGPIPE
         setsockopt(listen_sock, SOL_SOCKET, SO_NOSIGPIPE, &opt, sizeof(opt));
 #endif
-        int err = set_reuseport(listen_sock);
-        if (err == 0) {
-            LOGI("tcp port reuse enabled");
+        if (reuse_port) {
+            int err = set_reuseport(listen_sock);
+            if (err == 0) {
+                LOGI("tcp port reuse enabled");
+            }
         }
 
         s = bind(listen_sock, rp->ai_addr, rp->ai_addrlen);
@@ -322,12 +325,13 @@ remote_recv_cb(EV_P_ ev_io *w, int revents)
     server->buf->len = r;
 
     int err = crypto->decrypt(server->buf, server->d_ctx, BUF_SIZE);
-
-    if (err) {
+    if (err == CRYPTO_ERROR) {
         LOGE("invalid password or cipher");
         close_and_free_remote(EV_A_ remote);
         close_and_free_server(EV_A_ server);
         return;
+    } else if (err == CRYPTO_NEED_MORE) {
+        return; // Wait for more
     }
 
     int s = send(server->fd, server->buf->data, server->buf->len, 0);
@@ -351,8 +355,8 @@ remote_recv_cb(EV_P_ ev_io *w, int revents)
         ev_io_start(EV_A_ & server->send_ctx->io);
     }
 
+    // Disable TCP_NODELAY after the first response are sent
     if (!remote->recv_ctx->connected) {
-        // Disable TCP_NODELAY after the first response are sent
         int opt = 0;
         setsockopt(server->fd, SOL_TCP, TCP_NODELAY, &opt, sizeof(opt));
         setsockopt(remote->fd, SOL_TCP, TCP_NODELAY, &opt, sizeof(opt));
@@ -495,12 +499,11 @@ static remote_t *
 new_remote(int fd, int timeout)
 {
     remote_t *remote = ss_malloc(sizeof(remote_t));
-
     memset(remote, 0, sizeof(remote_t));
 
-    remote->buf      = ss_malloc(sizeof(buffer_t));
     remote->recv_ctx = ss_malloc(sizeof(remote_ctx_t));
     remote->send_ctx = ss_malloc(sizeof(remote_ctx_t));
+    remote->buf      = ss_malloc(sizeof(buffer_t));
     balloc(remote->buf, BUF_SIZE);
     memset(remote->recv_ctx, 0, sizeof(remote_ctx_t));
     memset(remote->send_ctx, 0, sizeof(remote_ctx_t));
@@ -524,7 +527,7 @@ free_remote(remote_t *remote)
     if (remote->server != NULL) {
         remote->server->remote = NULL;
     }
-    if (remote->buf) {
+    if (remote->buf != NULL) {
         bfree(remote->buf);
         ss_free(remote->buf);
     }
@@ -551,9 +554,9 @@ new_server(int fd)
     server_t *server = ss_malloc(sizeof(server_t));
     memset(server, 0, sizeof(server_t));
 
-    server->buf      = ss_malloc(sizeof(buffer_t));
     server->recv_ctx = ss_malloc(sizeof(server_ctx_t));
     server->send_ctx = ss_malloc(sizeof(server_ctx_t));
+    server->buf      = ss_malloc(sizeof(buffer_t));
     balloc(server->buf, BUF_SIZE);
     memset(server->recv_ctx, 0, sizeof(server_ctx_t));
     memset(server->send_ctx, 0, sizeof(server_ctx_t));
@@ -588,7 +591,7 @@ free_server(server_t *server)
         crypto->ctx_release(server->d_ctx);
         ss_free(server->d_ctx);
     }
-    if (server->buf) {
+    if (server->buf != NULL) {
         bfree(server->buf);
         ss_free(server->buf);
     }
@@ -726,6 +729,7 @@ main(int argc, char **argv)
     char *local_port = NULL;
     char *local_addr = NULL;
     char *password   = NULL;
+    char *key        = NULL;
     char *timeout    = NULL;
     char *method     = NULL;
     char *pid_path   = NULL;
@@ -750,8 +754,11 @@ main(int argc, char **argv)
         { "mptcp",       no_argument,       NULL, GETOPT_VAL_MPTCP },
         { "plugin",      required_argument, NULL, GETOPT_VAL_PLUGIN },
         { "plugin-opts", required_argument, NULL, GETOPT_VAL_PLUGIN_OPTS },
+        { "reuse-port",  no_argument,       NULL, GETOPT_VAL_REUSE_PORT },
+        { "password",    required_argument, NULL, GETOPT_VAL_PASSWORD },
+        { "key",         required_argument, NULL, GETOPT_VAL_KEY },
         { "help",        no_argument,       NULL, GETOPT_VAL_HELP },
-        { NULL,          0,                 NULL, 0}
+        { NULL,          0,                 NULL, 0 }
     };
 
     opterr = 0;
@@ -780,6 +787,12 @@ main(int argc, char **argv)
         case GETOPT_VAL_PLUGIN_OPTS:
             plugin_opts = optarg;
             break;
+        case GETOPT_VAL_KEY:
+            key = optarg;
+            break;
+        case GETOPT_VAL_REUSE_PORT:
+            reuse_port = 1;
+            break;
         case 's':
             if (remote_num < MAX_REMOTE_NUM) {
                 remote_addr[remote_num].host   = optarg;
@@ -792,6 +805,7 @@ main(int argc, char **argv)
         case 'l':
             local_port = optarg;
             break;
+        case GETOPT_VAL_PASSWORD:
         case 'k':
             password = optarg;
             break;
@@ -884,6 +898,9 @@ main(int argc, char **argv)
         if (password == NULL) {
             password = conf->password;
         }
+        if (key == NULL) {
+            key = conf->key;
+        }
         if (method == NULL) {
             method = conf->method;
         }
@@ -911,6 +928,9 @@ main(int argc, char **argv)
         if (mptcp == 0) {
             mptcp = conf->mptcp;
         }
+        if (reuse_port == 0) {
+            reuse_port = conf->reuse_port;
+        }
 #ifdef HAVE_SETRLIMIT
         if (nofile == 0) {
             nofile = conf->nofile;
@@ -918,8 +938,8 @@ main(int argc, char **argv)
 #endif
     }
 
-    if (remote_num == 0 || remote_port == NULL || tunnel_addr_str == NULL ||
-        local_port == NULL || password == NULL) {
+    if (remote_num == 0 || remote_port == NULL || tunnel_addr_str == NULL
+            || local_port == NULL || (password == NULL && key == NULL)) {
         usage();
         exit(EXIT_FAILURE);
     }
@@ -1007,7 +1027,7 @@ main(int argc, char **argv)
 
     // Setup keys
     LOGI("initializing ciphers... %s", method);
-    crypto = crypto_init(password, method);
+    crypto = crypto_init(password, key, method);
     if (crypto == NULL)
         FATAL("failed to initialize ciphers");
 
@@ -1045,10 +1065,10 @@ main(int argc, char **argv)
         int listenfd;
         listenfd = create_and_bind(local_addr, local_port);
         if (listenfd == -1) {
-            FATAL("bind() error:");
+            FATAL("bind() error");
         }
         if (listen(listenfd, SOMAXCONN) == -1) {
-            FATAL("listen() error:");
+            FATAL("listen() error");
         }
         setnonblocking(listenfd);
 

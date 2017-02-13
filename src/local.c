@@ -86,6 +86,7 @@
 #endif
 
 int verbose        = 0;
+int reuse_port     = 0;
 int keep_resolving = 1;
 
 #ifdef ANDROID
@@ -173,9 +174,11 @@ create_and_bind(const char *addr, const char *port)
 #ifdef SO_NOSIGPIPE
         setsockopt(listen_sock, SOL_SOCKET, SO_NOSIGPIPE, &opt, sizeof(opt));
 #endif
-        int err = set_reuseport(listen_sock);
-        if (err == 0) {
-            LOGI("tcp port reuse enabled");
+        if (reuse_port) {
+            int err = set_reuseport(listen_sock);
+            if (err == 0) {
+                LOGI("tcp port reuse enabled");
+            }
         }
 
         s = bind(listen_sock, rp->ai_addr, rp->ai_addrlen);
@@ -672,9 +675,11 @@ server_recv_cb(EV_P_ ev_io *w, int revents)
                     int err;
                     struct sockaddr_storage storage;
                     memset(&storage, 0, sizeof(struct sockaddr_storage));
+#ifndef ANDROID
                     if (sni_detected || atyp == 3)
                        err = get_sockaddr(host, port, &storage, 0, ipv6first);
                     else
+#endif
                        err = get_sockaddr(ip, port, &storage, 0, ipv6first);
                     if (err != -1) {
                         remote = create_remote(server->listener, (struct sockaddr *)&storage);
@@ -1168,6 +1173,7 @@ main(int argc, char **argv)
     char *local_port = NULL;
     char *local_addr = NULL;
     char *password   = NULL;
+    char *key        = NULL;
     char *timeout    = NULL;
     char *method     = NULL;
     char *pid_path   = NULL;
@@ -1187,12 +1193,15 @@ main(int argc, char **argv)
     char *remote_port = NULL;
 
     static struct option long_options[] = {
+        { "reuse-port",  no_argument,       NULL, GETOPT_VAL_REUSE_PORT },
         { "fast-open",   no_argument,       NULL, GETOPT_VAL_FAST_OPEN },
         { "acl",         required_argument, NULL, GETOPT_VAL_ACL },
         { "mtu",         required_argument, NULL, GETOPT_VAL_MTU },
         { "mptcp",       no_argument,       NULL, GETOPT_VAL_MPTCP },
         { "plugin",      required_argument, NULL, GETOPT_VAL_PLUGIN },
         { "plugin-opts", required_argument, NULL, GETOPT_VAL_PLUGIN_OPTS },
+        { "password",    required_argument, NULL, GETOPT_VAL_PASSWORD },
+        { "key",         required_argument, NULL, GETOPT_VAL_KEY },
         { "help",        no_argument,       NULL, GETOPT_VAL_HELP },
         { NULL,          0,                 NULL, 0 }
     };
@@ -1230,6 +1239,12 @@ main(int argc, char **argv)
         case GETOPT_VAL_PLUGIN_OPTS:
             plugin_opts = optarg;
             break;
+        case GETOPT_VAL_KEY:
+            key = optarg;
+            break;
+        case GETOPT_VAL_REUSE_PORT:
+            reuse_port = 1;
+            break;
         case 's':
             if (remote_num < MAX_REMOTE_NUM) {
                 remote_addr[remote_num].host   = optarg;
@@ -1242,6 +1257,7 @@ main(int argc, char **argv)
         case 'l':
             local_port = optarg;
             break;
+        case GETOPT_VAL_PASSWORD:
         case 'k':
             password = optarg;
             break;
@@ -1330,6 +1346,9 @@ main(int argc, char **argv)
         if (password == NULL) {
             password = conf->password;
         }
+        if (key == NULL) {
+            key = conf->key;
+        }
         if (method == NULL) {
             method = conf->method;
         }
@@ -1344,6 +1363,9 @@ main(int argc, char **argv)
         }
         if (plugin_opts == NULL) {
             plugin_opts = conf->plugin_opts;
+        }
+        if (reuse_port == 0) {
+            reuse_port = conf->reuse_port;
         }
         if (fast_open == 0) {
             fast_open = conf->fast_open;
@@ -1368,7 +1390,7 @@ main(int argc, char **argv)
 #ifndef HAVE_LAUNCHD
         local_port == NULL ||
 #endif
-        password == NULL) {
+        (password == NULL && key == NULL)) {
         usage();
         exit(EXIT_FAILURE);
     }
@@ -1452,7 +1474,7 @@ main(int argc, char **argv)
 
     // Setup keys
     LOGI("initializing ciphers... %s", method);
-    crypto = crypto_init(password, method);
+    crypto = crypto_init(password, key, method);
     if (crypto == NULL)
         FATAL("failed to initialize ciphers");
 
@@ -1633,7 +1655,7 @@ start_ss_local_server(profile_t profile)
 
     // Setup keys
     LOGI("initializing ciphers... %s", method);
-    crypto = crypto_init(password, method);
+    crypto = crypto_init(password, NULL, method);
     if (crypto == NULL)
         FATAL("failed to init ciphers");
 

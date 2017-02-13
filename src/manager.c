@@ -183,6 +183,11 @@ construct_command_line(struct manager_ctx *manager, struct server *server)
         int len = strlen(cmd);
         snprintf(cmd + len, BUF_SIZE - len, " -s %s", manager->hosts[i]);
     }
+    // Always enable reuse port
+    {
+        int len = strlen(cmd);
+        snprintf(cmd + len, BUF_SIZE - len, " --reuse-port");
+    }
 
     if (verbose) {
         LOGI("cmd: %s", cmd);
@@ -313,7 +318,7 @@ create_and_bind(const char *host, const char *port, int protocol)
 {
     struct addrinfo hints;
     struct addrinfo *result, *rp, *ipv4v6bindall;
-    int s, listen_sock = -1, is_port_reuse = 0;
+    int s, listen_sock = -1, is_reuse_port = 0;
 
     memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family   = AF_UNSPEC;                  /* Return IPv4 and IPv6 choices */
@@ -372,14 +377,14 @@ create_and_bind(const char *host, const char *port, int protocol)
             if (verbose) {
                 LOGI("%s port reuse enabled", protocol == IPPROTO_TCP ? "tcp" : "udp");
             }
-            is_port_reuse = 1;
+            is_reuse_port = 1;
         }
 
         s = bind(listen_sock, rp->ai_addr, rp->ai_addrlen);
         if (s == 0) {
             /* We managed to bind successfully! */
 
-            if (!is_port_reuse) {
+            if (!is_reuse_port) {
                 if (verbose) {
                     LOGI("close sock due to %s port reuse disabled", protocol == IPPROTO_TCP ? "tcp" : "udp");
                 }
@@ -401,7 +406,7 @@ create_and_bind(const char *host, const char *port, int protocol)
         return -1;
     }
 
-    return is_port_reuse ? listen_sock : -2;
+    return is_reuse_port ? listen_sock : -2;
 }
 
 static void
@@ -430,7 +435,7 @@ static void
 get_and_release_sock_lock(char *port)
 {
     if (verbose) {
-        LOGI("try to get and release sock lock at port: %s", port);
+        LOGI("try to release sock lock at port: %s", port);
     }
 
     sock_lock_t *sock_lock = NULL;
@@ -631,6 +636,9 @@ remove_server(char *prefix, char *port)
 static void
 update_stat(char *port, uint64_t traffic)
 {
+    if (verbose) {
+        LOGI("update traffic %" PRIu64 " for port %s", traffic, port);
+    }
     void *ret = cork_hash_table_get(server_table, (void *)port);
     if (ret != NULL) {
         struct server *server = (struct server *)ret;
@@ -876,11 +884,12 @@ main(int argc, char **argv)
     char *plugin          = NULL;
     char *plugin_opts     = NULL;
 
-    int auth      = 0;
-    int fast_open = 0;
-    int mode      = TCP_ONLY;
-    int mtu       = 0;
-    int ipv6first = 0;
+    int auth       = 0;
+    int fast_open  = 0;
+    int reuse_port = 0;
+    int mode       = TCP_ONLY;
+    int mtu        = 0;
+    int ipv6first  = 0;
 
 #ifdef HAVE_SETRLIMIT
     static int nofile = 0;
@@ -896,6 +905,7 @@ main(int argc, char **argv)
 
     static struct option long_options[] = {
         { "fast-open",       no_argument,       NULL, GETOPT_VAL_FAST_OPEN },
+        { "reuse-port",      no_argument,       NULL, GETOPT_VAL_REUSE_PORT },
         { "acl",             required_argument, NULL, GETOPT_VAL_ACL },
         { "manager-address", required_argument, NULL,
                                                 GETOPT_VAL_MANAGER_ADDRESS },
@@ -904,6 +914,7 @@ main(int argc, char **argv)
         { "mtu",             required_argument, NULL, GETOPT_VAL_MTU },
         { "plugin",          required_argument, NULL, GETOPT_VAL_PLUGIN },
         { "plugin-opts",     required_argument, NULL, GETOPT_VAL_PLUGIN_OPTS },
+        { "password",        required_argument, NULL, GETOPT_VAL_PASSWORD },
         { "help",            no_argument,       NULL, GETOPT_VAL_HELP },
         { NULL,              0,                 NULL, 0 }
     };
@@ -915,6 +926,9 @@ main(int argc, char **argv)
     while ((c = getopt_long(argc, argv, "f:s:l:k:t:m:c:i:d:a:n:6huUvA",
                             long_options, NULL)) != -1)
         switch (c) {
+        case GETOPT_VAL_REUSE_PORT:
+            reuse_port = 1;
+            break;
         case GETOPT_VAL_FAST_OPEN:
             fast_open = 1;
             break;
@@ -941,6 +955,7 @@ main(int argc, char **argv)
                 server_host[server_num++] = optarg;
             }
             break;
+        case GETOPT_VAL_PASSWORD:
         case 'k':
             password = optarg;
             break;
@@ -1023,11 +1038,12 @@ main(int argc, char **argv)
         if (user == NULL) {
             user = conf->user;
         }
-#ifdef TCP_FASTOPEN
         if (fast_open == 0) {
             fast_open = conf->fast_open;
         }
-#endif
+        if (reuse_port == 0) {
+            reuse_port = conf->reuse_port;
+        }
         if (conf->nameserver != NULL) {
             nameservers[nameserver_num++] = conf->nameserver;
         }
@@ -1073,6 +1089,11 @@ main(int argc, char **argv)
         daemonize(pid_path);
     }
 
+    if (manager_address == NULL) {
+        manager_address = "127.0.0.1:8839";
+        LOGI("using the default manager address: %s", manager_address);
+    }
+
     if (server_num == 0 || manager_address == NULL) {
         usage();
         exit(EXIT_FAILURE);
@@ -1105,6 +1126,7 @@ main(int argc, char **argv)
     struct manager_ctx manager;
     memset(&manager, 0, sizeof(struct manager_ctx));
 
+    manager.reuse_port      = reuse_port;
     manager.fast_open       = fast_open;
     manager.verbose         = verbose;
     manager.mode            = mode;

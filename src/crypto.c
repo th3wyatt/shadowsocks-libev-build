@@ -28,6 +28,7 @@
 #include <sodium.h>
 #include <mbedtls/md5.h>
 
+#include "base64.h"
 #include "cache.h"
 #include "crypto.h"
 #include "stream.h"
@@ -100,66 +101,8 @@ crypto_md5(const unsigned char *d, size_t n, unsigned char *md)
     return md;
 }
 
-int
-crypto_derive_key(const cipher_t *cipher, const char *pass,
-                  uint8_t *key, size_t nkey, int version)
-{
-    if (version == 2) {
-        const unsigned char salt[crypto_pwhash_SALTBYTES] = {
-            's', 'h', 'a', 'd', 'o', 'w', 's', 'o',
-            'c', 'k', 's', ' ', 'h', 'a', 's', 'h'
-        };
-        int err = crypto_pwhash (key, nkey, (char*)pass, strlen(pass), salt,
-                crypto_pwhash_OPSLIMIT_INTERACTIVE, crypto_pwhash_MEMLIMIT_INTERACTIVE,
-                crypto_pwhash_ALG_DEFAULT);
-        if (err)
-            FATAL("Out of memory when doing password hashing");
-        else
-            return nkey;
-    }
-
-    size_t datal;
-    datal = strlen((const char *)pass);
-
-    const digest_type_t *md = mbedtls_md_info_from_string("MD5");
-    if (md == NULL) {
-        FATAL("MD5 Digest not found in crypto library");
-    }
-
-    mbedtls_md_context_t c;
-    unsigned char md_buf[MAX_MD_SIZE];
-    int addmd;
-    unsigned int i, j, mds;
-
-    mds = mbedtls_md_get_size(md);
-    memset(&c, 0, sizeof(mbedtls_md_context_t));
-
-    if (pass == NULL)
-        return nkey;
-    if (mbedtls_md_setup(&c, md, 1))
-        return 0;
-
-    for (j = 0, addmd = 0; j < nkey; addmd++) {
-        mbedtls_md_starts(&c);
-        if (addmd) {
-            mbedtls_md_update(&c, md_buf, mds);
-        }
-        mbedtls_md_update(&c, (uint8_t *)pass, datal);
-        mbedtls_md_finish(&c, &(md_buf[0]));
-
-        for (i = 0; i < mds; i++, j++) {
-            if (j >= nkey)
-                break;
-            key[j] = md_buf[i];
-        }
-    }
-
-    mbedtls_md_free(&c);
-    return nkey;
-}
-
 crypto_t *
-crypto_init(const char *password, const char *method)
+crypto_init(const char *password, const char *key, const char *method)
 {
     int i, m = -1;
 
@@ -178,7 +121,7 @@ crypto_init(const char *password, const char *method)
                 break;
             }
         if (m != -1) {
-            cipher_t *cipher = stream_init(password, method);
+            cipher_t *cipher = stream_init(password, key, method);
             if (cipher == NULL)
                 return NULL;
             crypto_t *crypto = (crypto_t *)malloc(sizeof(crypto_t));
@@ -189,7 +132,7 @@ crypto_init(const char *password, const char *method)
                 .encrypt     = &stream_encrypt,
                 .decrypt     = &stream_decrypt,
                 .ctx_init    = &stream_ctx_init,
-                .ctx_release = &stream_ctx_release
+                .ctx_release = &stream_ctx_release,
             };
             memcpy(crypto, &tmp, sizeof(crypto_t));
             return crypto;
@@ -201,7 +144,7 @@ crypto_init(const char *password, const char *method)
                 break;
             }
         if (m != -1) {
-            cipher_t *cipher = aead_init(password, method);
+            cipher_t *cipher = aead_init(password, key, method);
             if (cipher == NULL)
                 return NULL;
             crypto_t *crypto = (crypto_t *)ss_malloc(sizeof(crypto_t));
@@ -212,7 +155,7 @@ crypto_init(const char *password, const char *method)
                 .encrypt     = &aead_encrypt,
                 .decrypt     = &aead_decrypt,
                 .ctx_init    = &aead_ctx_init,
-                .ctx_release = &aead_ctx_release
+                .ctx_release = &aead_ctx_release,
             };
             memcpy(crypto, &tmp, sizeof(crypto_t));
             return crypto;
@@ -221,4 +164,178 @@ crypto_init(const char *password, const char *method)
 
     LOGE("invalid cipher name: %s", method);
     return NULL;
+}
+
+int
+crypto_derive_key(const char *pass, uint8_t *key, size_t key_len)
+{
+    size_t datal;
+    datal = strlen((const char *)pass);
+
+    const digest_type_t *md = mbedtls_md_info_from_string("MD5");
+    if (md == NULL) {
+        FATAL("MD5 Digest not found in crypto library");
+    }
+
+    mbedtls_md_context_t c;
+    unsigned char md_buf[MAX_MD_SIZE];
+    int addmd;
+    unsigned int i, j, mds;
+
+    mds = mbedtls_md_get_size(md);
+    memset(&c, 0, sizeof(mbedtls_md_context_t));
+
+    if (pass == NULL)
+        return key_len;
+    if (mbedtls_md_setup(&c, md, 1))
+        return 0;
+
+    for (j = 0, addmd = 0; j < key_len; addmd++) {
+        mbedtls_md_starts(&c);
+        if (addmd) {
+            mbedtls_md_update(&c, md_buf, mds);
+        }
+        mbedtls_md_update(&c, (uint8_t *)pass, datal);
+        mbedtls_md_finish(&c, &(md_buf[0]));
+
+        for (i = 0; i < mds; i++, j++) {
+            if (j >= key_len)
+                break;
+            key[j] = md_buf[i];
+        }
+    }
+
+    mbedtls_md_free(&c);
+    return key_len;
+}
+
+/* HKDF-Extract + HKDF-Expand */
+int crypto_hkdf(const mbedtls_md_info_t *md, const unsigned char *salt,
+                 int salt_len, const unsigned char *ikm, int ikm_len,
+                 const unsigned char *info, int info_len, unsigned char *okm,
+                 int okm_len)
+{
+    unsigned char prk[MBEDTLS_MD_MAX_SIZE];
+
+    return crypto_hkdf_extract(md, salt, salt_len, ikm, ikm_len, prk) ||
+           crypto_hkdf_expand(md, prk, mbedtls_md_get_size(md), info, info_len,
+                               okm, okm_len);
+}
+
+/* HKDF-Extract(salt, IKM) -> PRK */
+int crypto_hkdf_extract(const mbedtls_md_info_t *md, const unsigned char *salt,
+                         int salt_len, const unsigned char *ikm, int ikm_len,
+                         unsigned char *prk)
+{
+    int hash_len;
+    unsigned char null_salt[MBEDTLS_MD_MAX_SIZE] = { '\0' };
+
+    if (salt_len < 0) {
+        return CRYPTO_ERROR;
+    }
+
+    hash_len = mbedtls_md_get_size(md);
+
+    if (salt == NULL) {
+        salt = null_salt;
+        salt_len = hash_len;
+    }
+
+    return mbedtls_md_hmac(md, salt, salt_len, ikm, ikm_len, prk);
+}
+
+/* HKDF-Expand(PRK, info, L) -> OKM */
+int crypto_hkdf_expand(const mbedtls_md_info_t *md, const unsigned char *prk,
+                        int prk_len, const unsigned char *info, int info_len,
+                        unsigned char *okm, int okm_len)
+{
+    int hash_len;
+    int N;
+    int T_len = 0, where = 0, i, ret;
+    mbedtls_md_context_t ctx;
+    unsigned char T[MBEDTLS_MD_MAX_SIZE];
+
+    if (info_len < 0 || okm_len < 0 || okm == NULL) {
+        return CRYPTO_ERROR;
+    }
+
+    hash_len = mbedtls_md_get_size(md);
+
+    if (prk_len < hash_len) {
+        return CRYPTO_ERROR;
+    }
+
+    if (info == NULL) {
+        info = (const unsigned char *)"";
+    }
+
+    N = okm_len / hash_len;
+
+    if ((okm_len % hash_len) != 0) {
+        N++;
+    }
+
+    if (N > 255) {
+        return CRYPTO_ERROR;
+    }
+
+    mbedtls_md_init(&ctx);
+
+    if ((ret = mbedtls_md_setup(&ctx, md, 1)) != 0) {
+        mbedtls_md_free(&ctx);
+        return ret;
+    }
+
+    /* Section 2.3. */
+    for (i = 1; i <= N; i++) {
+        unsigned char c = i;
+
+        ret = mbedtls_md_hmac_starts(&ctx, prk, prk_len) ||
+              mbedtls_md_hmac_update(&ctx, T, T_len) ||
+              mbedtls_md_hmac_update(&ctx, info, info_len) ||
+              /* The constant concatenated to the end of each T(n) is a single
+                 octet. */
+              mbedtls_md_hmac_update(&ctx, &c, 1) ||
+              mbedtls_md_hmac_finish(&ctx, T);
+
+        if (ret != 0) {
+            mbedtls_md_free(&ctx);
+            return ret;
+        }
+
+        memcpy(okm + where, T, (i != N) ? hash_len : (okm_len - where));
+        where += hash_len;
+        T_len = hash_len;
+    }
+
+    mbedtls_md_free(&ctx);
+
+    return 0;
+}
+
+int
+crypto_parse_key(const char *base64, uint8_t *key, size_t key_len)
+{
+    size_t base64_len = strlen(base64);
+    int out_len = BASE64_SIZE(base64_len);
+    uint8_t out[out_len];
+
+    out_len = base64_decode(out, base64, out_len);
+    if (out_len > 0 && out_len >= key_len) {
+        memcpy(key, out, key_len);
+#ifdef DEBUG
+        dump("KEY", (char*)key, key_len);
+#endif
+        return key_len;
+    }
+
+    out_len = BASE64_SIZE(key_len);
+    char out_key[out_len];
+    rand_bytes(key, key_len);
+    base64_encode(out_key, out_len, key, key_len);
+    LOGE("Invalid key for your chosen cipher!");
+    LOGE("It requires a %zu-byte key encoded with URL-safe Base64", key_len);
+    LOGE("Generating a new random key: %s", out_key);
+    FATAL("Please use the key above or input a valid key");
+    return key_len;
 }

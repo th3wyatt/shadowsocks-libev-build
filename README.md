@@ -9,7 +9,7 @@ It is a port of [Shadowsocks](https://github.com/shadowsocks/shadowsocks)
 created by [@clowwindy](https://github.com/clowwindy), and maintained by
 [@madeye](https://github.com/madeye) and [@linusyang](https://github.com/linusyang).
 
-Current version: 3.0.0 | [Changelog](debian/changelog)
+Current version: 3.0.2 | [Changelog](debian/changelog)
 
 Travis CI: [![Travis CI](https://travis-ci.org/shadowsocks/shadowsocks-libev.svg?branch=master)](https://travis-ci.org/shadowsocks/shadowsocks-libev)
 
@@ -25,7 +25,7 @@ no more than 5% on a low-end router (Buffalo WHR-G300N V2 with a 400MHz MIPS CPU
 For a full list of feature comparison between different versions of shadowsocks,
 refer to the [Wiki page](https://github.com/shadowsocks/shadowsocks/wiki/Feature-Comparison-across-Different-Versions).
 
-## Installation
+## Prerequisites
 
 ### Get the latest source code
 
@@ -36,6 +36,36 @@ git clone https://github.com/shadowsocks/shadowsocks-libev.git
 cd shadowsocks-libev
 git submodule update --init --recursive
 ```
+
+### Build and install with recent mbedTLS and libsodium
+
+You have to install libsodium 1.0.8 or later before building.
+
+If your system is too old to provide libmbedtls and libsodium (later than **v1.0.8**),
+you will need to either install those libraries manually or upgrade your system.
+
+If your system provides with those libraries, you **should** **not** install them
+from source. You should jump this section and install them from distribution
+repository instead.
+
+```bash
+export LIBSODIUM_VER=1.0.11
+export MBEDTLS_VER=2.4.0
+wget https://download.libsodium.org/libsodium/releases/libsodium-$LIBSODIUM_VER.tar.gz
+tar xvf libsodium-$LIBSODIUM_VER.tar.gz
+pushd libsodium-$LIBSODIUM_VER
+./configure --prefix=/usr && make
+sudo make install
+popd
+wget https://tls.mbed.org/download/mbedtls-$MBEDTLS_VER-gpl.tgz
+tar xvf mbedtls-$MBEDTLS_VER-gpl.tgz
+pushd mbedtls-$MBEDTLS_VER
+make SHARED=1 CFLAGS=-fPIC
+sudo make DESTDIR=/usr install
+popd
+```
+
+## Installation
 
 ### Distribution-specific guide
 
@@ -87,30 +117,29 @@ sudo apt -t jessie-backports install shadowsocks-libev
 
 Supported Platforms:
 
-* Debian 7 (see below), 8, 9, unstable
-* Ubuntu 14.04 (see below), Ubuntu 14.10, 15.04, 15.10 or higher
+* Debian 8 (see below), 9, unstable
+* Ubuntu 16.04 or higher
 
-**Note for Ubuntu 14.04 users**:
-Packages built on Ubuntu 14.04 may be used in later Ubuntu versions. However,
-packages built on Debian 7/8/9 or Ubuntu 14.10+ **cannot** be installed on
-Ubuntu 14.04.
+For older systems, building `.deb` packages is not supported.
+Please directly install from source.
+You may need to resolve library dependencies by yourself.
 
-**Note for Debian 7.x users**:
-To build packages on Debian 7 (Wheezy), you need to enable `debian-backports`
-to install systemd-compatibility packages like `dh-systemd` or `init-system-helpers`.
-Please follow the instructions on [Debian Backports](https://backports.debian.org).
+**Note for Debian 8.x users**:
+We strongly encourage you to install shadowsocks-libev from `jessie-backports`.
+Please follow instructions on [Debian Backports](https://backports.debian.org).
 
-This also means that you can only install those built packages on systems that have
-`init-system-helpers` installed.
+If you insist on building from source, you will need to manually install libsodium
+from `jessie-backports`, **NOT** libsodium in main repository.
+Please follow the instructions on [Debian Backports Website](https://backports.debian.org).
 
 Otherwise, try to build and install directly from source. See the [Linux](#linux)
 section below.
 
 ``` bash
 cd shadowsocks-libev
-sudo apt-get install --no-install-recommends gettext build-essential autoconf libtool \
-    gawk debhelper dh-systemd init-system-helpers pkg-config asciidoc xmlto apg libpcre3-dev libmbedtls-dev \
-    libev-dev libudns-dev libsodium-dev
+sudo apt-get install --no-install-recommends gettext build-essential autoconf automake libtool \
+    gawk debhelper dh-systemd init-system-helpers pkg-config asciidoc xmlto apg libpcre3-dev \
+    libev-dev libudns-dev dh-autoreconf
 ./autogen.sh && dpkg-buildpackage -b -us -uc -i
 cd ..
 sudo dpkg -i shadowsocks-libev*.deb
@@ -142,7 +171,7 @@ If you are using CentOS 7, you need to install these prequirement to build from 
 
 ```bash 
 yum install epel-release -y
-yum install gcc gettext autoconf libtool automake make pcre-devel asciidoc xmlto libsodium-devel udns-devel libev-devel libmbedtls-devel -y
+yum install gcc gettext autoconf libtool automake make pcre-devel asciidoc xmlto udns-devel libev-devel -y
 ```
 
 #### Install from repository
@@ -191,19 +220,34 @@ nix-env -iA nixpkgs.shadowsocks-libev
 
 ### Linux
 
+In general, you need the following build dependencies:
+
+* autotools (autoconf, automake, libtool)
+* gettext
+* pkg-config
+* libmbedtls
+* libsodium
+* libpcre3 (old pcre library)
+* libev
+* libudns
+* asciidoc (for documentation only)
+* xmlto (for documentation only)
+
 For Unix-like systems, especially Debian-based systems,
-e.g. Ubuntu, Debian or Linux Mint, you can build the binary like this:
+e.g. Ubuntu, Debian or Linux Mint, you might install build dependencies like this:
 
 ```bash
 # Debian / Ubuntu
-sudo apt-get install --no-install-recommends gettext build-essential autoconf libtool libpcre3-dev asciidoc xmlto libmbedtls-dev libev-dev libudns-dev libsodium-dev
+sudo apt-get install --no-install-recommends gettext build-essential autoconf libtool libpcre3-dev asciidoc xmlto libev-dev libudns-dev automake libmbedtls-dev
 # CentOS / Fedora / RHEL
-sudo yum install gettext gcc autoconf libtool automake make libmbedtls-devel asciidoc xmlto udns-devel libev-devel
+sudo yum install gettext gcc autoconf libtool automake make asciidoc xmlto udns-devel libev-devel
 # Arch
-sudo pacman -S gettext gcc autoconf libtool automake make mbedtls asciidoc xmlto udns libev
+sudo pacman -S gettext gcc autoconf libtool automake make asciidoc xmlto udns libev
 ./autogen.sh && ./configure && make
 sudo make install
 ```
+
+You may need to manually install missing softwares.
 
 ### FreeBSD
 
@@ -288,8 +332,6 @@ man pages of the applications, respectively.
 
        [-U]                       enable UDP relay and disable TCP relay,
                                   not available in local mode
-
-       [-A]                       enable onetime authentication
 
        [-L <addr>:<port>]         specify destination server address and port
                                   for local port forwarding,
@@ -396,6 +438,7 @@ setting up your server's firewall rules to limit connections from each user:
 
 ## License
 
+```
 Copyright: 2013-2015, Clow Windy <clowwindy42@gmail.com>
            2013-2017, Max Lv <max.c.lv@gmail.com>
            2014, Linus Yang <linusyang@gmail.com>
@@ -412,3 +455,4 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
+```

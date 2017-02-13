@@ -35,11 +35,7 @@
 #endif
 
 #include <sodium.h>
-#if SODIUM_LIBRARY_VERSION_MAJOR >= 8
 #define STREAM_CIPHER_NUM          21
-#else
-#define STREAM_CIPHER_NUM          20
-#endif
 
 #include "crypto.h"
 
@@ -51,6 +47,6 @@ int stream_decrypt(buffer_t *, cipher_ctx_t *, size_t);
 void stream_ctx_init(cipher_t *, cipher_ctx_t *, int);
 void stream_ctx_release(cipher_ctx_t *);
 
-cipher_t *stream_init(const char *pass, const char *method);
+cipher_t *stream_init(const char *pass, const char *key, const char *method);
 
 #endif // _STREAM_H

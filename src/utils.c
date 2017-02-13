@@ -281,15 +281,10 @@ usage()
         "                                  camellia-128-cfb, camellia-192-cfb,\n");
     printf(
         "                                  camellia-256-cfb, bf-cfb,\n");
-#if SODIUM_LIBRARY_VERSION_MAJOR >= 8
     printf(
-        "                                  chacha20-poly1305, chacha20-ietf-poly1305\n");
+        "                                  chacha20-ietf-poly1305,\n");
     printf(
         "                                  salsa20, chacha20 and chacha20-ietf.\n");
-#else
-    printf(
-        "                                  chacha20-poly1305, salsa20, chacha20.\n");
-#endif
     printf(
         "                                  The default cipher is rc4-md5.\n");
     printf("\n");
@@ -320,8 +315,6 @@ usage()
 #endif
     printf(
         "       [-U]                       Enable UDP relay and disable TCP relay.\n");
-    printf(
-        "       [-A]                       Enable onetime authentication.\n");
 #ifdef MODULE_REMOTE
     printf(
         "       [-6]                       Resovle hostname to IPv6 address first.\n");
@@ -337,6 +330,8 @@ usage()
     printf(
         "       [-d <addr>]                Name servers for internal DNS resolver.\n");
 #endif
+    printf(
+        "       [--reuse-port]             Enable port reuse.\n");
 #if defined(MODULE_REMOTE) || defined(MODULE_LOCAL)
     printf(
         "       [--fast-open]              Enable TCP fast open.\n");
@@ -358,6 +353,10 @@ usage()
 #ifdef __linux__
     printf(
         "       [--mptcp]                  Enable Multipath TCP on MPTCP Kernel.\n");
+#endif
+#ifndef MODULE_MANAGER
+    printf(
+        "       [--key <key_in_base64>]    Key of your remote server.\n");
 #endif
     printf(
         "       [--plugin <name>]          Enable SIP003 plugin. (Experimental)\n");

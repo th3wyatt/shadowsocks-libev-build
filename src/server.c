@@ -99,7 +99,8 @@ static void close_and_free_server(EV_P_ server_t *server);
 static void server_resolve_cb(struct sockaddr *addr, void *data);
 static void query_free_cb(void *data);
 
-int verbose = 0;
+int verbose     = 0;
+int reuse_port = 0;
 
 static crypto_t *crypto;
 
@@ -116,7 +117,7 @@ static int server_conn = 0;
 
 static char *plugin          = NULL;
 static char *bind_address    = NULL;
-static char *server_port     = NULL;
+static char *remote_port     = NULL;
 static char *manager_address = NULL;
 uint64_t tx                  = 0;
 uint64_t rx                  = 0;
@@ -141,7 +142,7 @@ stat_update_cb(EV_P_ ev_timer *watcher, int revents)
         LOGI("update traffic stat: tx: %" PRIu64 " rx: %" PRIu64 "", tx, rx);
     }
 
-    snprintf(resp, BUF_SIZE, "stat: {\"%s\":%" PRIu64 "}", server_port, tx + rx);
+    snprintf(resp, BUF_SIZE, "stat: {\"%s\":%" PRIu64 "}", remote_port, tx + rx);
     msgLen = strlen(resp) + 1;
 
     ss_addr_t ip_addr = { .host = NULL, .port = NULL };
@@ -156,7 +157,7 @@ stat_update_cb(EV_P_ ev_timer *watcher, int revents)
 
         memset(&claddr, 0, sizeof(struct sockaddr_un));
         claddr.sun_family = AF_UNIX;
-        snprintf(claddr.sun_path, sizeof(claddr.sun_path), "/tmp/shadowsocks.%s", server_port);
+        snprintf(claddr.sun_path, sizeof(claddr.sun_path), "/tmp/shadowsocks.%s", remote_port);
 
         unlink(claddr.sun_path);
 
@@ -379,9 +380,11 @@ create_and_bind(const char *host, const char *port, int mptcp)
 #ifdef SO_NOSIGPIPE
         setsockopt(listen_sock, SOL_SOCKET, SO_NOSIGPIPE, &opt, sizeof(opt));
 #endif
-        int err = set_reuseport(listen_sock);
-        if (err == 0) {
-            LOGI("tcp port reuse enabled");
+        if (reuse_port) {
+            int err = set_reuseport(listen_sock);
+            if (err == 0) {
+                LOGI("tcp port reuse enabled");
+            }
         }
 
         if (mptcp == 1) {
@@ -1335,12 +1338,14 @@ main(int argc, char **argv)
     int mtu         = 0;
     char *user      = NULL;
     char *password  = NULL;
+    char *key       = NULL;
     char *timeout   = NULL;
     char *method    = NULL;
     char *pid_path  = NULL;
     char *conf_path = NULL;
     char *iface     = NULL;
 
+    char *server_port = NULL;
     char *plugin_opts = NULL;
     char *plugin_port = NULL;
     char tmp_port[8];
@@ -1353,6 +1358,7 @@ main(int argc, char **argv)
 
     static struct option long_options[] = {
         { "fast-open",       no_argument,       NULL, GETOPT_VAL_FAST_OPEN },
+        { "reuse-port",      no_argument,       NULL, GETOPT_VAL_REUSE_PORT },
         { "acl",             required_argument, NULL, GETOPT_VAL_ACL },
         { "manager-address", required_argument, NULL,
                                                 GETOPT_VAL_MANAGER_ADDRESS },
@@ -1360,6 +1366,8 @@ main(int argc, char **argv)
         { "help",            no_argument,       NULL, GETOPT_VAL_HELP },
         { "plugin",          required_argument, NULL, GETOPT_VAL_PLUGIN },
         { "plugin-opts",     required_argument, NULL, GETOPT_VAL_PLUGIN_OPTS },
+        { "password",        required_argument, NULL, GETOPT_VAL_PASSWORD },
+        { "key",             required_argument, NULL, GETOPT_VAL_KEY },
 #ifdef __linux__
         { "mptcp",           no_argument,       NULL, GETOPT_VAL_MPTCP },
 #endif
@@ -1397,6 +1405,12 @@ main(int argc, char **argv)
             mptcp = 1;
             LOGI("enable multipath TCP");
             break;
+        case GETOPT_VAL_KEY:
+            key = optarg;
+            break;
+        case GETOPT_VAL_REUSE_PORT:
+            reuse_port = 1;
+            break;
         case 's':
             if (server_num < MAX_REMOTE_NUM) {
                 server_host[server_num++] = optarg;
@@ -1408,6 +1422,7 @@ main(int argc, char **argv)
         case 'p':
             server_port = optarg;
             break;
+        case GETOPT_VAL_PASSWORD:
         case 'k':
             password = optarg;
             break;
@@ -1488,6 +1503,9 @@ main(int argc, char **argv)
         if (password == NULL) {
             password = conf->password;
         }
+        if (key == NULL) {
+            key = conf->key;
+        }
         if (method == NULL) {
             method = conf->method;
         }
@@ -1512,11 +1530,12 @@ main(int argc, char **argv)
         if (mptcp == 0) {
             mptcp = conf->mptcp;
         }
-#ifdef TCP_FASTOPEN
+        if (reuse_port == 0) {
+            reuse_port = conf->reuse_port;
+        }
         if (fast_open == 0) {
             fast_open = conf->fast_open;
         }
-#endif
 #ifdef HAVE_SETRLIMIT
         if (nofile == 0) {
             nofile = conf->nofile;
@@ -1534,10 +1553,13 @@ main(int argc, char **argv)
         server_host[server_num++] = NULL;
     }
 
-    if (server_num == 0 || server_port == NULL || password == NULL) {
+    if (server_num == 0 || server_port == NULL
+            || (password == NULL && key == NULL)) {
         usage();
         exit(EXIT_FAILURE);
     }
+
+    remote_port = server_port;
 
     if (plugin != NULL) {
         uint16_t port = get_local_port();
@@ -1613,7 +1635,7 @@ main(int argc, char **argv)
 
     // setup keys
     LOGI("initializing ciphers... %s", method);
-    crypto = crypto_init(password, method);
+    crypto = crypto_init(password, key, method);
     if (crypto == NULL)
         FATAL("failed to initialize ciphers");
 

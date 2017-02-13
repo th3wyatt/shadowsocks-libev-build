@@ -35,10 +35,12 @@ struct manager_ctx {
     ev_io io;
     int fd;
     int fast_open;
+    int reuse_port;
     int verbose;
     int mode;
     int auth;
     char *password;
+    char *key;
     char *timeout;
     char *method;
     char *iface;
