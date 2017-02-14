@@ -12,6 +12,8 @@ shadowsocks-libev (3.0.2+ds-1~exp1) UNRELEASED; urgency=medium
       asciidoc-base package in jessie-backports and ubuntu.
     - Remove dh-systemd from Build-Depends, which is unnecessary in
       debhelper 10.
+  * debian/shadowsocks-libev.postinst:
+    - Add CAP_NET_ADMIN capability to ss-redir
 
  -- Roger Shimizu <rogershimizu@gmail.com>  Thu, 02 Feb 2017 00:21:16 +0900
 
