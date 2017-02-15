@@ -1,0 +1,37 @@
+From: Syrone Wong <wong.syrone@gmail.com>
+Date: Tue, 14 Feb 2017 19:31:09 +0800
+Subject: Output error log when repeat IV/salt detected
+
+This is useful when checking connection issues, and can be used to
+check broken random number generator and replay attacks.
+
+Signed-off-by: Syrone Wong <wong.syrone@gmail.com>
+---
+ src/aead.c   | 1 +
+ src/stream.c | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/src/aead.c b/src/aead.c
+index 3196880..b7f9b34 100644
+--- a/src/aead.c
++++ b/src/aead.c
+@@ -635,6 +635,7 @@ aead_decrypt(buffer_t *ciphertext, cipher_ctx_t *cipher_ctx, size_t capacity)
+         aead_cipher_ctx_set_key(cipher_ctx, 0);
+ 
+         if (cache_key_exist(nonce_cache, (char *)cipher_ctx->salt, salt_len)) {
++            LOGE("crypto: AEAD: repeat salt detected");
+             bfree(ciphertext);
+             return CRYPTO_ERROR;
+         } else {
+diff --git a/src/stream.c b/src/stream.c
+index 335deb6..40b7877 100644
+--- a/src/stream.c
++++ b/src/stream.c
+@@ -507,6 +507,7 @@ stream_decrypt(buffer_t *ciphertext, cipher_ctx_t *cipher_ctx, size_t capacity)
+ 
+         if (cipher->method >= RC4_MD5) {
+             if (cache_key_exist(nonce_cache, (char *)nonce, nonce_len)) {
++                LOGE("crypto: stream: repeat IV detected");
+                 bfree(ciphertext);
+                 return -1;
+             } else {

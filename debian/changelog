@@ -6,6 +6,7 @@ shadowsocks-libev (3.0.2+ds-1~exp1) UNRELEASED; urgency=medium
   * debian/patches:
     - Remove all debian specific patches (0001 & 0002), after backporting
       a new autotool related patch from upstream. Thanks to Max Lv.
+    - Backport a few patches from upstream.
   * debian/control:
     - Add asciidoc as alternative Build-Depends. Although sbuild doesn't
       support it, it's better to mention here, because there's no

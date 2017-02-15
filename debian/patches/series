@@ -1,1 +1,11 @@
 backport/0001-Add-USE_SYSTEM_SHARED_LIB-check-in-configure.patch
+backport/0002-Rename-DEBUG-to-SS_DEBUG.patch
+backport/0003-Replace-the-URL-for-libsodium.patch
+backport/0004-Add-deb-build-script-for-ubuntu-trusty-14.04.patch
+backport/0005-Add-deb-build-script-for-ubuntu-xenial-16.04.patch
+backport/0006-Add-more-cleanup-pkg-to-trusty-script.patch
+backport/0007-Add-Ubuntu-14.04-16.04-build-instruction-to-README.patch
+backport/0008-dh-systemd-dependency-should-be-removed-for-debhelpe.patch
+backport/0009-Add-back-fragmentation-detection.patch
+backport/0010-Refine-MAX_FRAG.patch
+backport/0011-Output-error-log-when-repeat-IV-salt-detected.patch
