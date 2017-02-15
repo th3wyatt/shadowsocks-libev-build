@@ -23,6 +23,8 @@ shadowsocks-libev (3.0.2+ds-1~exp1) UNRELEASED; urgency=medium
       + Add --enable-system-shared-lib
       + Remove --with-crypto-library, since upstream now only supports
         mbedtls and removes this option.
+  * debian/shadowsocks-libev.docs:
+    - Install contrib scripts as docs.
 
  -- Roger Shimizu <rogershimizu@gmail.com>  Thu, 02 Feb 2017 00:21:16 +0900
 
