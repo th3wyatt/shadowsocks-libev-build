@@ -1,4 +1,4 @@
-shadowsocks-libev (3.0.2+ds-1~exp1) UNRELEASED; urgency=medium
+shadowsocks-libev (3.0.2+ds-1~exp1) experimental; urgency=medium
 
   * New upstream release 3.0.2
   * debian/copyright:
@@ -27,7 +27,7 @@ shadowsocks-libev (3.0.2+ds-1~exp1) UNRELEASED; urgency=medium
   * debian/shadowsocks-libev.docs:
     - Install contrib scripts as docs.
 
- -- Roger Shimizu <rogershimizu@gmail.com>  Thu, 02 Feb 2017 00:21:16 +0900
+ -- Roger Shimizu <rogershimizu@gmail.com>  Thu, 16 Feb 2017 02:35:57 +0900
 
 shadowsocks-libev (2.6.3+ds-1) unstable; urgency=medium
 
