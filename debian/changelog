@@ -4,8 +4,8 @@ shadowsocks-libev (3.0.2+ds-1~exp1) UNRELEASED; urgency=medium
   * debian/copyright:
     - Remove non-existing files from Files-Excluded list.
   * debian/patches:
-    - Refresh existing patches.
-    - Update 0001 patch to match v3.0.2.
+    - Remove all debian specific patches (0001 & 0002), after backporting
+      a new autotool related patch from upstream. Thanks to Max Lv.
   * debian/control:
     - Add asciidoc as alternative Build-Depends. Although sbuild doesn't
       support it, it's better to mention here, because there's no
@@ -14,6 +14,14 @@ shadowsocks-libev (3.0.2+ds-1~exp1) UNRELEASED; urgency=medium
       debhelper 10.
   * debian/shadowsocks-libev.postinst:
     - Add CAP_NET_ADMIN capability to ss-redir
+  * debian/rules:
+    - override_dh_autoreconf:
+      + Since now we use autotool scripts the same as upstream, here we
+        have to add some dummy folders/files to feed configure.ac.
+    - override_dh_auto_configure:
+      + Add --enable-system-shared-lib
+      + Remove --with-crypto-library, since upstream now only supports
+        mbedtls and removes this option.
 
  -- Roger Shimizu <rogershimizu@gmail.com>  Thu, 02 Feb 2017 00:21:16 +0900
 

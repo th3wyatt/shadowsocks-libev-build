@@ -13,13 +13,20 @@ override_dh_auto_install:
 	find src/ -name '*.la' -delete
 	dh_auto_install
 
+override_dh_autoreconf:
+	# autoreconf script conplains without the two folders
+	mkdir libcork libipset
+	touch libcork/Makefile.in libipset/Makefile.in
+	dh_autoreconf
+	rm -rf libcork libipset
+
 override_dh_auto_configure:
-	dh_auto_configure -- \
-        --enable-shared \
-        --disable-ssp \
-        --with-crypto-library=mbedtls
 	# Whether to have stack-protector is decided by dpkg-buildflags.
 	# So --disable-ssp here should be safe. See Bug#829498
+	dh_auto_configure -- \
+		--enable-shared \
+		--enable-system-shared-lib \
+		--disable-ssp
 
 %:
 	dh $@ --with systemd

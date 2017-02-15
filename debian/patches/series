@@ -1,2 +1,1 @@
-0001-use-system-library-libcork-libcorkipset-libev-libsod.patch
-0002-use-libcorkipset-library-in-system.patch
+backport/0001-Add-USE_SYSTEM_SHARED_LIB-check-in-configure.patch
