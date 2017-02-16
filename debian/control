@@ -11,7 +11,7 @@ Build-Depends:
  libev-dev,
  libmbedtls-dev,
  libpcre3-dev,
- libsodium-dev,
+ libsodium-dev (>= 1.0.8~),
  libudns-dev,
  pkg-config,
  xmlto
@@ -36,7 +36,7 @@ Description: lightweight and secure socks5 proxy
  .
  Shadowsocks-libev was inspired by Shadowsock (in Python). It's rewritten
  in pure C and only depends on libev, mbedTLS and a few other tiny
- libraries. OpenSSL dependency is removed due to license issue.
+ libraries.
 
 Package: libshadowsocks-libev-dev
 Architecture: any
@@ -52,7 +52,7 @@ Description: lightweight and secure socks5 proxy (development files)
  .
  Shadowsocks-libev was inspired by Shadowsock (in Python). It's rewritten
  in pure C and only depends on libev, mbedTLS and a few other tiny
- libraries. OpenSSL dependency is removed due to license issue.
+ libraries.
  .
  This package provides C header files for the libraries.
 
@@ -74,6 +74,6 @@ Description: lightweight and secure socks5 proxy (shared library)
  .
  Shadowsocks-libev was inspired by Shadowsock (in Python). It's rewritten
  in pure C and only depends on libev, mbedTLS and a few other tiny
- libraries. OpenSSL dependency is removed due to license issue.
+ libraries.
  .
  This package provides shared libraries.
