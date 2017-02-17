@@ -9,3 +9,10 @@ backport/0008-dh-systemd-dependency-should-be-removed-for-debhelpe.patch
 backport/0009-Add-back-fragmentation-detection.patch
 backport/0010-Refine-MAX_FRAG.patch
 backport/0011-Output-error-log-when-repeat-IV-salt-detected.patch
+backport/0012-iperf.sh-wait-one-second-before-killing-processes.patch
+backport/0013-fix-of-PATH_MAX-for-GNU-Hurd.patch
+backport/0014-Fix-a-memory-leak.patch
+backport/0015-Fix-build-on-non-GPU-targets.patch
+backport/0016-Detect-get_current_dir_name-in-configure.patch
+backport/0017-Update-trusty-build-script.patch
+backport/0018-Add-xenial-backports-repository.patch

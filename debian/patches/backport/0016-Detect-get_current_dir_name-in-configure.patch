@@ -1,0 +1,44 @@
+From: Max Lv <max.c.lv@gmail.com>
+Date: Fri, 17 Feb 2017 13:29:44 +0800
+Subject: Detect get_current_dir_name in configure
+
+---
+ configure.ac | 2 +-
+ src/plugin.c | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index 95d3f58..bd03c59 100755
+--- a/configure.ac
++++ b/configure.ac
+@@ -212,7 +212,7 @@ dnl Checks for library functions.
+ AC_FUNC_FORK
+ AC_FUNC_SELECT_ARGTYPES
+ AC_TYPE_SIGNAL
+-AC_CHECK_FUNCS([memset select setresuid setreuid strerror getpwnam_r setrlimit])
++AC_CHECK_FUNCS([memset select setresuid setreuid strerror get_current_dir_name getpwnam_r setrlimit])
+ 
+ AC_CHECK_LIB(socket, connect)
+ 
+diff --git a/src/plugin.c b/src/plugin.c
+index 3564def..dda57aa 100644
+--- a/src/plugin.c
++++ b/src/plugin.c
+@@ -239,7 +239,7 @@ start_plugin(const char *plugin,
+     env = cork_env_clone_current();
+     current_path = cork_env_get(env, "PATH");
+     if (current_path != NULL) {
+-#ifdef _GNU_SOURCE
++#ifdef HAVE_GET_CURRENT_DIR_NAME
+         char *cwd = get_current_dir_name();
+         if (cwd) {
+ #else
+@@ -249,7 +249,7 @@ start_plugin(const char *plugin,
+             new_path_len = strlen(current_path) + strlen(cwd) + 2;
+             new_path = ss_malloc(new_path_len);
+             snprintf(new_path, new_path_len, "%s:%s", cwd, current_path);
+-#ifdef _GNU_SOURCE
++#ifdef HAVE_GET_CURRENT_DIR_NAME
+             free(cwd);
+ #endif
+         }

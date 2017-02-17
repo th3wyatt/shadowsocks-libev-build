@@ -1,0 +1,178 @@
+From: Max Lv <max.c.lv@gmail.com>
+Date: Fri, 17 Feb 2017 12:30:10 +0800
+Subject: Fix a memory leak
+
+---
+ src/aead.c   |  8 ++++----
+ src/local.c  |  4 ++--
+ src/redir.c  |  4 ++--
+ src/server.c |  4 ++--
+ src/stream.c | 18 ++++++------------
+ src/tunnel.c |  4 ++--
+ src/utils.c  | 13 +++++++++++++
+ src/utils.h  |  1 +
+ 8 files changed, 32 insertions(+), 24 deletions(-)
+
+diff --git a/src/aead.c b/src/aead.c
+index b7f9b34..a397dd3 100644
+--- a/src/aead.c
++++ b/src/aead.c
+@@ -365,16 +365,16 @@ aead_ctx_init(cipher_t *cipher, cipher_ctx_t *cipher_ctx, int enc)
+ void
+ aead_ctx_release(cipher_ctx_t *cipher_ctx)
+ {
+-    if (cipher_ctx->cipher->method >= CHACHA20POLY1305IETF) {
+-        return;
+-    }
+-
+     if (cipher_ctx->chunk != NULL) {
+         bfree(cipher_ctx->chunk);
+         ss_free(cipher_ctx->chunk);
+         cipher_ctx->chunk = NULL;
+     }
+ 
++    if (cipher_ctx->cipher->method >= CHACHA20POLY1305IETF) {
++        return;
++    }
++
+     mbedtls_cipher_free(cipher_ctx->evp);
+     ss_free(cipher_ctx->evp);
+ }
+diff --git a/src/local.c b/src/local.c
+index 1a40947..346b6ae 100644
+--- a/src/local.c
++++ b/src/local.c
+@@ -1014,8 +1014,8 @@ new_server(int fd)
+     server->recv_ctx->server    = server;
+     server->send_ctx->server    = server;
+ 
+-    server->e_ctx = ss_malloc(sizeof(cipher_ctx_t));
+-    server->d_ctx = ss_malloc(sizeof(cipher_ctx_t));
++    server->e_ctx = ss_align(sizeof(cipher_ctx_t));
++    server->d_ctx = ss_align(sizeof(cipher_ctx_t));
+     crypto->ctx_init(crypto->cipher, server->e_ctx, 1);
+     crypto->ctx_init(crypto->cipher, server->d_ctx, 0);
+ 
+diff --git a/src/redir.c b/src/redir.c
+index a595ab8..410b1f9 100644
+--- a/src/redir.c
++++ b/src/redir.c
+@@ -618,8 +618,8 @@ new_server(int fd)
+     server->hostname     = NULL;
+     server->hostname_len = 0;
+ 
+-    server->e_ctx = ss_malloc(sizeof(cipher_ctx_t));
+-    server->d_ctx = ss_malloc(sizeof(cipher_ctx_t));
++    server->e_ctx = ss_align(sizeof(cipher_ctx_t));
++    server->d_ctx = ss_align(sizeof(cipher_ctx_t));
+     crypto->ctx_init(crypto->cipher, server->e_ctx, 1);
+     crypto->ctx_init(crypto->cipher, server->d_ctx, 0);
+ 
+diff --git a/src/server.c b/src/server.c
+index cd78908..8a5cef0 100644
+--- a/src/server.c
++++ b/src/server.c
+@@ -1201,8 +1201,8 @@ new_server(int fd, listen_ctx_t *listener)
+     server->listen_ctx          = listener;
+     server->remote              = NULL;
+ 
+-    server->e_ctx = ss_malloc(sizeof(cipher_ctx_t));
+-    server->d_ctx = ss_malloc(sizeof(cipher_ctx_t));
++    server->e_ctx = ss_align(sizeof(cipher_ctx_t));
++    server->d_ctx = ss_align(sizeof(cipher_ctx_t));
+     crypto->ctx_init(crypto->cipher, server->e_ctx, 1);
+     crypto->ctx_init(crypto->cipher, server->d_ctx, 0);
+ 
+diff --git a/src/stream.c b/src/stream.c
+index 40b7877..e9aa35d 100644
+--- a/src/stream.c
++++ b/src/stream.c
+@@ -216,13 +216,18 @@ stream_cipher_ctx_init(cipher_ctx_t *ctx, int method, int enc)
+ }
+ 
+ void
+-stream_cipher_ctx_release(cipher_ctx_t *cipher_ctx)
++stream_ctx_release(cipher_ctx_t *cipher_ctx)
+ {
+     if (cipher_ctx->chunk != NULL) {
+         bfree(cipher_ctx->chunk);
+         ss_free(cipher_ctx->chunk);
+         cipher_ctx->chunk = NULL;
+     }
++
++    if (cipher_ctx->cipher->method >= SALSA20) {
++        return;
++    }
++
+     mbedtls_cipher_free(cipher_ctx->evp);
+     ss_free(cipher_ctx->evp);
+ }
+@@ -574,17 +579,6 @@ stream_ctx_init(cipher_t *cipher, cipher_ctx_t *cipher_ctx, int enc)
+     }
+ }
+ 
+-void
+-stream_ctx_release(cipher_ctx_t *cipher_ctx)
+-{
+-    if (cipher_ctx->cipher->method >= SALSA20) {
+-        return;
+-    }
+-
+-    mbedtls_cipher_free(cipher_ctx->evp);
+-    ss_free(cipher_ctx->evp);
+-}
+-
+ cipher_t *
+ stream_key_init(int method, const char *pass, const char *key)
+ {
+diff --git a/src/tunnel.c b/src/tunnel.c
+index 607f251..79d1216 100644
+--- a/src/tunnel.c
++++ b/src/tunnel.c
+@@ -566,8 +566,8 @@ new_server(int fd)
+     server->send_ctx->server    = server;
+     server->send_ctx->connected = 0;
+ 
+-    server->e_ctx = ss_malloc(sizeof(cipher_ctx_t));
+-    server->d_ctx = ss_malloc(sizeof(cipher_ctx_t));
++    server->e_ctx = ss_align(sizeof(cipher_ctx_t));
++    server->d_ctx = ss_align(sizeof(cipher_ctx_t));
+     crypto->ctx_init(crypto->cipher, server->e_ctx, 1);
+     crypto->ctx_init(crypto->cipher, server->d_ctx, 0);
+ 
+diff --git a/src/utils.c b/src/utils.c
+index 26b2641..838e492 100644
+--- a/src/utils.c
++++ b/src/utils.c
+@@ -230,6 +230,19 @@ ss_malloc(size_t size)
+ }
+ 
+ void *
++ss_align(size_t size)
++{
++    int err;
++    void *tmp;
++    err = posix_memalign(&tmp, sizeof(void *), size);
++    if (err) {
++        return ss_malloc(size);
++    } else {
++        return tmp;
++    }
++}
++
++void *
+ ss_realloc(void *ptr, size_t new_size)
+ {
+     void *new = realloc(ptr, new_size);
+diff --git a/src/utils.h b/src/utils.h
+index e3b4417..6ec0407 100644
+--- a/src/utils.h
++++ b/src/utils.h
+@@ -175,6 +175,7 @@ int set_nofile(int nofile);
+ #endif
+ 
+ void *ss_malloc(size_t size);
++void *ss_align(size_t size);
+ void *ss_realloc(void *ptr, size_t new_size);
+ 
+ #define ss_free(ptr)     \

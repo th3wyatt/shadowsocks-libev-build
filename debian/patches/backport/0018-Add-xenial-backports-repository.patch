@@ -1,0 +1,42 @@
+From: Roger Shimizu <rogershimizu@gmail.com>
+Date: Fri, 17 Feb 2017 08:38:03 +0900
+Subject: Add xenial-backports repository
+
+Because user may upgrade from previous LTS version, xenial-backports
+is better to be added by us for safety.
+
+And use debhelper 10 for shadowsocks-libev only.
+---
+ scripts/deb4xenial.sh | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/scripts/deb4xenial.sh b/scripts/deb4xenial.sh
+index b7b5e27..13b9d28 100755
+--- a/scripts/deb4xenial.sh
++++ b/scripts/deb4xenial.sh
+@@ -6,13 +6,8 @@
+ # the Free Software Foundation; either version 3 of the License, or
+ # (at your option) any later version.
+ 
+-# Please add xenial-backports repo to your apt source list
+-# Because we use debhelper 10 in that repo
+ DEPS="git-buildpackage equivs"
+-DEPS_BPO="debhelper"
+-BPO=xenial-backports
+ sudo apt-get install -y $DEPS
+-sudo apt-get install -y -t $BPO $DEPS_BPO
+ 
+ gbp_build() {
+ 	REPO=$1
+@@ -49,6 +44,11 @@ gbp_build https://github.com/rogers0/libcorkipset debian
+ sudo dpkg -i libcorkipset-dev_*.deb libcorkipset1_*.deb
+ 
+ # Build shadowsocks-libev
++DEPS_BPO="debhelper"
++BPO=xenial-backports
++sudo sh -c 'printf "deb http://archive.ubuntu.com/ubuntu xenial-backports main restricted universe multiverse" > /etc/apt/sources.list.d/xenial-backports.list'
++sudo apt-get update
++sudo apt-get install -y -t $BPO $DEPS_BPO
+ gbp_build https://anonscm.debian.org/git/collab-maint/shadowsocks-libev.git master
+ sudo dpkg -i shadowsocks-libev_*.deb
+ sudo apt-get install -fy

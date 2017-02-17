@@ -1,0 +1,35 @@
+From: Roger Shimizu <rogershimizu@gmail.com>
+Date: Thu, 16 Feb 2017 23:24:42 +0900
+Subject: Update trusty build script
+
+- Move Build-Depends dh-autoreconf dh-systemd to debian/control
+- Also change debian/compat to 9 (debhelper 9)
+---
+ scripts/deb4trusty.sh | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/scripts/deb4trusty.sh b/scripts/deb4trusty.sh
+index d25e669..52b5264 100755
+--- a/scripts/deb4trusty.sh
++++ b/scripts/deb4trusty.sh
+@@ -6,7 +6,7 @@
+ # the Free Software Foundation; either version 3 of the License, or
+ # (at your option) any later version.
+ 
+-DEPS="git-buildpackage equivs dh-autoreconf dh-systemd"
++DEPS="git-buildpackage equivs"
+ sudo apt-get install -y $DEPS
+ 
+ gbp_build() {
+@@ -55,8 +55,9 @@ sudo dpkg -i libsodium*.deb
+ gbp clone --pristine-tar https://anonscm.debian.org/git/collab-maint/shadowsocks-libev.git
+ # Add patch to work with ubuntu trusty (14.04)
+ cd shadowsocks-libev
+-sed -i s/--with\ systemd/--with\ systemd\ --with\ autoreconf/ debian/rules
+-sed -i s/debhelper\ \(\>=\ 10\)/debhelper\ \(\>=\ 9\)/ debian/control
++sed -i 's/dh $@/dh $@ --with systemd,autoreconf/' debian/rules
++sed -i 's/debhelper (>= 10)/debhelper (>= 9), dh-systemd, dh-autoreconf/' debian/control
++echo 9 > debian/compat
+ git add -u
+ git commit -m "Patch to work with ubuntu trusty (14.04)"
+ cd -
