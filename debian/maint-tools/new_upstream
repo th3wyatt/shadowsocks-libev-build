@@ -7,7 +7,7 @@ else
 	exit 1
 fi
 
-tag=$(git tag -l|grep ^v[0-9]|tail -n1)
+tag=$(git describe --tags $(git rev-list --tags='v[0-9]*' --max-count=1))
 ver=$(echo $tag|sed s/^v//)
 dstag=upstream/${ver}+ds
 rmfiles=$(awk 'BEGIN{RS=ORS="\n\n";FS=OFS="\n"}/Files-Excluded:/' debian/copyright|sed -n -e '/^Files-Excluded:/,${p}'|sed s/Files-Excluded://|sed /^$/d)
