@@ -66,6 +66,22 @@ typedef mbedtls_md_info_t digest_type_t;
 #define SUBKEY_INFO "ss-subkey"
 #define IV_INFO "ss-iv"
 
+#ifndef BF_NUM_ENTRIES_FOR_SERVER
+#define BF_NUM_ENTRIES_FOR_SERVER 1e6
+#endif
+
+#ifndef BF_NUM_ENTRIES_FOR_CLIENT
+#define BF_NUM_ENTRIES_FOR_CLIENT 1e4
+#endif
+
+#ifndef BF_ERROR_RATE_FOR_SERVER
+#define BF_ERROR_RATE_FOR_SERVER 1e-6
+#endif
+
+#ifndef BF_ERROR_RATE_FOR_CLIENT
+#define BF_ERROR_RATE_FOR_CLIENT 1e-15
+#endif
+
 typedef struct buffer {
     size_t idx;
     size_t len;
@@ -84,7 +100,7 @@ typedef struct {
 } cipher_t;
 
 typedef struct {
-    uint8_t init;
+    uint32_t init;
     uint64_t counter;
     cipher_evp_t *evp;
     cipher_t *cipher;
@@ -127,6 +143,9 @@ int crypto_hkdf_extract(const mbedtls_md_info_t *md, const unsigned char *salt,
 int crypto_hkdf_expand(const mbedtls_md_info_t *md, const unsigned char *prk,
                         int prk_len, const unsigned char *info, int info_len,
                         unsigned char *okm, int okm_len);
+#ifdef SS_DEBUG
+void dump(char *tag, char *text, int len);
+#endif
 
 extern struct cache *nonce_cache;
 extern const char *supported_stream_ciphers[];

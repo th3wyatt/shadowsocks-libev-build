@@ -33,7 +33,7 @@
 #include <sodium.h>
 #include <arpa/inet.h>
 
-#include "cache.h"
+#include "ppbloom.h"
 #include "aead.h"
 #include "utils.h"
 
@@ -127,18 +127,6 @@
  * we don't have to keep a field to track its length.
  *
  */
-
-#ifdef DEBUG
-static void
-dump(char *tag, char *text, int len)
-{
-    int i;
-    printf("%s: ", tag);
-    for (i = 0; i < len; i++)
-        printf("0x%02x ", (uint8_t)text[i]);
-    printf("\n");
-}
-#endif
 
 const char *supported_aead_ciphers[AEAD_CIPHER_NUM] = {
     "aes-128-gcm",
@@ -356,7 +344,7 @@ aead_cipher_ctx_init(cipher_ctx_t *cipher_ctx, int method, int enc)
         FATAL("Cannot initialize mbed TLS cipher context");
     }
 
-#ifdef DEBUG
+#ifdef SS_DEBUG
     dump("KEY", (char *)cipher_ctx->cipher->key, cipher_ctx->cipher->key_len);
 #endif
 }
@@ -377,14 +365,14 @@ aead_ctx_init(cipher_t *cipher, cipher_ctx_t *cipher_ctx, int enc)
 void
 aead_ctx_release(cipher_ctx_t *cipher_ctx)
 {
-    if (cipher_ctx->cipher->method >= CHACHA20POLY1305IETF) {
-        return;
-    }
-
     if (cipher_ctx->chunk != NULL) {
         bfree(cipher_ctx->chunk);
         ss_free(cipher_ctx->chunk);
         cipher_ctx->chunk = NULL;
+    }
+
+    if (cipher_ctx->cipher->method >= CHACHA20POLY1305IETF) {
+        return;
     }
 
     mbedtls_cipher_free(cipher_ctx->evp);
@@ -417,13 +405,11 @@ aead_encrypt_all(buffer_t *plaintext, cipher_t *cipher, size_t capacity)
                               (uint8_t *)plaintext->data, plaintext->len,
                               NULL, 0, cipher_ctx.nonce, cipher_ctx.skey);
 
-    if (err) {
-        bfree(plaintext);
-        aead_ctx_release(&cipher_ctx);
-        return CRYPTO_ERROR;
-    }
-
     aead_ctx_release(&cipher_ctx);
+
+    if (err)
+        return CRYPTO_ERROR;
+
     assert(ciphertext->len == clen);
 
     brealloc(plaintext, salt_len + ciphertext->len, capacity);
@@ -456,6 +442,11 @@ aead_decrypt_all(buffer_t *ciphertext, cipher_t *cipher, size_t capacity)
     uint8_t *salt = cipher_ctx.salt;
     memcpy(salt, ciphertext->data, salt_len);
 
+    if (ppbloom_check((void *)salt, salt_len) == 1) {
+        LOGE("crypto: AEAD: repeat salt detected");
+        return CRYPTO_ERROR;
+    }
+
     aead_cipher_ctx_set_key(&cipher_ctx, 0);
 
     size_t plen = plaintext->len;
@@ -465,13 +456,12 @@ aead_decrypt_all(buffer_t *ciphertext, cipher_t *cipher, size_t capacity)
                               ciphertext->len - salt_len, NULL, 0,
                               cipher_ctx.nonce, cipher_ctx.skey);
 
-    if (err) {
-        bfree(ciphertext);
-        aead_ctx_release(&cipher_ctx);
-        return CRYPTO_ERROR;
-    }
-
     aead_ctx_release(&cipher_ctx);
+
+    if (err)
+        return CRYPTO_ERROR;
+
+    ppbloom_add((void *)salt, salt_len);
 
     brealloc(ciphertext, plaintext->len, capacity);
     memcpy(ciphertext->data, plaintext->data, plaintext->len);
@@ -487,7 +477,7 @@ aead_chunk_encrypt(cipher_ctx_t *ctx, uint8_t *p, uint8_t *c,
     size_t nlen = ctx->cipher->nonce_len;
     size_t tlen = ctx->cipher->tag_len;
 
-    assert(plen + tlen < CHUNK_SIZE_MASK);
+    assert(plen <= CHUNK_SIZE_MASK);
 
     int err;
     size_t clen;
@@ -500,6 +490,7 @@ aead_chunk_encrypt(cipher_ctx_t *ctx, uint8_t *p, uint8_t *c,
                                NULL, 0, n, ctx->skey);
     if (err)
         return CRYPTO_ERROR;
+
     assert(clen == CHUNK_SIZE_LEN + tlen);
 
     sodium_increment(n, nlen);
@@ -509,6 +500,7 @@ aead_chunk_encrypt(cipher_ctx_t *ctx, uint8_t *p, uint8_t *c,
                                NULL, 0, n, ctx->skey);
     if (err)
         return CRYPTO_ERROR;
+
     assert(clen == plen + tlen);
 
     sodium_increment(n, nlen);
@@ -646,11 +638,9 @@ aead_decrypt(buffer_t *ciphertext, cipher_ctx_t *cipher_ctx, size_t capacity)
 
         aead_cipher_ctx_set_key(cipher_ctx, 0);
 
-        if (cache_key_exist(nonce_cache, (char *)cipher_ctx->salt, salt_len)) {
-            bfree(ciphertext);
+        if (ppbloom_check((void *)cipher_ctx->salt, salt_len) == 1) {
+            LOGE("crypto: AEAD: repeat salt detected");
             return CRYPTO_ERROR;
-        } else {
-            cache_insert(nonce_cache, (char *)cipher_ctx->salt, salt_len, NULL);
         }
 
         memmove(cipher_ctx->chunk->data, cipher_ctx->chunk->data + salt_len,
@@ -658,6 +648,10 @@ aead_decrypt(buffer_t *ciphertext, cipher_ctx_t *cipher_ctx, size_t capacity)
         cipher_ctx->chunk->len -= salt_len;
 
         cipher_ctx->init = 1;
+
+    } else if (cipher_ctx->init == 1) {
+        ppbloom_add((void *)cipher_ctx->salt, salt_len);
+        cipher_ctx->init = 2;
     }
 
     size_t plen = 0;
@@ -696,16 +690,8 @@ aead_key_init(int method, const char *pass, const char *key)
         return NULL;
     }
 
-    // Initialize cache
-    cache_create(&nonce_cache, 1024, NULL);
-
     cipher_t *cipher = (cipher_t *)ss_malloc(sizeof(cipher_t));
     memset(cipher, 0, sizeof(cipher_t));
-
-    // Initialize sodium for random generator
-    if (sodium_init() == -1) {
-        FATAL("Failed to initialize sodium");
-    }
 
     if (method >= CHACHA20POLY1305IETF) {
         cipher_kt_t *cipher_info = (cipher_kt_t *)ss_malloc(sizeof(cipher_kt_t));

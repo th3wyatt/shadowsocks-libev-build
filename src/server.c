@@ -75,7 +75,19 @@
 #endif
 
 #ifndef MAX_FRAG
-#define MAX_FRAG 2
+#define MAX_FRAG 1
+#endif
+
+#ifdef USE_NFCONNTRACK_TOS
+
+#ifndef MARK_MAX_PACKET
+#define MARK_MAX_PACKET 10
+#endif
+
+#ifndef MARK_MASK_PREFIX
+#define MARK_MASK_PREFIX 0xDC00
+#endif
+
 #endif
 
 static void signal_cb(EV_P_ ev_signal *w, int revents);
@@ -328,6 +340,8 @@ create_and_bind(const char *host, const char *port, int mptcp)
     hints.ai_flags    = AI_PASSIVE | AI_ADDRCONFIG; /* For wildcard IP address */
     hints.ai_protocol = IPPROTO_TCP;
 
+    result = NULL;
+
     for (int i = 1; i < 8; i++) {
         s = getaddrinfo(host, port, &hints, &result);
         if (s == 0) {
@@ -340,6 +354,11 @@ create_and_bind(const char *host, const char *port, int mptcp)
 
     if (s != 0) {
         LOGE("getaddrinfo: %s", gai_strerror(s));
+        return -1;
+    }
+
+    if (result == NULL) {
+        LOGE("Could not bind");
         return -1;
     }
 
@@ -388,8 +407,15 @@ create_and_bind(const char *host, const char *port, int mptcp)
         }
 
         if (mptcp == 1) {
-            int err = setsockopt(listen_sock, SOL_TCP, MPTCP_ENABLED, &opt, sizeof(opt));
-            if (err == -1) {
+            int i = 0;
+            while((mptcp = mptcp_enabled_values[i]) > 0) {
+                int err = setsockopt(listen_sock, IPPROTO_TCP, mptcp, &opt, sizeof(opt));
+                if (err != -1) {
+                    break;
+                }
+                i++;
+            }
+            if (mptcp == 0) {
                 ERROR("failed to enable multipath TCP");
             }
         }
@@ -403,11 +429,7 @@ create_and_bind(const char *host, const char *port, int mptcp)
         }
 
         close(listen_sock);
-    }
-
-    if (rp == NULL) {
-        LOGE("Could not bind");
-        return -1;
+        listen_sock = -1;
     }
 
     freeaddrinfo(result);
@@ -541,6 +563,93 @@ connect_to_remote(EV_P_ struct addrinfo *res,
     return remote;
 }
 
+#ifdef USE_NFCONNTRACK_TOS
+int setMarkDscpCallback(enum nf_conntrack_msg_type type, struct nf_conntrack *ct, void *data)
+{
+	server_t* server = (server_t*) data;
+	struct dscptracker* tracker = server->tracker;
+
+	tracker->mark = nfct_get_attr_u32(ct, ATTR_MARK);
+	if ((tracker->mark & 0xff00) == MARK_MASK_PREFIX) {
+		// Extract DSCP value from mark value
+		tracker->dscp = tracker->mark & 0x00ff;
+		int tos = (tracker->dscp) << 2;
+		if (setsockopt(server->fd, IPPROTO_IP, IP_TOS, &tos, sizeof(tos)) != 0) {
+			ERROR("iptable setsockopt IP_TOS");
+		};
+	}
+	return NFCT_CB_CONTINUE;
+}
+
+void conntrackQuery(server_t* server) {
+	struct dscptracker* tracker = server->tracker;
+	if(tracker && tracker->ct) {
+		// Trying query mark from nf conntrack
+		struct nfct_handle *h = nfct_open(CONNTRACK, 0);
+		if (h) {
+			nfct_callback_register(h, NFCT_T_ALL, setMarkDscpCallback, (void*) server);
+			int x = nfct_query(h, NFCT_Q_GET, tracker->ct);
+			if (x == -1) {
+				LOGE("QOS: Failed to retrieve connection mark %s", strerror(errno));
+			}
+			nfct_close(h);
+		} else {
+			LOGE("QOS: Failed to open conntrack handle for upstream netfilter mark retrieval.");
+		}
+	}
+}
+
+void setTosFromConnmark(remote_t* remote, server_t* server)
+{
+	if(server->tracker && server->tracker->ct) {
+		if(server->tracker->mark == 0 && server->tracker->packet_count < MARK_MAX_PACKET) {
+			server->tracker->packet_count++;
+			conntrackQuery(server);
+		}
+	} else {
+		socklen_t len;
+		struct sockaddr_storage sin;
+		len = sizeof(sin);
+		if (getsockname(remote->fd, (struct sockaddr *)&sin, &len) == 0) {
+			struct sockaddr_storage from_addr;
+			len = sizeof from_addr;
+			if(getpeername(remote->fd, (struct sockaddr*)&from_addr, &len) == 0) {
+				if((server->tracker = (struct dscptracker*) malloc(sizeof(struct dscptracker))))
+				{
+					if ((server->tracker->ct = nfct_new())) {
+						// Build conntrack query SELECT
+						if (from_addr.ss_family == AF_INET) {
+							struct sockaddr_in *src = (struct sockaddr_in *)&from_addr;
+							struct sockaddr_in *dst = (struct sockaddr_in *)&sin;
+
+							nfct_set_attr_u8(server->tracker->ct, ATTR_L3PROTO, AF_INET);
+							nfct_set_attr_u32(server->tracker->ct, ATTR_IPV4_DST, dst->sin_addr.s_addr);
+							nfct_set_attr_u32(server->tracker->ct, ATTR_IPV4_SRC, src->sin_addr.s_addr);
+							nfct_set_attr_u16(server->tracker->ct, ATTR_PORT_DST, dst->sin_port);
+							nfct_set_attr_u16(server->tracker->ct, ATTR_PORT_SRC, src->sin_port);
+						} else if (from_addr.ss_family == AF_INET6) {
+							struct sockaddr_in6 *src = (struct sockaddr_in6 *)&from_addr;
+							struct sockaddr_in6 *dst = (struct sockaddr_in6 *)&sin;
+
+							nfct_set_attr_u8(server->tracker->ct, ATTR_L3PROTO, AF_INET6);
+							nfct_set_attr(server->tracker->ct, ATTR_IPV6_DST, dst->sin6_addr.s6_addr);
+							nfct_set_attr(server->tracker->ct, ATTR_IPV6_SRC, src->sin6_addr.s6_addr);
+							nfct_set_attr_u16(server->tracker->ct, ATTR_PORT_DST, dst->sin6_port);
+							nfct_set_attr_u16(server->tracker->ct, ATTR_PORT_SRC, src->sin6_port);
+						}
+						nfct_set_attr_u8(server->tracker->ct, ATTR_L4PROTO, IPPROTO_TCP);
+						conntrackQuery(server);
+					} else {
+						LOGE("Failed to allocate new conntrack for upstream netfilter mark retrieval.");
+						server->tracker->ct=NULL;
+					};
+				}
+			}
+		}
+	}
+}
+#endif
+
 static void
 server_recv_cb(EV_P_ ev_io *w, int revents)
 {
@@ -591,6 +700,12 @@ server_recv_cb(EV_P_ ev_io *w, int revents)
         close_and_free_server(EV_A_ server);
         return;
     } else if (err == CRYPTO_NEED_MORE) {
+        if (server->stage != STAGE_STREAM && server->frag > MAX_FRAG) {
+            report_addr(server->fd, MALICIOUS, "malicious fragmentation");
+            close_and_free_remote(EV_A_ remote);
+            close_and_free_server(EV_A_ server);
+        }
+        server->frag++;
         return;
     }
 
@@ -988,6 +1103,9 @@ remote_recv_cb(EV_P_ ev_io *w, int revents)
         return;
     }
 
+#ifdef USE_NFCONNTRACK_TOS
+    setTosFromConnmark(remote, server);
+#endif
     int s = send(server->fd, server->buf->data, server->buf->len, 0);
 
     if (s == -1) {
@@ -1195,8 +1313,8 @@ new_server(int fd, listen_ctx_t *listener)
     server->listen_ctx          = listener;
     server->remote              = NULL;
 
-    server->e_ctx = ss_malloc(sizeof(cipher_ctx_t));
-    server->d_ctx = ss_malloc(sizeof(cipher_ctx_t));
+    server->e_ctx = ss_align(sizeof(cipher_ctx_t));
+    server->d_ctx = ss_align(sizeof(cipher_ctx_t));
     crypto->ctx_init(crypto->cipher, server->e_ctx, 1);
     crypto->ctx_init(crypto->cipher, server->d_ctx, 0);
 
@@ -1216,6 +1334,17 @@ new_server(int fd, listen_ctx_t *listener)
 static void
 free_server(server_t *server)
 {
+#ifdef USE_NFCONNTRACK_TOS
+    if(server->tracker) {
+        struct dscptracker* tracker = server->tracker;
+        struct nf_conntrack* ct = server->tracker->ct;
+        server->tracker = NULL;
+        if (ct) {
+            nfct_destroy(ct);
+       }
+       free(tracker);
+    };
+#endif
     cork_dllist_remove(&server->entries);
 
     if (server->remote != NULL) {
@@ -1378,7 +1507,7 @@ main(int argc, char **argv)
 
     USE_TTY();
 
-    while ((c = getopt_long(argc, argv, "f:s:p:l:k:t:m:b:c:i:d:a:n:huUv6",
+    while ((c = getopt_long(argc, argv, "f:s:p:l:k:t:m:b:c:i:d:a:n:huUv6A",
                             long_options, NULL)) != -1) {
         switch (c) {
         case GETOPT_VAL_FAST_OPEN:
@@ -1471,6 +1600,9 @@ main(int argc, char **argv)
         case '6':
             ipv6first = 1;
             break;
+        case 'A':
+            FATAL("One time auth has been deprecated. Try AEAD ciphers instead.");
+            break;
         case '?':
             // The option character is not recognized.
             LOGE("Unrecognized option: %s", optarg);
@@ -1550,7 +1682,7 @@ main(int argc, char **argv)
     }
 
     if (server_num == 0) {
-        server_host[server_num++] = NULL;
+        server_host[server_num++] = "0.0.0.0";
     }
 
     if (server_num == 0 || server_port == NULL
@@ -1709,7 +1841,7 @@ main(int argc, char **argv)
             if (host && strcmp(host, ":") > 0)
                 LOGI("tcp server listening at [%s]:%s", host, server_port);
             else
-                LOGI("tcp server listening at %s:%s", host ? host : "*", server_port);
+                LOGI("tcp server listening at %s:%s", host ? host : "0.0.0.0", server_port);
 
             if (plugin != NULL) break;
         }
@@ -1727,7 +1859,7 @@ main(int argc, char **argv)
             if (host && strcmp(host, ":") > 0)
                 LOGI("udp server listening at [%s]:%s", host, port);
             else
-                LOGI("udp server listening at %s:%s", host ? host : "*", port);
+                LOGI("udp server listening at %s:%s", host ? host : "0.0.0.0", port);
         }
     }
 

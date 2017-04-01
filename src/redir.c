@@ -97,6 +97,7 @@ static int mode      = TCP_ONLY;
 #ifdef HAVE_SETRLIMIT
 static int nofile    = 0;
 #endif
+static int fast_open = 0;
 
 static struct ev_signal sigint_watcher;
 static struct ev_signal sigterm_watcher;
@@ -139,9 +140,16 @@ create_and_bind(const char *addr, const char *port)
     hints.ai_family   = AF_UNSPEC;   /* Return IPv4 and IPv6 choices */
     hints.ai_socktype = SOCK_STREAM; /* We want a TCP socket */
 
+    result = NULL;
+
     s = getaddrinfo(addr, port, &hints, &result);
     if (s != 0) {
         LOGI("getaddrinfo: %s", gai_strerror(s));
+        return -1;
+    }
+
+    if (result == NULL) {
+        LOGE("Could not bind");
         return -1;
     }
 
@@ -172,11 +180,7 @@ create_and_bind(const char *addr, const char *port)
         }
 
         close(listen_sock);
-    }
-
-    if (rp == NULL) {
-        LOGE("Could not bind");
-        return -1;
+        listen_sock = -1;
     }
 
     freeaddrinfo(result);
@@ -190,6 +194,8 @@ server_recv_cb(EV_P_ ev_io *w, int revents)
     server_ctx_t *server_recv_ctx = (server_ctx_t *)w;
     server_t *server              = server_recv_ctx->server;
     remote_t *remote              = server->remote;
+
+    ev_timer_stop(EV_A_ & server->delayed_connect_watcher);
 
     ssize_t r = recv(server->fd, remote->buf->data + remote->buf->len,
                      BUF_SIZE - remote->buf->len, 0);
@@ -224,8 +230,6 @@ server_recv_cb(EV_P_ ev_io *w, int revents)
             dns_ntop(AF_INET, &(sa->sin_addr), ipstr, INET_ADDRSTRLEN);
             port = ntohs(sa->sin_port);
         } else {
-            // TODO: The code below need to be test in IPv6 envirment, which I
-            //       don't have.
             struct sockaddr_in6 *sa = (struct sockaddr_in6 *)&(server->destaddr);
             dns_ntop(AF_INET6, &(sa->sin6_addr), ipstr, INET6_ADDRSTRLEN);
             port = ntohs(sa->sin6_port);
@@ -333,6 +337,28 @@ server_send_cb(EV_P_ ev_io *w, int revents)
 }
 
 static void
+delayed_connect_cb(EV_P_ ev_timer *watcher, int revents)
+{
+    server_t *server = cork_container_of(watcher, server_t,
+                                         delayed_connect_watcher);
+    remote_t *remote = server->remote;
+
+    int r = connect(remote->fd, remote->addr,
+                    get_sockaddr_len(remote->addr));
+
+    if (r == -1 && errno != CONNECT_IN_PROGRESS) {
+        ERROR("connect");
+        close_and_free_remote(EV_A_ remote);
+        close_and_free_server(EV_A_ server);
+        return;
+    } else {
+        // listen to remote connected event
+        ev_io_start(EV_A_ & remote->send_ctx->io);
+        ev_timer_start(EV_A_ & remote->send_ctx->watcher);
+    }
+}
+
+static void
 remote_timeout_cb(EV_P_ ev_timer *watcher, int revents)
 {
     remote_ctx_t *remote_ctx
@@ -425,16 +451,22 @@ remote_send_cb(EV_P_ ev_io *w, int revents)
     remote_t *remote              = remote_send_ctx->remote;
     server_t *server              = remote->server;
 
+    ev_timer_stop(EV_A_ & remote_send_ctx->watcher);
+
     if (!remote_send_ctx->connected) {
-        struct sockaddr_storage addr;
-        memset(&addr, 0, sizeof(struct sockaddr_storage));
-        socklen_t len = sizeof addr;
-        int r         = getpeername(remote->fd, (struct sockaddr *)&addr, &len);
+        int r = 0;
+        if (remote->addr == NULL) {
+            struct sockaddr_storage addr;
+            memset(&addr, 0, sizeof(struct sockaddr_storage));
+            socklen_t len = sizeof addr;
+            r = getpeername(remote->fd, (struct sockaddr *)&addr, &len);
+        }
         if (r == 0) {
             remote_send_ctx->connected = 1;
+
             ev_io_stop(EV_A_ & remote_send_ctx->io);
             ev_io_stop(EV_A_ & server->recv_ctx->io);
-            ev_timer_stop(EV_A_ & remote_send_ctx->watcher);
+            ev_io_start(EV_A_ & remote->recv_ctx->io);
             ev_timer_start(EV_A_ & remote->recv_ctx->watcher);
 
             // send destaddr
@@ -498,8 +530,6 @@ remote_send_cb(EV_P_ ev_io *w, int revents)
 
             bprepend(remote->buf, abuf, BUF_SIZE);
             bfree(abuf);
-
-            ev_io_start(EV_A_ & remote->recv_ctx->io);
         } else {
             ERROR("getpeername");
             // not connected
@@ -516,8 +546,40 @@ remote_send_cb(EV_P_ ev_io *w, int revents)
         return;
     } else {
         // has data to send
-        ssize_t s = send(remote->fd, remote->buf->data + remote->buf->idx,
-                         remote->buf->len, 0);
+        ssize_t s;
+        if (remote->addr != NULL) {
+            s = sendto(remote->fd, remote->buf->data + remote->buf->idx,
+                       remote->buf->len, MSG_FASTOPEN, remote->addr,
+                       get_sockaddr_len(remote->addr));
+
+            if (s == -1 && (errno == EOPNOTSUPP || errno == EPROTONOSUPPORT ||
+                errno == ENOPROTOOPT)) {
+                fast_open = 0;
+                LOGE("fast open is not supported on this platform");
+                close_and_free_remote(EV_A_ remote);
+                close_and_free_server(EV_A_ server);
+                return;
+            }
+
+            remote->addr = NULL;
+
+            if (s == -1) {
+                if (errno == CONNECT_IN_PROGRESS || errno == EAGAIN
+                    || errno == EWOULDBLOCK) {
+                    ev_io_start(EV_A_ & remote_send_ctx->io);
+                    ev_timer_start(EV_A_ & remote_send_ctx->watcher);
+                } else {
+                    ERROR("connect");
+                    close_and_free_remote(EV_A_ remote);
+                    close_and_free_server(EV_A_ server);
+                }
+                return;
+            }
+        } else {
+            s = send(remote->fd, remote->buf->data + remote->buf->idx,
+                     remote->buf->len, 0);
+        }
+
         if (s == -1) {
             if (errno != EAGAIN && errno != EWOULDBLOCK) {
                 ERROR("send");
@@ -530,6 +592,7 @@ remote_send_cb(EV_P_ ev_io *w, int revents)
             // partly sent, move memory, wait for the next time to send
             remote->buf->len -= s;
             remote->buf->idx += s;
+            ev_io_start(EV_A_ & remote_send_ctx->io);
             return;
         } else {
             // all sent out, wait for reading
@@ -618,13 +681,16 @@ new_server(int fd)
     server->hostname     = NULL;
     server->hostname_len = 0;
 
-    server->e_ctx = ss_malloc(sizeof(cipher_ctx_t));
-    server->d_ctx = ss_malloc(sizeof(cipher_ctx_t));
+    server->e_ctx = ss_align(sizeof(cipher_ctx_t));
+    server->d_ctx = ss_align(sizeof(cipher_ctx_t));
     crypto->ctx_init(crypto->cipher, server->e_ctx, 1);
     crypto->ctx_init(crypto->cipher, server->d_ctx, 0);
 
     ev_io_init(&server->recv_ctx->io, server_recv_cb, fd, EV_READ);
     ev_io_init(&server->send_ctx->io, server_send_cb, fd, EV_WRITE);
+
+    ev_timer_init(&server->delayed_connect_watcher, delayed_connect_cb, 0.05,
+                  0);
 
     return server;
 }
@@ -661,6 +727,7 @@ close_and_free_server(EV_P_ server_t *server)
     if (server != NULL) {
         ev_io_stop(EV_A_ & server->send_ctx->io);
         ev_io_stop(EV_A_ & server->recv_ctx->io);
+        ev_timer_stop(EV_A_ & server->delayed_connect_watcher);
         close(server->fd);
         free_server(server);
     }
@@ -722,10 +789,28 @@ accept_cb(EV_P_ ev_io *w, int revents)
     // Set non blocking
     setnonblocking(remotefd);
 
+    if (listener->tos >= 0) {
+        if (setsockopt(remotefd, IPPROTO_IP, IP_TOS, &listener->tos, sizeof(listener->tos)) != 0) {
+            ERROR("setsockopt IP_TOS");
+        }
+    }
+
     // Enable MPTCP
-    if (listener->mptcp == 1) {
-        int err = setsockopt(remotefd, SOL_TCP, MPTCP_ENABLED, &opt, sizeof(opt));
+    if (listener->mptcp > 1) {
+        int err = setsockopt(remotefd, SOL_TCP, listener->mptcp, &opt, sizeof(opt));
         if (err == -1) {
+            ERROR("failed to enable multipath TCP");
+        }
+    } else if (listener->mptcp == 1) {
+        int i = 0;
+        while((listener->mptcp = mptcp_enabled_values[i]) > 0) {
+            int err = setsockopt(remotefd, SOL_TCP, listener->mptcp, &opt, sizeof(opt));
+            if (err != -1) {
+                break;
+            }
+            i++;
+        }
+        if (listener->mptcp == 0) {
             ERROR("failed to enable multipath TCP");
         }
     }
@@ -736,18 +821,23 @@ accept_cb(EV_P_ ev_io *w, int revents)
     remote->server   = server;
     server->destaddr = destaddr;
 
-    int r = connect(remotefd, remote_addr, get_sockaddr_len(remote_addr));
+    if (fast_open) {
+        // save remote addr for fast open
+        remote->addr = remote_addr;
+        ev_timer_start(EV_A_ & server->delayed_connect_watcher);
+    } else {
+        int r = connect(remotefd, remote_addr, get_sockaddr_len(remote_addr));
 
-    if (r == -1 && errno != CONNECT_IN_PROGRESS) {
-        ERROR("connect");
-        close_and_free_remote(EV_A_ remote);
-        close_and_free_server(EV_A_ server);
-        return;
+        if (r == -1 && errno != CONNECT_IN_PROGRESS) {
+            ERROR("connect");
+            close_and_free_remote(EV_A_ remote);
+            close_and_free_server(EV_A_ server);
+            return;
+        }
+        // listen to remote connected event
+        ev_io_start(EV_A_ & remote->send_ctx->io);
+        ev_timer_start(EV_A_ & remote->send_ctx->watcher);
     }
-
-    // listen to remote connected event
-    ev_io_start(EV_A_ & remote->send_ctx->io);
-    ev_timer_start(EV_A_ & remote->send_ctx->watcher);
     ev_io_start(EV_A_ & server->recv_ctx->io);
 }
 
@@ -802,7 +892,11 @@ main(int argc, char **argv)
     ss_addr_t remote_addr[MAX_REMOTE_NUM];
     char *remote_port = NULL;
 
+    int dscp_num   = 0;
+    ss_dscp_t * dscp = NULL;
+
     static struct option long_options[] = {
+        { "fast-open",   no_argument,       NULL, GETOPT_VAL_FAST_OPEN },
         { "mtu",         required_argument, NULL, GETOPT_VAL_MTU },
         { "mptcp",       no_argument,       NULL, GETOPT_VAL_MPTCP },
         { "plugin",      required_argument, NULL, GETOPT_VAL_PLUGIN },
@@ -818,9 +912,12 @@ main(int argc, char **argv)
 
     USE_TTY();
 
-    while ((c = getopt_long(argc, argv, "f:s:p:l:k:t:m:c:b:a:n:huUv6",
+    while ((c = getopt_long(argc, argv, "f:s:p:l:k:t:m:c:b:a:n:huUv6A",
                             long_options, NULL)) != -1) {
         switch (c) {
+        case GETOPT_VAL_FAST_OPEN:
+            fast_open = 1;
+            break;
         case GETOPT_VAL_MTU:
             mtu = atoi(optarg);
             LOGI("set MTU to %d", mtu);
@@ -897,6 +994,9 @@ main(int argc, char **argv)
         case '6':
             ipv6first = 1;
             break;
+        case 'A':
+            FATAL("One time auth has been deprecated. Try AEAD ciphers instead.");
+            break;
         case '?':
             // The option character is not recognized.
             LOGE("Unrecognized option: %s", optarg);
@@ -965,11 +1065,16 @@ main(int argc, char **argv)
         if (reuse_port == 0) {
             reuse_port = conf->reuse_port;
         }
+        if (fast_open == 0) {
+            fast_open = conf->fast_open;
+        }
 #ifdef HAVE_SETRLIMIT
         if (nofile == 0) {
             nofile = conf->nofile;
         }
 #endif
+	dscp_num = conf->dscp_num;
+	dscp = conf->dscp;
     }
 
     if (remote_num == 0 || remote_port == NULL || local_port == NULL
@@ -1013,6 +1118,16 @@ main(int argc, char **argv)
 
     if (local_addr == NULL) {
         local_addr = "127.0.0.1";
+    }
+
+
+    if (fast_open == 1) {
+#ifdef TCP_FASTOPEN
+        LOGI("using tcp fast open");
+#else
+        LOGE("tcp fast open is not supported by this environment");
+        fast_open = 0;
+#endif
     }
 
     if (pid_flags) {
@@ -1086,44 +1201,59 @@ main(int argc, char **argv)
 
     struct ev_loop *loop = EV_DEFAULT;
 
-    if (mode != UDP_ONLY) {
-        // Setup socket
-        int listenfd;
-        listenfd = create_and_bind(local_addr, local_port);
-        if (listenfd == -1) {
-            FATAL("bind() error");
+    listen_ctx_t* listen_ctx_current = &listen_ctx;
+    do {
+        if (mode != UDP_ONLY) {
+            // Setup socket
+            int listenfd;
+            listenfd = create_and_bind(local_addr, local_port);
+            if (listenfd == -1) {
+               FATAL("bind() error");
+            }
+            if (listen(listenfd, SOMAXCONN) == -1) {
+               FATAL("listen() error");
+            }
+            setnonblocking(listenfd);
+
+            listen_ctx_current->fd = listenfd;
+
+            ev_io_init(&listen_ctx_current->io, accept_cb, listenfd, EV_READ);
+            ev_io_start(loop, &listen_ctx_current->io);
         }
-        if (listen(listenfd, SOMAXCONN) == -1) {
-            FATAL("listen() error");
+
+        // Setup UDP
+        if (mode != TCP_ONLY) {
+            LOGI("UDP relay enabled");
+            char *host = remote_addr[0].host;
+            char *port = remote_addr[0].port == NULL ? remote_port : remote_addr[0].port;
+            struct sockaddr_storage *storage = ss_malloc(sizeof(struct sockaddr_storage));
+            memset(storage, 0, sizeof(struct sockaddr_storage));
+            if (get_sockaddr(host, port, storage, 1, ipv6first) == -1) {
+                FATAL("failed to resolve the provided hostname");
+            }
+            struct sockaddr *addr = (struct sockaddr *)storage;
+            init_udprelay(local_addr, local_port, addr,
+                          get_sockaddr_len(addr), mtu, crypto, listen_ctx_current->timeout, NULL);
         }
-        setnonblocking(listenfd);
 
-        listen_ctx.fd = listenfd;
-
-        ev_io_init(&listen_ctx.io, accept_cb, listenfd, EV_READ);
-        ev_io_start(loop, &listen_ctx.io);
-    }
-
-    // Setup UDP
-    if (mode != TCP_ONLY) {
-        LOGI("UDP relay enabled");
-        char *host = remote_addr[0].host;
-        char *port = remote_addr[0].port == NULL ? remote_port : remote_addr[0].port;
-        struct sockaddr_storage *storage = ss_malloc(sizeof(struct sockaddr_storage));
-        memset(storage, 0, sizeof(struct sockaddr_storage));
-        if (get_sockaddr(host, port, storage, 1, ipv6first) == -1) {
-            FATAL("failed to resolve the provided hostname");
+        if (mode == UDP_ONLY) {
+            LOGI("TCP relay disabled");
         }
-        struct sockaddr *addr = (struct sockaddr *)storage;
-        init_udprelay(local_addr, local_port, addr,
-                      get_sockaddr_len(addr), mtu, crypto, listen_ctx.timeout, NULL);
-    }
 
-    if (mode == UDP_ONLY) {
-        LOGI("TCP relay disabled");
-    }
+        if(listen_ctx_current->tos) {
+            LOGI("listening at %s:%s (TOS/DSCP 0x%x)", local_addr, local_port, listen_ctx_current->tos);
+        } else {
+            LOGI("listening at %s:%s", local_addr, local_port);
+        }
 
-    LOGI("listening at %s:%s", local_addr, local_port);
+        // Handle additionals TOS/DSCP listening ports
+        if (dscp_num > 0) {
+            listen_ctx_current = (listen_ctx_t*) malloc(sizeof(listen_ctx_t));
+            listen_ctx_current = memcpy(listen_ctx_current, &listen_ctx, sizeof(listen_ctx_t));
+            local_port = dscp[dscp_num-1].port;
+            listen_ctx_current->tos = dscp[dscp_num-1].dscp;
+        }
+    } while (dscp_num-- > 0);
 
     // setuid
     if (user != NULL && !run_as(user)) {

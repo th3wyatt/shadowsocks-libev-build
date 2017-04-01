@@ -23,9 +23,14 @@
 #ifndef _MANAGER_H
 #define _MANAGER_H
 
-#include <ev.h>
 #include <time.h>
 #include <libcork/ds.h>
+
+#ifdef HAVE_LIBEV_EV_H
+#include <libev/ev.h>
+#else
+#include <ev.h>
+#endif
 
 #include "jconf.h"
 
@@ -38,7 +43,6 @@ struct manager_ctx {
     int reuse_port;
     int verbose;
     int mode;
-    int auth;
     char *password;
     char *key;
     char *timeout;

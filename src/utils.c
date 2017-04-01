@@ -230,6 +230,23 @@ ss_malloc(size_t size)
 }
 
 void *
+ss_align(size_t size)
+{
+    int err;
+    void *tmp = NULL;
+#ifdef HAVE_POSIX_MEMALIGN
+    err = posix_memalign(&tmp, sizeof(void *), size);
+#else
+    err = -1;
+#endif
+    if (err) {
+        return ss_malloc(size);
+    } else {
+        return tmp;
+    }
+}
+
+void *
 ss_realloc(void *ptr, size_t new_size)
 {
     void *new = realloc(ptr, new_size);
@@ -332,7 +349,7 @@ usage()
 #endif
     printf(
         "       [--reuse-port]             Enable port reuse.\n");
-#if defined(MODULE_REMOTE) || defined(MODULE_LOCAL)
+#if defined(MODULE_REMOTE) || defined(MODULE_LOCAL) || defined(MODULE_REDIR)
     printf(
         "       [--fast-open]              Enable TCP fast open.\n");
     printf(

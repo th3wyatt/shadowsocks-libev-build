@@ -23,9 +23,14 @@
 #ifndef _SERVER_H
 #define _SERVER_H
 
-#include <ev.h>
 #include <time.h>
 #include <libcork/ds.h>
+
+#ifdef HAVE_LIBEV_EV_H
+#include <libev/ev.h>
+#else
+#include <ev.h>
+#endif
 
 #include "crypto.h"
 #include "jconf.h"
@@ -48,6 +53,20 @@ typedef struct server_ctx {
     struct server *server;
 } server_ctx_t;
 
+#ifdef USE_NFCONNTRACK_TOS
+
+#include <libnetfilter_conntrack/libnetfilter_conntrack.h>
+#include <libnetfilter_conntrack/libnetfilter_conntrack_tcp.h>
+
+struct dscptracker {
+        struct nf_conntrack *ct;
+        long unsigned int mark;
+        unsigned int dscp;
+        unsigned int packet_count;
+};
+
+#endif
+
 typedef struct server {
     int fd;
     int stage;
@@ -65,6 +84,9 @@ typedef struct server {
     struct ResolvQuery *query;
 
     struct cork_dllist_item entries;
+#ifdef USE_NFCONNTRACK_TOS
+    struct dscptracker* tracker;
+#endif
 } server_t;
 
 typedef struct query {

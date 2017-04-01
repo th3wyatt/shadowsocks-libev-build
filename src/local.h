@@ -23,8 +23,13 @@
 #ifndef _LOCAL_H
 #define _LOCAL_H
 
-#include <ev.h>
 #include <libcork/ds.h>
+
+#ifdef HAVE_LIBEV_EV_H
+#include <libev/ev.h>
+#else
+#include <ev.h>
+#endif
 
 #include "crypto.h"
 #include "jconf.h"
@@ -61,6 +66,8 @@ typedef struct server {
 
     buffer_t *buf;
     buffer_t *abuf;
+
+    ev_timer delayed_connect_watcher;
 
     struct cork_dllist_item entries;
 } server_t;

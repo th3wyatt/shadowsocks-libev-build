@@ -9,18 +9,14 @@ It is a port of [Shadowsocks](https://github.com/shadowsocks/shadowsocks)
 created by [@clowwindy](https://github.com/clowwindy), and maintained by
 [@madeye](https://github.com/madeye) and [@linusyang](https://github.com/linusyang).
 
-Current version: 3.0.2 | [Changelog](debian/changelog)
+Current version: 3.0.5 | [Changelog](debian/changelog)
 
 Travis CI: [![Travis CI](https://travis-ci.org/shadowsocks/shadowsocks-libev.svg?branch=master)](https://travis-ci.org/shadowsocks/shadowsocks-libev)
 
 ## Features
 
-Shadowsocks-libev is written in pure C and depends on
-[libev](http://software.schmorp.de/pkg/libev.html).
-
-In normal usage, the memory footprint is about 600KB and the CPU utilization is
-no more than 5% on a low-end router (Buffalo WHR-G300N V2 with a 400MHz MIPS CPU,
-32MB memory and 4MB flash).
+Shadowsocks-libev is written in pure C and depends on [libev](http://software.schmorp.de/pkg/libev.html). It's designed
+to be a very simple implementation of shadowsocks protocol, in order to keep the resource usage as low as possible.
 
 For a full list of feature comparison between different versions of shadowsocks,
 refer to the [Wiki page](https://github.com/shadowsocks/shadowsocks/wiki/Feature-Comparison-across-Different-Versions).
@@ -37,33 +33,9 @@ cd shadowsocks-libev
 git submodule update --init --recursive
 ```
 
-### Build and install with recent mbedTLS and libsodium
+### Build and install with recent libsodium
 
-You have to install libsodium 1.0.8 or later before building.
-
-If your system is too old to provide libmbedtls and libsodium (later than **v1.0.8**),
-you will need to either install those libraries manually or upgrade your system.
-
-If your system provides with those libraries, you **should** **not** install them
-from source. You should jump this section and install them from distribution
-repository instead.
-
-```bash
-export LIBSODIUM_VER=1.0.11
-export MBEDTLS_VER=2.4.0
-wget https://download.libsodium.org/libsodium/releases/libsodium-$LIBSODIUM_VER.tar.gz
-tar xvf libsodium-$LIBSODIUM_VER.tar.gz
-pushd libsodium-$LIBSODIUM_VER
-./configure --prefix=/usr && make
-sudo make install
-popd
-wget https://tls.mbed.org/download/mbedtls-$MBEDTLS_VER-gpl.tgz
-tar xvf mbedtls-$MBEDTLS_VER-gpl.tgz
-pushd mbedtls-$MBEDTLS_VER
-make SHARED=1 CFLAGS=-fPIC
-sudo make DESTDIR=/usr install
-popd
-```
+You have to install libsodium 1.0.8 or later before building. See [Directly build and install on UNIX-like system](#Linux).
 
 ## Installation
 
@@ -96,16 +68,21 @@ try `configure --help`.
 
 #### Install from repository
 
-**Note: The repositories doesn't always contain the latest version. Please build from source if you want the latest version (see below)**
+**Note: The repositories doesn't always contain the latest version. Please build from source if you want the latest version. (see below)**
 
-Shadowsocks-libev is available in the official repository for Debian 9("Stretch"), unstable, Ubuntu 16.10 and later derivatives:
+Shadowsocks-libev is available in the official repository for following distributions:
+
+* Debian 9 or higher (including testing and unstable/sid)
+* Ubuntu 16.10 or higher
 
 ```bash
 sudo apt update
 sudo apt install shadowsocks-libev
 ```
 
-For Debian Jessie users, please install it from `jessie-backports`:
+For **Debian 8 (Jessie)** users, please install it from `jessie-backports`:
+We strongly encourage you to install shadowsocks-libev from `jessie-backports`.
+Please follow instructions on [Debian Backports](https://backports.debian.org).
 
 ```bash
 sudo sh -c 'printf "deb http://httpredir.debian.org/debian jessie-backports main" > /etc/apt/sources.list.d/jessie-backports.list'
@@ -115,32 +92,35 @@ sudo apt -t jessie-backports install shadowsocks-libev
 
 #### Build deb package from source
 
-Supported Platforms:
+Supported distributions:
 
-* Debian 8 (see below), 9, unstable
-* Ubuntu 16.04 or higher
+* Debian 8, 9 or higher
+* Ubuntu 14.04 LTS, 16.04 LTS, 16.10 or higher
 
-For older systems, building `.deb` packages is not supported.
-Please directly install from source.
-You may need to resolve library dependencies by yourself.
+For older systems, building `.deb` packages is not supported. Please directly install it from source.
 
-**Note for Debian 8.x users**:
-We strongly encourage you to install shadowsocks-libev from `jessie-backports`.
-Please follow instructions on [Debian Backports](https://backports.debian.org).
+You can build shadowsocks-libev and all its dependencies by script:
 
-If you insist on building from source, you will need to manually install libsodium
-from `jessie-backports`, **NOT** libsodium in main repository.
+```bash
+mkdir -p ~/build-area/
+cp ./scripts/build_deb.sh ~/build-area/
+cd ~/build-area
+./build_deb.sh
+```
+
+Otherwise, try to build and install directly from source. See the [Linux](#linux) section below.
+
+**Note for Debian 8 (Jessie) users**:
+
+We strongly encourage you to install shadowsocks-libev from `jessie-backports`. If you insist on building from source, you will need to manually install libsodium from `jessie-backports`, **NOT** libsodium in main repository.
+
 Please follow the instructions on [Debian Backports Website](https://backports.debian.org).
-
-Otherwise, try to build and install directly from source. See the [Linux](#linux)
-section below.
 
 ``` bash
 cd shadowsocks-libev
-sudo apt-get install --no-install-recommends gettext build-essential autoconf automake libtool \
-    gawk debhelper dh-systemd init-system-helpers pkg-config asciidoc xmlto apg libpcre3-dev \
-    libev-dev libudns-dev dh-autoreconf
-./autogen.sh && dpkg-buildpackage -b -us -uc -i
+sudo apt-get install --no-install-recommends devscripts equivs
+mk-build-deps --root-cmd sudo --install --tool "apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y"
+./autogen.sh && dpkg-buildpackage -b -us -uc
 cd ..
 sudo dpkg -i shadowsocks-libev*.deb
 ```
@@ -161,13 +141,14 @@ sudo systemctl start shadowsocks-libev      # for systemd
 
 ### Fedora & RHEL
 
-Supported distributions include
-- Fedora 22, 23, 24
-- RHEL 6, 7 and derivatives (including CentOS, Scientific Linux)
+Supported distributions:
+
+* Fedora 22, 23, 24
+* RHEL 6, 7 and derivatives (including CentOS, Scientific Linux)
 
 #### Build from source with centos
 
-If you are using CentOS 7, you need to install these prequirement to build from source code
+If you are using CentOS 7, you need to install these prequirement to build from source code:
 
 ```bash 
 yum install epel-release -y
@@ -233,16 +214,42 @@ In general, you need the following build dependencies:
 * asciidoc (for documentation only)
 * xmlto (for documentation only)
 
-For Unix-like systems, especially Debian-based systems,
-e.g. Ubuntu, Debian or Linux Mint, you might install build dependencies like this:
+If your system is too old to provide libmbedtls and libsodium (later than **v1.0.8**), you will need to either install those libraries manually or upgrade your system.
+
+If your system provides with those libraries, you **should not** install them from source. You should jump this section and install them from distribution repository instead.
+
+For some of the distributions, you might install build dependencies like this:
 
 ```bash
-# Debian / Ubuntu
-sudo apt-get install --no-install-recommends gettext build-essential autoconf libtool libpcre3-dev asciidoc xmlto libev-dev libudns-dev automake libmbedtls-dev
-# CentOS / Fedora / RHEL
+# Installation of basic build dependencies
+## Debian / Ubuntu
+sudo apt-get install --no-install-recommends gettext build-essential autoconf libtool libpcre3-dev asciidoc xmlto libev-dev libudns-dev automake libmbedtls-dev libsodium-dev
+## CentOS / Fedora / RHEL
 sudo yum install gettext gcc autoconf libtool automake make asciidoc xmlto udns-devel libev-devel
-# Arch
+## Arch
 sudo pacman -S gettext gcc autoconf libtool automake make asciidoc xmlto udns libev
+
+# Installation of Libsodium
+export LIBSODIUM_VER=1.0.12
+wget https://download.libsodium.org/libsodium/releases/libsodium-$LIBSODIUM_VER.tar.gz
+tar xvf libsodium-$LIBSODIUM_VER.tar.gz
+pushd libsodium-$LIBSODIUM_VER
+./configure --prefix=/usr && make
+sudo make install
+popd
+sudo ldconfig
+
+# Installation of MbedTLS
+export MBEDTLS_VER=2.4.2
+wget https://tls.mbed.org/download/mbedtls-$MBEDTLS_VER-gpl.tgz
+tar xvf mbedtls-$MBEDTLS_VER-gpl.tgz
+pushd mbedtls-$MBEDTLS_VER
+make SHARED=1 CFLAGS=-fPIC
+sudo make DESTDIR=/usr install
+popd
+sudo ldconfig
+
+# Start building
 ./autogen.sh && ./configure && make
 sudo make install
 ```
@@ -292,11 +299,11 @@ brew install shadowsocks-libev
 
 ## Usage
 
-For a detailed and complete list of all supported arguments, you may refer to the
-man pages of the applications, respectively.
+For a detailed and complete list of all supported arguments,
+you may refer to the man pages of the applications, respectively.
 
 ```
-    ss-[local|redir|server|tunnel]
+    ss-[local|redir|server|tunnel|manager]
 
        -s <server_host>           host name or ip address of your remote server
 

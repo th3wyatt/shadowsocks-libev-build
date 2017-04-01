@@ -3,6 +3,7 @@ VERSION_INFO = 2:0:0
 AM_CFLAGS = -g -O2 -Wall -Werror -Wno-deprecated-declarations -fno-strict-aliasing -std=gnu99 -D_GNU_SOURCE
 AM_CFLAGS += $(PTHREAD_CFLAGS)
 if !USE_SYSTEM_SHARED_LIB
+AM_CFLAGS += -I$(top_srcdir)/libbloom
 AM_CFLAGS += -I$(top_srcdir)/libipset/include
 AM_CFLAGS += -I$(top_srcdir)/libcork/include
 endif
@@ -10,10 +11,11 @@ AM_CFLAGS += $(LIBPCRE_CFLAGS)
 
 SS_COMMON_LIBS = $(INET_NTOP_LIB) $(LIBPCRE_LIBS)
 if !USE_SYSTEM_SHARED_LIB
-SS_COMMON_LIBS += $(top_builddir)/libipset/libipset.la \
+SS_COMMON_LIBS += $(top_builddir)/libbloom/libbloom.la \
+                  $(top_builddir)/libipset/libipset.la \
                   $(top_builddir)/libcork/libcork.la
 else
-SS_COMMON_LIBS += -lcork -lcorkipset
+SS_COMMON_LIBS += -lbloom -lcork -lcorkipset
 endif
 SS_COMMON_LIBS += -lev -lsodium -lm
 
@@ -26,6 +28,7 @@ sni_src = http.c \
 crypto_src = crypto.c \
              aead.c \
              stream.c \
+			 ppbloom.c \
              base64.c
 
 plugin_src = plugin.c
@@ -112,6 +115,6 @@ libshadowsocks_libev_la_LIBADD = $(ss_local_LDADD)
 include_HEADERS = shadowsocks.h
 
 noinst_HEADERS = acl.h crypto.h stream.h aead.h json.h netutils.h redir.h server.h tls.h uthash.h \
-                 cache.h http.h local.h plugin.h resolv.h tunnel.h utils.h base64.h \
+                 cache.h http.h local.h plugin.h resolv.h tunnel.h utils.h base64.h ppbloom.h \
                  common.h jconf.h manager.h protocol.h rule.h socks5.h udprelay.h
 EXTRA_DIST = ss-nat

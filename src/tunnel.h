@@ -23,7 +23,12 @@
 #ifndef _TUNNEL_H
 #define _TUNNEL_H
 
+#ifdef HAVE_LIBEV_EV_H
+#include <libev/ev.h>
+#else
 #include <ev.h>
+#endif
+
 #include "crypto.h"
 #include "jconf.h"
 
@@ -50,12 +55,15 @@ typedef struct server {
     int fd;
 
     buffer_t *buf;
+    buffer_t *abuf;
     cipher_ctx_t *e_ctx;
     cipher_ctx_t *d_ctx;
     struct server_ctx *recv_ctx;
     struct server_ctx *send_ctx;
     struct remote *remote;
     ss_addr_t destaddr;
+
+    ev_timer delayed_connect_watcher;
 } server_t;
 
 typedef struct remote_ctx {
