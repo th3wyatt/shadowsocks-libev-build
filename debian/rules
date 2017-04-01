@@ -6,8 +6,8 @@
 # Security Hardening
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
-DPKG_EXPORT_BUILDFLAGS = 1
-include /usr/share/dpkg/buildflags.mk
+# Dummy folder for autotools scripts
+LIBDIR=libbloom libcork libipset
 
 override_dh_auto_install:
 	find src/ -name '*.la' -delete
@@ -15,10 +15,12 @@ override_dh_auto_install:
 
 override_dh_autoreconf:
 	# autoreconf script conplains without the two folders
-	mkdir libcork libipset
-	touch libcork/Makefile.in libipset/Makefile.in
+	for libdir in ${LIBDIR}; do \
+		mkdir -p $$libdir; \
+		touch $$libdir/Makefile.in; \
+	done
 	dh_autoreconf
-	rm -rf libcork libipset
+	rm -rf ${LIBDIR}
 
 override_dh_auto_configure:
 	# Whether to have stack-protector is decided by dpkg-buildflags.

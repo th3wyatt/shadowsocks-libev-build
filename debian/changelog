@@ -1,3 +1,18 @@
+shadowsocks-libev (3.0.5+ds-1~exp1) UNRELEASED; urgency=medium
+
+  * New upstream release 3.0.5
+  * debian/control:
+    - Add libbloom-dev as Build-Depends, which is required since 3.0.3.
+  * debian/copyright:
+    - Add new entry of scripts/build_deb.sh
+  * debian/rules:
+    - Remove old hardening environment variables which is not necessary
+      any more.
+    - Create libbloom folder temporarily for dh_autoreconf, because
+      configure.ac complains without it.
+
+ -- Roger Shimizu <rogershimizu@gmail.com>  Sat, 01 Apr 2017 21:38:46 +0900
+
 shadowsocks-libev (3.0.2+ds-1~exp2) experimental; urgency=medium
 
   * debian/ folder sync with upstream:
