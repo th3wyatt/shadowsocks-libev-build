@@ -1,0 +1,61 @@
+From: Simon Shi <simonsmh@gmail.com>
+Date: Tue, 7 Feb 2017 08:47:34 +0800
+Subject: Fix typo (#1210)
+
+* Fix doc
+
+* Update ss-redir.asciidoc
+
+* Update ss-server.asciidoc
+---
+ doc/ss-local.asciidoc  | 4 ++--
+ doc/ss-redir.asciidoc  | 2 +-
+ doc/ss-server.asciidoc | 4 ++--
+ 3 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/doc/ss-local.asciidoc b/doc/ss-local.asciidoc
+index a1f2b0f..468d67e 100644
+--- a/doc/ss-local.asciidoc
++++ b/doc/ss-local.asciidoc
+@@ -12,9 +12,9 @@ SYNOPSIS
+  [-s <server_host>] [-p <server_port>] [-l <local_port>]
+  [-k <password>] [-m <encrypt_method>] [-f <pid_file>]
+  [-t <timeout>] [-c <config_file>] [-i <interface>]
+- [-a <user_name>] [-b <local_address] [-n <nofile>]
++ [-a <user_name>] [-b <local_address>] [-n <nofile>]
+  [--fast-open] [--acl <acl_config>] [--mtu <MTU>]
+- [--plugin <plugin_name>] [--plugin_opts <plugin_options]
++ [--plugin <plugin_name>] [--plugin_opts <plugin_options>]
+ 
+ DESCRIPTION
+ -----------
+diff --git a/doc/ss-redir.asciidoc b/doc/ss-redir.asciidoc
+index 84b9c8b..dbc00f1 100644
+--- a/doc/ss-redir.asciidoc
++++ b/doc/ss-redir.asciidoc
+@@ -13,7 +13,7 @@ SYNOPSIS
+  [-k <password>] [-m <encrypt_method>] [-f <pid_file>]
+  [-t <timeout>] [-c <config_file>] [-b <local_address>]
+  [-a <user_name>] [-n <nofile>] [--mtu <MTU>]
+- [--plugin <plugin_name>] [--plugin_opts <plugin_options]
++ [--plugin <plugin_name>] [--plugin_opts <plugin_options>]
+ 
+ DESCRIPTION
+ -----------
+diff --git a/doc/ss-server.asciidoc b/doc/ss-server.asciidoc
+index 8c6a246..f09fb07 100644
+--- a/doc/ss-server.asciidoc
++++ b/doc/ss-server.asciidoc
+@@ -13,10 +13,10 @@ SYNOPSIS
+  [-k <password>] [-m <encrypt_method>] [-f <pid_file>]
+  [-t <timeout>] [-c <config_file>] [-i <interface>]
+  [-a <user_name>] [-d <addr>] [-n <nofile>]
+- [-b <local_address] [--fast-open] [--mptcp]
++ [-b <local_address>] [--fast-open] [--mptcp]
+  [--acl <acl_config>] [--mtu <MTU>]
+  [--manager-address <path_to_unix_domain>]
+- [--plugin <plugin_name>] [--plugin_opts <plugin_options]
++ [--plugin <plugin_name>] [--plugin_opts <plugin_options>]
+ 
+ DESCRIPTION
+ -----------

@@ -1,0 +1,29 @@
+From: Max Lv <max.c.lv@gmail.com>
+Date: Mon, 30 Jan 2017 08:41:04 +0800
+Subject: Fix #1148
+
+Upstream BTS#1148
+ss-local doesn't do DNS resolving for acl bypassed domains
+---
+ src/local.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/src/local.c b/src/local.c
+index 1f200ce..1b0b4ca 100644
+--- a/src/local.c
++++ b/src/local.c
+@@ -667,9 +667,13 @@ server_recv_cb(EV_P_ ev_io *w, int revents)
+                         else if (atyp == 4)
+                             LOGI("bypass [%s]:%s", ip, port);
+                     }
++                    int err;
+                     struct sockaddr_storage storage;
+                     memset(&storage, 0, sizeof(struct sockaddr_storage));
+-                    int err = get_sockaddr(ip, port, &storage, 0, ipv6first);
++                    if (sni_detected || atyp == 3)
++                       err = get_sockaddr(host, port, &storage, 0, ipv6first);
++                    else
++                       err = get_sockaddr(ip, port, &storage, 0, ipv6first);
+                     if (err != -1) {
+                         remote = create_remote(server->listener, (struct sockaddr *)&storage);
+                         if (remote != NULL)

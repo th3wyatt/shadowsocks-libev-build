@@ -6,3 +6,5 @@ backport/0005-Refine-1133.patch
 backport/0006-Fix-array-size-with-old-libsodium.patch
 backport/0007-Add-missing-ss-nat.patch
 backport/0008-Refine-1133-second-time-1136.patch
+backport/0009-Fix-1148.patch
+backport/0010-Fix-typo-1210.patch
