@@ -1,4 +1,4 @@
-shadowsocks-libev (3.0.5+ds-1~exp1) UNRELEASED; urgency=medium
+shadowsocks-libev (3.0.5+ds-1~exp1) experimental; urgency=medium
 
   * New upstream release 3.0.5
   * debian/control:
@@ -13,7 +13,7 @@ shadowsocks-libev (3.0.5+ds-1~exp1) UNRELEASED; urgency=medium
   * debian/patches:
     - Backport patches from upstream, till commit [adbc0be].
 
- -- Roger Shimizu <rogershimizu@gmail.com>  Sat, 01 Apr 2017 21:38:46 +0900
+ -- Roger Shimizu <rogershimizu@gmail.com>  Thu, 13 Apr 2017 21:24:48 +0900
 
 shadowsocks-libev (3.0.2+ds-1~exp2) experimental; urgency=medium
 
