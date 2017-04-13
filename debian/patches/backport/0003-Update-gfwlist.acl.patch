@@ -1,0 +1,21 @@
+From: Heiybb <hf.heiybb@gmail.com>
+Date: Thu, 23 Mar 2017 11:19:12 +0800
+Subject: Update gfwlist.acl
+
+V2EX has already registered an ICP license and can be visited normally in CHINA
+---
+ acl/gfwlist.acl | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/acl/gfwlist.acl b/acl/gfwlist.acl
+index d732ae4..03b32bb 100644
+--- a/acl/gfwlist.acl
++++ b/acl/gfwlist.acl
+@@ -398,7 +398,6 @@
+ (^|\.)zynamics\.com$
+ (^|\.)kat\.cr$
+ (^|\.)naughtyamerica\.com$
+-(^|\.)v2ex\.com$
+ (^|\.)0to255\.com$
+ (^|\.)100ke\.org$
+ (^|\.)1000giri\.net$

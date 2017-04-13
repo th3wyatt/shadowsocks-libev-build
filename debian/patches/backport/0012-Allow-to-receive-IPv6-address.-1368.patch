@@ -1,0 +1,26 @@
+From: Max Lv <max.c.lv@gmail.com>
+Date: Mon, 27 Mar 2017 13:16:14 +0800
+Subject: Allow to receive IPv6 address. #1368
+
+---
+ src/udprelay.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/src/udprelay.c b/src/udprelay.c
+index 571eb2c..8b1f7f2 100644
+--- a/src/udprelay.c
++++ b/src/udprelay.c
+@@ -460,9 +460,12 @@ create_server_socket(const char *host, const char *port)
+             ERROR("[udp] setsockopt IP_TRANSPARENT");
+             exit(EXIT_FAILURE);
+         }
+-        if (setsockopt(server_sock, IPPROTO_IP, IP_RECVORIGDSTADDR, &opt, sizeof(opt))) {
++        if (setsockopt(server_sock, SOL_IP, IP_RECVORIGDSTADDR, &opt, sizeof(opt))) {
+             FATAL("[udp] setsockopt IP_RECVORIGDSTADDR");
+         }
++        if (setsockopt(server_sock, SOL_IPV6, IPV6_RECVORIGDSTADDR, &opt, sizeof(opt))) {
++            FATAL("[udp] setsockopt IPV6_RECVORIGDSTADDR");
++        }
+ #endif
+ 
+         s = bind(server_sock, rp->ai_addr, rp->ai_addrlen);

@@ -1,0 +1,17 @@
+backport/0001-Update-README-1388.patch
+backport/0002-Output-the-entropy-hints-as-info.patch
+backport/0003-Update-gfwlist.acl.patch
+backport/0004-Add-zsh-completion-scripts.patch
+backport/0005-Add-method-fast_open-mode-plugin-options-to-ss-manag.patch
+backport/0006-Add-document-build.patch
+backport/0007-1.-Fix-incorrect-install-path.-2.-set-CMP0048-to-OLD.patch
+backport/0008-Recommend-to-use-shared-binary.patch
+backport/0009-Install-shadowsocks-libev-libs-only-install-shadowso.patch
+backport/0010-fix-shadowsocks-shadowsocks-libev-1408.patch
+backport/0011-Refine-interface.patch
+backport/0012-Allow-to-receive-IPv6-address.-1368.patch
+backport/0013-Refine-IPV6_RECVORIGDSTADDR.patch
+backport/0014-Increase-minimum-version-of-cmake.patch
+backport/0015-Update-scripts-build_deb.sh.patch
+backport/0016-Fix-1430.patch
+backport/0017-Update-ss-tunnel.asciidoc.patch

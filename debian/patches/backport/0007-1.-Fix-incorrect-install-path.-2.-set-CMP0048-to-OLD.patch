@@ -1,0 +1,91 @@
+From: wener <wenermail@gmail.com>
+Date: Sun, 26 Mar 2017 20:01:49 +0800
+Subject: 1. Fix incorrect install path. 2. set CMP0048 to OLD to prevent
+ warning
+
+---
+ CMakeLists.txt     | 12 ++++++++----
+ doc/CMakeLists.txt | 13 ++++++-------
+ src/CMakeLists.txt |  7 ++++---
+ 3 files changed, 18 insertions(+), 14 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 16df8b7..6ab2846 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1,5 +1,9 @@
+ cmake_minimum_required(VERSION 2.8)
+ 
++# Prevent warning, atleast we need 2.8 anyway.
++cmake_policy(VERSION 2.8)
++cmake_policy(SET CMP0048 OLD)
++
+ set(PROJECT_NAME shadowsocks-libev)
+ set(RELEASE_DATE 2017-3-21)
+ set(PROJECT_VERSION "3.0.5")
+@@ -37,13 +41,13 @@ add_definitions(-DHAVE_CONFIG_H)
+ 
+ # pkg-config
+ configure_file(
+-        "${CMAKE_SOURCE_DIR}/cmake/shadowsocks-libev.pc.cmake"
+-        "${CMAKE_BINARY_DIR}/pkgconfig/shadowsocks-libev.pc"
++        ${CMAKE_SOURCE_DIR}/cmake/shadowsocks-libev.pc.cmake
++        ${CMAKE_BINARY_DIR}/pkgconfig/shadowsocks-libev.pc
+         @ONLY
+ )
+ install(FILES
+-        "${CMAKE_BINARY_DIR}/pkgconfig/shadowsocks-libev.pc"
+-        DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig"
++        ${CMAKE_BINARY_DIR}/pkgconfig/shadowsocks-libev.pc
++        DESTINATION pkgconfig
+         )
+ 
+ # We need libcork,libipset headers
+diff --git a/doc/CMakeLists.txt b/doc/CMakeLists.txt
+index 7619de6..3c1f19c 100644
+--- a/doc/CMakeLists.txt
++++ b/doc/CMakeLists.txt
+@@ -68,18 +68,17 @@ add_custom_target(doc-html ALL DEPENDS ${HTML_FILES})
+ 
+ if (NOT WITH_DOC_MAN)
+     set_target_properties(doc-man PROPERTIES EXCLUDE_FROM_ALL TRUE)
++else ()
++    install(DIRECTORY ${CMAKE_BINARY_DIR}/man/
++            DESTINATION man)
+ endif ()
+ if (NOT WITH_DOC_HTML)
+     set_target_properties(doc-html PROPERTIES EXCLUDE_FROM_ALL TRUE)
++else ()
++    install(DIRECTORY ${CMAKE_BINARY_DIR}/html/
++            DESTINATION doc/html)
+ endif ()
+ 
+ # This is required for custom command
+ file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/man)
+ file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/html)
+-
+-install(DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+-        DESTINATION man
+-        FILES_MATCHING PATTERN "*.[18]")
+-install(DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+-        DESTINATION html
+-        FILES_MATCHING PATTERN "*.html")
+\ No newline at end of file
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index b620a1e..e1b4314 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -197,9 +197,10 @@ target_link_libraries(shadowsocks-libev-shared cork-shared ipset-shared ${DEPS_S
+ 
+ # ------------------------------------------------------------------
+ # Misc
+-install(DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+-        DESTINATION bin
+-        FILES_MATCHING PATTERN "ss-*")
++install(DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/
++        DESTINATION bin)
++install(DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/
++        DESTINATION lib)
+ 
+ 
+ add_custom_target(distclean

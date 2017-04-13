@@ -10,6 +10,8 @@ shadowsocks-libev (3.0.5+ds-1~exp1) UNRELEASED; urgency=medium
       any more.
     - Create libbloom folder temporarily for dh_autoreconf, because
       configure.ac complains without it.
+  * debian/patches:
+    - Backport patches from upstream, till commit [adbc0be].
 
  -- Roger Shimizu <rogershimizu@gmail.com>  Sat, 01 Apr 2017 21:38:46 +0900
 
