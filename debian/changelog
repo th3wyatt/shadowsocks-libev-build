@@ -1,4 +1,4 @@
-shadowsocks-libev (2.6.3+ds-3) UNRELEASED; urgency=medium
+shadowsocks-libev (2.6.3+ds-3) unstable; urgency=medium
 
   * debian/patches:
     - Backport a few patches from upstream:
@@ -7,7 +7,7 @@ shadowsocks-libev (2.6.3+ds-3) UNRELEASED; urgency=medium
       + Update ACL list, Upstream BTS#1394.
       + Fix two potential out of bound access, Upstream BTS#1465.
 
- -- Roger Shimizu <rogershimizu@gmail.com>  Thu, 20 Apr 2017 22:42:19 +0900
+ -- Roger Shimizu <rogershimizu@gmail.com>  Thu, 20 Apr 2017 22:44:32 +0900
 
 shadowsocks-libev (2.6.3+ds-2) unstable; urgency=medium
 
