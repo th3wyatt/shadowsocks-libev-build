@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.2)
 
 set(PROJECT_NAME shadowsocks-libev)
-set(RELEASE_DATE 2017-3-21)
-set(PROJECT_VERSION "3.0.5")
+set(RELEASE_DATE 2017-4-26)
+set(PROJECT_VERSION "3.0.6")
 set(PROJECT_DESC "a lightweight secured socks5 proxy")
 set(PROJECT_URL "https://shadowsocks.org")
 set(PROJECT_ISSUES_URL "https://github.com/shadowsocks/shadowsocks-libev")
@@ -15,6 +15,8 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
+set(RUNTIME_SHARED_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/shared/bin)
+
 set(CMAKE_MACOSX_RPATH TRUE)
 
 if (NOT CMAKE_BUILD_TYPE)
@@ -27,6 +29,8 @@ endif ()
 
 message(STATUS "Running cmake version ${CMAKE_VERSION}")
 
+option(WITH_STATIC "build with static libraries." ON)
+
 # Will set GIT_EXECUTABLE and GIT_FOUND
 # find_package(Git)
 
@@ -37,13 +41,13 @@ add_definitions(-DHAVE_CONFIG_H)
 
 # pkg-config
 configure_file(
-        "${CMAKE_SOURCE_DIR}/cmake/shadowsocks-libev.pc.cmake"
-        "${CMAKE_BINARY_DIR}/pkgconfig/shadowsocks-libev.pc"
+        ${CMAKE_SOURCE_DIR}/cmake/shadowsocks-libev.pc.cmake
+        ${CMAKE_BINARY_DIR}/pkgconfig/shadowsocks-libev.pc
         @ONLY
 )
 install(FILES
-        "${CMAKE_BINARY_DIR}/pkgconfig/shadowsocks-libev.pc"
-        DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig"
+        ${CMAKE_BINARY_DIR}/pkgconfig/shadowsocks-libev.pc
+        DESTINATION pkgconfig
         )
 
 # We need libcork,libipset headers
@@ -81,8 +85,10 @@ set(LIBCORK_SOURCE
         libcork/src/libcork/pthreads/thread.c
         )
 
+if (WITH_STATIC)
 add_library(cork STATIC ${LIBCORK_SOURCE})
 target_compile_definitions(cork PUBLIC -DCORK_API=CORK_LOCAL)
+endif ()
 
 add_library(cork-shared SHARED ${LIBCORK_SOURCE})
 target_compile_definitions(cork-shared PUBLIC -DCORK_API=CORK_EXPORT)
@@ -110,7 +116,9 @@ set(LIBIPSET_SOURCE
         libipset/src/libipset/set/storage.c
         )
 
+if (WITH_STATIC)
 add_library(ipset STATIC ${LIBIPSET_SOURCE})
+endif ()
 
 add_library(ipset-shared SHARED ${LIBIPSET_SOURCE})
 set_target_properties(ipset-shared PROPERTIES OUTPUT_NAME ipset)
@@ -120,12 +128,15 @@ set(LIBBLOOM_SOURCE
         libbloom/murmur2/MurmurHash2.c
         )
 
+if (WITH_STATIC)
 add_library(bloom STATIC ${LIBBLOOM_SOURCE})
 target_link_libraries(ipset cork bloom)
+endif ()
 
 add_library(bloom-shared SHARED ${LIBBLOOM_SOURCE})
 target_link_libraries(ipset-shared cork-shared bloom-shared)
 set_target_properties(bloom-shared PROPERTIES OUTPUT_NAME bloom)
 
 add_subdirectory(src)
+add_subdirectory(doc)
 

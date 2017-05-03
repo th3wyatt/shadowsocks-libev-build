@@ -14,7 +14,7 @@ Usage:
 	$(basename $0) [--help|-h] [lib|bin|all]
 
 	--help|-h	Show this usage.
-	kcp		Build kcptun package (and its dependencies) only.
+	kcp		Build kcptun package (with its dependencies) only.
 	lib		Build library packages only.
 	bin		Build binary packages only.
 			However, you need the libraries built previously, in current working directory.
@@ -61,7 +61,7 @@ apt_init() {
 		esac
 		sudo sh -c "printf \"deb $REPO ${OSVER}-backports main\" > /etc/apt/sources.list.d/${OSVER}-backports.list"
 		sudo apt-get update
-		sudo apt-get install -y -t $BPO $DEPS_BPO
+		sudo apt-get install --no-install-recommends -y -t $BPO $DEPS_BPO
 	else
 		sudo apt-get update
 	fi
@@ -75,18 +75,19 @@ apt_clean() {
 	sudo apt-get purge -y libcork-build-deps libcorkipset-build-deps \
 		libbloom-build-deps libsodium-build-deps mbedtls-build-deps
 	sudo apt-get purge -y simple-obfs-build-deps shadowsocks-libev-build-deps
-	sudo apt-get purge -y dh-golang-build-deps golang-check.v1-build-deps \
-		golang-github-golang-snappy-build-deps \
-		golang-github-klauspost-reedsolomon-build-deps \
-		golang-github-pkg-errors-build-deps golang-github-urfave-cli-build-deps \
+
+	sudo apt-get purge -y golang-github-klauspost-reedsolomon-build-deps \
 		golang-github-xtaci-kcp-build-deps golang-github-xtaci-smux-build-deps \
-		golang-toml-build-deps golang-yaml.v2-build-deps kcptun-build-deps
-	sudo apt-get purge -y dh-golang golang-github-pkg-errors-dev \
-		golang-github-klauspost-reedsolomon-dev \
-		golang-github-burntsushi-toml-dev golang-gopkg-check.v1-dev \
-		golang-gopkg-yaml.v2-dev golang-github-urfave-cli-dev \
-		golang-github-golang-snappy-dev golang-github-xtaci-kcp-dev \
-		golang-github-xtaci-smux-dev
+		kcptun-build-deps
+	sudo apt-get purge -y golang-github-urfave-cli-build-deps
+	sudo apt-get purge -y golang-github-golang-snappy-build-deps \
+		dh-golang-build-deps golang-github-pkg-errors-build-deps
+
+	sudo apt-get purge -y golang-github-klauspost-reedsolomon-dev \
+		golang-github-xtaci-kcp-dev golang-github-xtaci-smux-dev
+	sudo apt-get purge -y golang-github-urfave-cli-dev
+	sudo apt-get purge -y golang-github-pkg-errors-dev \
+		golang-github-golang-snappy-dev dh-golang
 	sudo apt-get autoremove -y
 }
 
@@ -96,11 +97,11 @@ gbp_build() {
 	PROJECT_NAME=$(basename $1|sed s/\.git$//)
 	gbp clone --pristine-tar $REPO
 	cd $PROJECT_NAME
-	git checkout $BRANCH
+	[ -n "$BRANCH" ] && git checkout $BRANCH
 	[ -n "$DEPS_BPO" ] && BPO_REPO="-t ${OSVER}-backports"
 	mk-build-deps --root-cmd sudo --install --tool "apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y $BPO_REPO"
 	rm -f ${PROJECT_NAME}-build-deps_*.deb
-	gbp buildpackage -us -uc --git-ignore-branch --git-pristine-tar --git-export-dir=../
+	gbp buildpackage -us -uc --git-ignore-branch --git-pristine-tar
 	git clean -fdx
 	git reset --hard HEAD
 	cd -
@@ -112,7 +113,7 @@ git_build() {
 	PROJECT_NAME=$(basename $1|sed s/\.git$//)
 	git clone $REPO
 	cd $PROJECT_NAME
-	git checkout $BRANCH
+	[ -n "$BRANCH" ] && git checkout $BRANCH
 	mk-build-deps --root-cmd sudo --install --tool "apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y"
 	rm ${PROJECT_NAME}-build-deps_*.deb
 	gbp buildpackage -us -uc --git-ignore-branch
@@ -180,7 +181,7 @@ fi
 build_install_libsodium() {
 if [ $BUILD_LIB -eq 1 -o $BUILD_BIN -eq 1 ]; then
 	if [ $BUILD_LIB -eq 1 ]; then
-		dsc_build http://httpredir.debian.org/debian/pool/main/libs/libsodium/libsodium_1.0.11-1~bpo8+1.dsc
+		dsc_build http://httpredir.debian.org/debian/pool/main/libs/libsodium/libsodium_1.0.11-2.dsc
 	else
 		ls libsodium*.deb 2>&1 > /dev/null ||
 			help_lib libsodium
@@ -194,7 +195,7 @@ build_install_libbloom() {
 if [ $BUILD_LIB -eq 1 -o $BUILD_BIN -eq 1 ]; then
 	BRANCH=$1
 	if [ $BUILD_LIB -eq 1 ]; then
-		gbp_build https://github.com/rogers0/libbloom $BRANCH
+		gbp_build https://anonscm.debian.org/git/collab-maint/libbloom.git $BRANCH
 	else
 		ls libbloom-dev_*.deb libbloom1_*.deb 2>&1 > /dev/null ||
 			help_lib "libbloom-dev libbloom1"
@@ -209,7 +210,7 @@ if [ $BUILD_BIN -eq 1 ]; then
 	BRANCH=$1
 	gbp clone --pristine-tar https://anonscm.debian.org/git/collab-maint/shadowsocks-libev.git
 	cd shadowsocks-libev
-	git checkout $BRANCH
+	[ -n "$BRANCH" ] && git checkout $BRANCH
 	sed -i 's/dh $@/dh $@ --with systemd,autoreconf/' debian/rules
 	sed -i 's/debhelper (>= 10)/debhelper (>= 9), dh-systemd, dh-autoreconf/' debian/control
 	echo 9 > debian/compat
@@ -269,33 +270,17 @@ if [ $BUILD_KCP -eq 1 ]; then
 fi
 }
 
-# Build and install golang-toml deb
-build_install_tomldev() {
+# Add patch to work on system with xenial
+patch_urfaveclidev_xenial() {
 if [ $BUILD_KCP -eq 1 ]; then
 	BRANCH=$1
-	gbp_build https://anonscm.debian.org/git/pkg-go/packages/golang-toml.git $BRANCH
-	sudo dpkg -i golang-github-burntsushi-toml-dev_*.deb
-	sudo apt-get install -fy
-fi
-}
-
-# Build and install golang-check.v1 deb
-build_install_checkdev() {
-if [ $BUILD_KCP -eq 1 ]; then
-	BRANCH=$1
-	gbp_build https://anonscm.debian.org/git/pkg-go/packages/golang-check.v1.git $BRANCH
-	sudo dpkg -i golang-gopkg-check.v1-dev_*.deb
-	sudo apt-get install -fy
-fi
-}
-
-# Build and install golang-yaml.v2 deb
-build_install_yamldev() {
-if [ $BUILD_KCP -eq 1 ]; then
-	BRANCH=$1
-	gbp_build https://anonscm.debian.org/git/pkg-go/packages/golang-yaml.v2.git $BRANCH
-	sudo dpkg -i golang-gopkg-yaml.v2-dev_*.deb
-	sudo apt-get install -fy
+	gbp clone --pristine-tar https://anonscm.debian.org/git/pkg-go/packages/golang-github-urfave-cli.git
+	cd golang-github-urfave-cli
+	[ -n "$BRANCH" ] && git checkout $BRANCH
+	sed -i 's/golang-github-burntsushi-toml-dev/golang-toml-dev/; s/golang-gopkg-yaml.v2-dev/golang-yaml.v2-dev/' debian/control
+	git add -u
+	git commit -m "Patch to work with ubuntu xenial (16.04)"
+	cd -
 fi
 }
 
@@ -304,7 +289,7 @@ build_install_urfaveclidev() {
 if [ $BUILD_KCP -eq 1 ]; then
 	BRANCH=$1
 	gbp_build https://anonscm.debian.org/git/pkg-go/packages/golang-github-urfave-cli.git $BRANCH
-	sudo dpkg -i golang-github-urfave-cli-dev_*.deb
+	sudo dpkg -i build-area/golang-github-urfave-cli-dev_*.deb
 	sudo apt-get install -fy
 fi
 }
@@ -390,58 +375,63 @@ xenial)
 	BPO=debhelper
 	;;
 esac
-apt_init "git-buildpackage equivs" "$BPO"
+apt_init "git-buildpackage pristine-tar equivs" "$BPO"
 
-case "$OSVER" in
+[ $BUILD_KCP -eq 1 ] && case "$OSVER" in
+wheezy|precise|trusty)
+	echo Sorry, your system $OSID/$OSVER is not supported.
+	;;
+jessie)
+	build_install_urfaveclidev
+	build_install_reedsolomondev
+	build_install_kcpdev
+	build_install_smuxdev
+	build_install_kcptun
+	;;
+stretch|unstable|sid|yakkety|zesty)
+	build_install_reedsolomondev
+	build_install_kcpdev
+	build_install_smuxdev
+	build_install_kcptun
+	;;
+xenial)
+	build_install_dhgolang debian/jessie-backports
+	build_install_reedsolomondev
+	build_install_errorsdev
+	patch_urfaveclidev_xenial
+	build_install_urfaveclidev
+	build_install_snappydev debian/jessie-backports
+	build_install_kcpdev
+	build_install_smuxdev
+	build_install_kcptun
+	;;
+esac
+
+[ $BUILD_LIB -eq 1 -o $BUILD_BIN -eq 1 ] && case "$OSVER" in
 wheezy|precise)
 	echo Sorry, your system $OSID/$OSVER is not supported.
 	;;
 jessie|stretch|unstable|sid|zesty)
-	build_install_libbloom exp1
-	build_install_sslibev exp1
+	build_install_libbloom
+	build_install_sslibev
 	build_install_simpleobfs exp1
-	build_install_dhgolang debian/jessie-backports
-	build_install_reedsolomondev master
-	build_install_errorsdev master
-	build_install_tomldev master
-	build_install_checkdev master
-	build_install_yamldev master
-	build_install_urfaveclidev master
-	build_install_snappydev debian/jessie-backports
-	build_install_kcpdev master
-	build_install_smuxdev master
-	build_install_kcptun master
-	apt_clean
 	;;
 trusty)
 	build_install_libcork trusty
 	build_install_libcorkipset trusty
 	build_install_libmbedtls debian/jessie-backports
 	build_install_libsodium
-	build_install_libbloom exp1_trusty
-	patch_sslibev_dh9 exp1
-	build_install_sslibev exp1
+	build_install_libbloom trusty
+	patch_sslibev_dh9
+	build_install_sslibev
 	build_install_simpleobfs exp1_trusty
-	apt_clean
 	;;
 xenial|yakkety)
 	build_install_libcork debian
 	build_install_libcorkipset debian
-	build_install_libbloom exp1
-	build_install_sslibev exp1
+	build_install_libbloom
+	build_install_sslibev
 	build_install_simpleobfs exp1
-	build_install_dhgolang debian/jessie-backports
-	build_install_reedsolomondev master
-	build_install_errorsdev master
-	build_install_tomldev master
-	build_install_checkdev master
-	build_install_yamldev master
-	build_install_urfaveclidev master
-	build_install_snappydev debian/jessie-backports
-	build_install_kcpdev master
-	build_install_smuxdev master
-	build_install_kcptun master
-	apt_clean
 	;;
 *)
 	echo Your system $OSID/$OSVER is not supported yet.
@@ -449,3 +439,5 @@ xenial|yakkety)
 	echo "    https://github.com/shadowsocks/shadowsocks-libev/issues/new"
 	;;
 esac
+
+apt_clean

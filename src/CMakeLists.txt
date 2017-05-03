@@ -83,12 +83,14 @@ set(SS_REDIR_SOURCE
         )
 
 
+if (WITH_STATIC)
 find_library(LIBSODIUM libsodium.a)
 find_library(LIBMBEDTLS libmbedtls.a)
 find_library(LIBMBEDCRYPTO libmbedcrypto.a)
 find_library(LIBEV libev.a)
 find_library(LIBUDNS libudns.a)
 find_library(LIBPCRE libpcre.a)
+endif ()
 
 find_library(LIBSODIUM_SHARED sodium)
 find_library(LIBMBEDTLS_SHARED mbedtls)
@@ -97,13 +99,37 @@ find_library(LIBEV_SHARED ev)
 find_library(LIBUDNS_SHARED udns)
 find_library(LIBPCRE_SHARED pcre)
 
-list(APPEND DEPS bloom m ${LIBEV} ${LIBUDNS} ${LIBPCRE} ${LIBSODIUM} ${LIBMBEDTLS} ${LIBMBEDCRYPTO})
-list(APPEND DEPS_SHARED bloom-shared m ${LIBEV_SHARED} ${LIBUDNS_SHARED} ${LIBPCRE_SHARED} ${LIBSODIUM_SHARED}
-${LIBMBEDTLS_SHARED} ${LIBMBEDCRYPTO_SHARED})
+# Dependencies we need for static and shared
+if (WITH_STATIC)
+list(APPEND DEPS
+        m
+        bloom
+        ${LIBEV}
+        ${LIBUDNS}
+        ${LIBPCRE}
+        ${LIBSODIUM}
+        ${LIBMBEDTLS}
+        ${LIBMBEDCRYPTO}
+        )
+endif ()
+
+list(APPEND DEPS_SHARED
+        m
+        bloom-shared
+        ${LIBEV_SHARED}
+        ${LIBUDNS_SHARED}
+        ${LIBPCRE_SHARED}
+        ${LIBSODIUM_SHARED}
+        ${LIBMBEDTLS_SHARED}
+        ${LIBMBEDCRYPTO_SHARED}
+        )
 
 find_package (Threads)
 
-# Add our targets
+if (WITH_STATIC)
+# ------------------------------------------------------------------
+# Static
+# By default we use normal name for static, all shared targets will add a `-shared' suffix
 add_executable(ss-server ${SS_SERVER_SOURCE})
 add_executable(ss-tunnel ${SS_TUNNEL_SOURCE})
 add_executable(ss-manager ${SS_MANAGER_SOURCE})
@@ -129,9 +155,13 @@ target_link_libraries(ss-manager m bloom cork ${LIBEV} ${LIBUDNS})
 target_link_libraries(ss-local cork ipset ${DEPS})
 target_link_libraries(ss-redir cork ipset ${DEPS})
 target_link_libraries(shadowsocks-libev cork ipset ${DEPS})
+endif ()
 
 # ------------------------------------------------------------------
 # Shared
+# Shared target will have a `-shared' suffix
+# All shared dependency also have `-shared' suffix
+# For shared binary, we still use the same name as static, without `-shared', but will output to shared directory
 add_executable(ss-server-shared ${SS_SERVER_SOURCE})
 add_executable(ss-tunnel-shared ${SS_TUNNEL_SOURCE})
 add_executable(ss-manager-shared ${SS_MANAGER_SOURCE})
@@ -165,17 +195,28 @@ set_target_properties(ss-redir-shared PROPERTIES OUTPUT_NAME ss-redir)
 
 set_target_properties(ss-server-shared ss-tunnel-shared ss-manager-shared ss-local-shared ss-redir-shared
         PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/shared/bin"
+        RUNTIME_OUTPUT_DIRECTORY ${RUNTIME_SHARED_OUTPUT_DIRECTORY}
         )
 
 set_target_properties(shadowsocks-libev-shared PROPERTIES OUTPUT_NAME shadowsocks-libev)
 target_compile_definitions(shadowsocks-libev-shared PUBLIC -DMODULE_LOCAL)
 target_link_libraries(shadowsocks-libev-shared cork-shared ipset-shared ${DEPS_SHARED})
 
+# ------------------------------------------------------------------
+# Misc
+# Recommend to install shared by default
+install(DIRECTORY ${RUNTIME_SHARED_OUTPUT_DIRECTORY}/
+        DESTINATION bin)
 
-install(DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-        DESTINATION bin
-        FILES_MATCHING PATTERN "ss-*")
+if (WITH_STATIC)
+    install(TARGETS shadowsocks-libev
+        ARCHIVE DESTINATION lib)
+endif ()
+
+install(TARGETS shadowsocks-libev-shared
+        LIBRARY DESTINATION lib)
+
+install(FILES shadowsocks.h DESTINATION include)
 
 
 add_custom_target(distclean

@@ -601,6 +601,7 @@ server_recv_cb(EV_P_ ev_io *w, int revents)
                     memcpy(host, buf->data + 4 + 1, name_len);
                     host[name_len] = '\0';
                     sprintf(port, "%d", p);
+
                 }
             } else if (atyp == 4) {
                 // IP V6
@@ -685,11 +686,38 @@ server_recv_cb(EV_P_ ev_io *w, int revents)
                     ) {
                 int host_match = acl_match_host(host);
                 int bypass = 0;
+                int resolved = 0;
+                struct sockaddr_storage storage;
+                memset(&storage, 0, sizeof(struct sockaddr_storage));
+                int err;
+
                 if (host_match > 0)
                     bypass = 1;                 // bypass hostnames in black list
                 else if (host_match < 0)
                     bypass = 0;                 // proxy hostnames in white list
                 else {
+#ifndef ANDROID
+                    if (atyp == 3) {            // resolve domain so we can bypass domain with geoip
+                        err = get_sockaddr(host, port, &storage, 0, ipv6first);
+                        if ( err != -1) {
+                            resolved = 1;
+                            switch(((struct sockaddr*)&storage)->sa_family) {
+                                case AF_INET: {
+                                    struct sockaddr_in *addr_in = (struct sockaddr_in *)&storage;
+                                    dns_ntop(AF_INET, &(addr_in->sin_addr), ip, INET_ADDRSTRLEN);
+                                    break;
+                                }
+                                case AF_INET6: {
+                                    struct sockaddr_in6 *addr_in6 = (struct sockaddr_in6 *)&storage;
+                                    dns_ntop(AF_INET6, &(addr_in6->sin6_addr), ip, INET6_ADDRSTRLEN);
+                                    break;
+                                }
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+#endif
                     int ip_match = acl_match_host(ip);
                     switch (get_acl_mode()) {
                         case BLACK_LIST:
@@ -713,15 +741,12 @@ server_recv_cb(EV_P_ ev_io *w, int revents)
                         else if (atyp == 4)
                             LOGI("bypass [%s]:%s", ip, port);
                     }
-                    int err;
-                    struct sockaddr_storage storage;
-                    memset(&storage, 0, sizeof(struct sockaddr_storage));
 #ifndef ANDROID
-                    if (atyp == 3)
-                       err = get_sockaddr(host, port, &storage, 0, ipv6first);
+                    if (atyp == 3 && resolved != 1)
+                        err = get_sockaddr(host, port, &storage, 0, ipv6first);
                     else
 #endif
-                       err = get_sockaddr(ip, port, &storage, 0, ipv6first);
+                        err = get_sockaddr(ip, port, &storage, 0, ipv6first);
                     if (err != -1) {
                         remote = create_remote(server->listener, (struct sockaddr *)&storage);
                         if (remote != NULL)
@@ -1723,20 +1748,20 @@ start_ss_local_server(profile_t profile)
     if (crypto == NULL)
         FATAL("failed to init ciphers");
 
-    struct sockaddr_storage *storage = ss_malloc(sizeof(struct sockaddr_storage));
-    memset(storage, 0, sizeof(struct sockaddr_storage));
-    if (get_sockaddr(remote_host, remote_port_str, storage, 0, ipv6first) == -1) {
+    struct sockaddr_storage storage;
+    memset(&storage, 0, sizeof(struct sockaddr_storage));
+    if (get_sockaddr(remote_host, remote_port_str, &storage, 0, ipv6first) == -1) {
         return -1;
     }
 
     // Setup proxy context
     struct ev_loop *loop = EV_DEFAULT;
 
-    struct sockaddr **remote_addr_tmp = ss_malloc(sizeof(struct sockaddr *));
+    struct sockaddr *remote_addr_tmp[MAX_REMOTE_NUM];
     listen_ctx_t listen_ctx;
     listen_ctx.remote_num     = 1;
     listen_ctx.remote_addr    = remote_addr_tmp;
-    listen_ctx.remote_addr[0] = (struct sockaddr *)storage;
+    listen_ctx.remote_addr[0] = (struct sockaddr *)(&storage);
     listen_ctx.timeout        = timeout;
     listen_ctx.iface          = NULL;
     listen_ctx.mptcp          = mptcp;
@@ -1764,7 +1789,7 @@ start_ss_local_server(profile_t profile)
     // Setup UDP
     if (mode != TCP_ONLY) {
         LOGI("udprelay enabled");
-        struct sockaddr *addr = (struct sockaddr *)storage;
+        struct sockaddr *addr = (struct sockaddr *)(&storage);
         init_udprelay(local_addr, local_port_str, addr,
                       get_sockaddr_len(addr), mtu, crypto, timeout, NULL);
     }
@@ -1785,20 +1810,16 @@ start_ss_local_server(profile_t profile)
     }
 
     // Clean up
-    if (mode != TCP_ONLY) {
-        free_udprelay();
-    }
-
     if (mode != UDP_ONLY) {
         ev_io_stop(loop, &listen_ctx.io);
         free_connections(loop);
         close(listen_ctx.fd);
     }
 
-    ss_free(listen_ctx.remote_addr[0]);
-    ss_free(remote_addr_tmp);
+    if (mode != TCP_ONLY) {
+        free_udprelay();
+    }
 
-    // cannot reach here
     return 0;
 }
 
