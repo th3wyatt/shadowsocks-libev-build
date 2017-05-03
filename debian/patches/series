@@ -1,0 +1,5 @@
+backports/0001-Make-SOCKS5-fields-unsigned.patch
+backports/0002-Make-use-of-struct-when-parsing-method-select-reques.patch
+backports/0003-Fix-decryption-failed-issue-by-nonce-overwrite.patch
+backports/0004-Fix-losing-data-issue-of-SALSA20-cipher.patch
+backports/0005-Fix-1491.patch

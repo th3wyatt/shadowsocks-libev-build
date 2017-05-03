@@ -1,10 +1,13 @@
-shadowsocks-libev (3.0.6+ds-1~exp1) UNRELEASED; urgency=medium
+shadowsocks-libev (3.0.6+ds-1~exp1) experimental; urgency=medium
 
   [ Boyuan Yang ]
   * New upstream release 3.0.6
-  * debian/patches: drop all backports patches.
+  * debian/patches:
+    - drop all old backports patches.
+    - cherry-pick upstream fixes till commit 3f0d39ae.
+  * debian/copyright: refresh release date.
 
- -- Boyuan Yang <073plan@gmail.com>  Wed, 03 May 2017 16:49:18 +0800
+ -- Boyuan Yang <073plan@gmail.com>  Wed, 03 May 2017 16:54:51 +0800
 
 shadowsocks-libev (3.0.5+ds-1~exp1) experimental; urgency=medium
 
