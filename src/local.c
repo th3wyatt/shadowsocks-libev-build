@@ -89,7 +89,7 @@ int verbose        = 0;
 int reuse_port     = 0;
 int keep_resolving = 1;
 
-#ifdef ANDROID
+#ifdef __ANDROID__
 int vpn        = 0;
 uint64_t tx    = 0;
 uint64_t rx    = 0;
@@ -102,6 +102,7 @@ static int acl       = 0;
 static int mode      = TCP_ONLY;
 static int ipv6first = 0;
 static int fast_open = 0;
+static int udp_fd    = 0;
 
 static struct ev_signal sigint_watcher;
 static struct ev_signal sigterm_watcher;
@@ -311,7 +312,7 @@ server_recv_cb(EV_P_ ev_io *w, int revents)
 
             // insert shadowsocks header
             if (!remote->direct) {
-#ifdef ANDROID
+#ifdef __ANDROID__
                 tx += remote->buf->len;
 #endif
                 int err = crypto->encrypt(remote->buf, server->e_ctx, BUF_SIZE);
@@ -332,7 +333,7 @@ server_recv_cb(EV_P_ ev_io *w, int revents)
             }
 
             if (!remote->send_ctx->connected) {
-#ifdef ANDROID
+#ifdef __ANDROID__
                 if (vpn) {
                     int not_protect = 0;
                     if (remote->addr.ss_family == AF_INET) {
@@ -465,10 +466,11 @@ server_recv_cb(EV_P_ ev_io *w, int revents)
             // all processed
             return;
         } else if (server->stage == STAGE_INIT) {
-            if (buf->len < 3) {
+            if (buf->len < sizeof(struct method_select_request) + 1) {
                 return;
             }
-            int method_len = (buf->data[1] & 0xff) + 2;
+            struct method_select_request *method = (struct method_select_request *)buf->data;
+            int method_len = method->nmethods + sizeof(struct method_select_request);
             if (buf->len < method_len) {
                 return;
             }
@@ -479,7 +481,7 @@ server_recv_cb(EV_P_ ev_io *w, int revents)
             send(server->fd, send_buf, sizeof(response), 0);
             server->stage = STAGE_HANDSHAKE;
 
-            if (buf->data[0] == 0x05 && method_len < (int)(buf->len)) {
+            if (method->ver == SVERSION && method_len < (int)(buf->len)) {
                 memmove(buf->data, buf->data + method_len , buf->len - method_len);
                 buf->len -= method_len;
                 continue;
@@ -502,7 +504,7 @@ server_recv_cb(EV_P_ ev_io *w, int revents)
             if (request->cmd == 3) {
                 udp_assc = 1;
                 socklen_t addr_len = sizeof(sock_addr);
-                getsockname(server->fd, (struct sockaddr *)&sock_addr,
+                getsockname(udp_fd, (struct sockaddr *)&sock_addr,
                             &addr_len);
                 if (verbose) {
                     LOGI("udp assc request accepted");
@@ -554,8 +556,7 @@ server_recv_cb(EV_P_ ev_io *w, int revents)
                     return;
                 }
                 if (udp_assc) {
-                    close_and_free_remote(EV_A_ remote);
-                    close_and_free_server(EV_A_ server);
+                    // Wait until client closes the connection
                     return;
                 }
             }
@@ -680,7 +681,7 @@ server_recv_cb(EV_P_ ev_io *w, int revents)
             }
 
             if (acl
-#ifdef ANDROID
+#ifdef __ANDROID__
                     && !(vpn && strcmp(port, "53") == 0)
 #endif
                     ) {
@@ -696,10 +697,10 @@ server_recv_cb(EV_P_ ev_io *w, int revents)
                 else if (host_match < 0)
                     bypass = 0;                 // proxy hostnames in white list
                 else {
-#ifndef ANDROID
+#ifndef __ANDROID__
                     if (atyp == 3) {            // resolve domain so we can bypass domain with geoip
                         err = get_sockaddr(host, port, &storage, 0, ipv6first);
-                        if ( err != -1) {
+                        if (err != -1) {
                             resolved = 1;
                             switch(((struct sockaddr*)&storage)->sa_family) {
                                 case AF_INET: {
@@ -741,7 +742,7 @@ server_recv_cb(EV_P_ ev_io *w, int revents)
                         else if (atyp == 4)
                             LOGI("bypass [%s]:%s", ip, port);
                     }
-#ifndef ANDROID
+#ifndef __ANDROID__
                     if (atyp == 3 && resolved != 1)
                         err = get_sockaddr(host, port, &storage, 0, ipv6first);
                     else
@@ -829,12 +830,12 @@ server_send_cb(EV_P_ ev_io *w, int revents)
     }
 }
 
-#ifdef ANDROID
-static void
+#ifdef __ANDROID__
+void
 stat_update_cb()
 {
     ev_tstamp now = ev_time();
-    if (now - last > 1.0) {
+    if (now - last > 0.5) {
         send_traffic_stat(tx, rx);
         last = now;
     }
@@ -868,10 +869,6 @@ remote_recv_cb(EV_P_ ev_io *w, int revents)
 
     ev_timer_again(EV_A_ & remote->recv_ctx->watcher);
 
-#ifdef ANDROID
-    stat_update_cb();
-#endif
-
     ssize_t r = recv(remote->fd, server->buf->data, BUF_SIZE, 0);
 
     if (r == 0) {
@@ -895,8 +892,9 @@ remote_recv_cb(EV_P_ ev_io *w, int revents)
     server->buf->len = r;
 
     if (!remote->direct) {
-#ifdef ANDROID
+#ifdef __ANDROID__
         rx += server->buf->len;
+        stat_update_cb();
 #endif
         int err = crypto->decrypt(server->buf, server->d_ctx, BUF_SIZE);
         if (err == CRYPTO_ERROR) {
@@ -1296,7 +1294,7 @@ main(int argc, char **argv)
 
     USE_TTY();
 
-#ifdef ANDROID
+#ifdef __ANDROID__
     while ((c = getopt_long(argc, argv, "f:s:p:l:k:t:m:i:c:b:a:n:huUvV6A",
                             long_options, NULL)) != -1) {
 #else
@@ -1390,7 +1388,7 @@ main(int argc, char **argv)
         case '6':
             ipv6first = 1;
             break;
-#ifdef ANDROID
+#ifdef __ANDROID__
         case 'V':
             vpn = 1;
             break;
@@ -1636,7 +1634,7 @@ main(int argc, char **argv)
             FATAL("failed to resolve the provided hostname");
         }
         struct sockaddr *addr = (struct sockaddr *)storage;
-        init_udprelay(local_addr, local_port, addr,
+        udp_fd = init_udprelay(local_addr, local_port, addr,
                       get_sockaddr_len(addr), mtu, crypto, listen_ctx.timeout, iface);
     }
 
@@ -1645,6 +1643,7 @@ main(int argc, char **argv)
         LOGI("listening through launchd");
     else
 #endif
+
     if (strcmp(local_addr, ":") > 0)
         LOGI("listening at [%s]:%s", local_addr, local_port);
     else
@@ -1790,7 +1789,7 @@ start_ss_local_server(profile_t profile)
     if (mode != TCP_ONLY) {
         LOGI("udprelay enabled");
         struct sockaddr *addr = (struct sockaddr *)(&storage);
-        init_udprelay(local_addr, local_port_str, addr,
+        udp_fd = init_udprelay(local_addr, local_port_str, addr,
                       get_sockaddr_len(addr), mtu, crypto, timeout, NULL);
     }
 

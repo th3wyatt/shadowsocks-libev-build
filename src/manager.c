@@ -109,14 +109,14 @@ build_config(char *prefix, struct server *server)
         return;
     }
     fprintf(f, "{\n");
-    fprintf(f, "\"server_port\":\"%s\",\n", server->port);
-    fprintf(f, "\"password\":\"%s\",\n", server->password);
-    if (server->fast_open[0]) fprintf(f, "\"fast_open\": %s,\n", server->fast_open);
-    if (server->mode)   fprintf(f, "\"mode\":\"%s\",\n", server->mode);
-    if (server->method) fprintf(f, "\"method\":\"%s\",\n", server->method);
-    if (server->plugin) fprintf(f, "\"plugin\":\"%s\",\n", server->plugin);
-    if (server->plugin_opts) fprintf(f, "\"plugin_opts\":\"%s\",\n", server->plugin_opts);
-    fprintf(f, "}\n");
+    fprintf(f, "\"server_port\":%d,\n", atoi(server->port));
+    fprintf(f, "\"password\":\"%s\"", server->password);
+    if (server->fast_open[0]) fprintf(f, ",\n\"fast_open\": %s", server->fast_open);
+    if (server->mode)   fprintf(f, ",\n\"mode\":\"%s\"", server->mode);
+    if (server->method) fprintf(f, ",\n\"method\":\"%s\"", server->method);
+    if (server->plugin) fprintf(f, ",\n\"plugin\":\"%s\"", server->plugin);
+    if (server->plugin_opts) fprintf(f, ",\n\"plugin_opts\":\"%s\"", server->plugin_opts);
+    fprintf(f, "\n}\n");
     fclose(f);
     ss_free(path);
 }
@@ -736,6 +736,39 @@ manager_recv_cb(EV_P_ ev_io *w, int revents)
         if (sendto(manager->fd, msg, msg_len, 0, (struct sockaddr *)&claddr, len) != 2) {
             ERROR("add_sendto");
         }
+    } else if (strcmp(action, "list") == 0) {
+        struct cork_hash_table_iterator  iter;
+        struct cork_hash_table_entry  *entry;
+        char buf[BUF_SIZE];
+        memset(buf, 0, BUF_SIZE);
+        sprintf(buf, "[");
+
+        cork_hash_table_iterator_init(server_table, &iter);
+        while ((entry = cork_hash_table_iterator_next(&iter)) != NULL) {
+            struct server *server = (struct server *)entry->value;
+            char *method = server->method?server->method:manager->method;
+            size_t pos = strlen(buf);
+            size_t entry_len = strlen(server->port) + strlen(server->password) + strlen(method);
+            if (pos > BUF_SIZE-entry_len-50) {
+                if (sendto(manager->fd, buf, pos, 0, (struct sockaddr *)&claddr, len)
+                    != pos) {
+                    ERROR("list_sendto");
+                }
+                memset(buf, 0, BUF_SIZE);
+                pos = 0;
+            }
+            sprintf(buf + pos, "\n\t{\"server_port\":\"%s\",\"password\":\"%s\",\"method\":\"%s\"},", 
+                    server->port,server->password,method);
+
+        }
+
+        size_t pos = strlen(buf);
+        strcpy(buf + pos - 1, "\n]"); //Remove trailing ","
+        pos = strlen(buf);
+        if (sendto(manager->fd, buf, pos, 0, (struct sockaddr *)&claddr, len)
+            != pos) {
+            ERROR("list_sendto");
+        }
     } else if (strcmp(action, "remove") == 0) {
         struct server *server = get_server(buf, r);
 
@@ -1179,11 +1212,6 @@ main(int argc, char **argv)
 
     // initialize ev loop
     struct ev_loop *loop = EV_DEFAULT;
-
-    // setuid
-    if (user != NULL && !run_as(user)) {
-        FATAL("failed to switch user");
-    }
 
     if (geteuid() == 0) {
         LOGI("running from root user");
