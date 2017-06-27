@@ -16,7 +16,7 @@ Build-Depends:
  libudns-dev,
  pkg-config,
  xmlto
-Standards-Version: 3.9.8
+Standards-Version: 4.0.0
 Homepage: https://www.shadowsocks.org
 Vcs-Git: https://anonscm.debian.org/git/collab-maint/shadowsocks-libev.git
 Vcs-Browser: https://anonscm.debian.org/cgit/collab-maint/shadowsocks-libev.git

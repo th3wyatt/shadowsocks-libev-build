@@ -1,3 +1,13 @@
+shadowsocks-libev (3.0.7+ds-1) unstable; urgency=medium
+
+  * New upstream release 3.0.7
+  * debian/control:
+    Bump Standards-Version to 4.0.0, no changes required.
+  * debian/patches:
+    - drop all backported patches.
+
+ -- Boyuan Yang <073plan@gmail.com>  Tue, 27 Jun 2017 15:34:23 +0800
+
 shadowsocks-libev (3.0.6+ds-1~exp1) experimental; urgency=medium
 
   [ Boyuan Yang ]
