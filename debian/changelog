@@ -5,6 +5,7 @@ shadowsocks-libev (3.0.7+ds-2) UNRELEASED; urgency=medium
     - Add to Suggests: haveged, kcptun, simple-obfs.
   * debian/patches:
     - Cherry-pick upstream fixes till commit 0e74ea50.
+  * Add debian/doc-base.
 
  -- Roger Shimizu <rogershimizu@gmail.com>  Thu, 29 Jun 2017 01:05:19 +0900
 
