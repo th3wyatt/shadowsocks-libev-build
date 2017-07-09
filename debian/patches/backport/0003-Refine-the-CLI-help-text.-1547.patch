@@ -1,0 +1,21 @@
+From: Max Lv <max.c.lv@gmail.com>
+Date: Thu, 6 Jul 2017 17:17:17 +0800
+Subject: Refine the CLI help text. #1547
+
+---
+ src/utils.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/utils.c b/src/utils.c
+index c3bafcb..afa99e8 100644
+--- a/src/utils.c
++++ b/src/utils.c
+@@ -359,6 +359,8 @@ usage()
+         "       [--fast-open]              Enable TCP fast open.\n");
+     printf(
+         "                                  with Linux kernel > 3.7.0.\n");
++#endif
++#if defined(MODULE_REMOTE) || defined(MODULE_LOCAL)
+     printf(
+         "       [--acl <acl_file>]         Path to ACL (Access Control List).\n");
+ #endif
