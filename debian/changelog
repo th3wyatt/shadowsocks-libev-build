@@ -1,6 +1,8 @@
 shadowsocks-libev (3.0.7+ds-2) UNRELEASED; urgency=medium
 
   * Add back debian/patches/backport/README
+  * debian/control:
+    - Add to Suggests: haveged, kcptun, simple-obfs.
 
  -- Roger Shimizu <rogershimizu@gmail.com>  Thu, 29 Jun 2017 01:05:19 +0900
 
