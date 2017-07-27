@@ -9,7 +9,7 @@ It is a port of [Shadowsocks](https://github.com/shadowsocks/shadowsocks)
 created by [@clowwindy](https://github.com/clowwindy), and maintained by
 [@madeye](https://github.com/madeye) and [@linusyang](https://github.com/linusyang).
 
-Current version: 3.0.7 | [Changelog](debian/changelog)
+Current version: 3.0.8 | [Changelog](debian/changelog)
 
 Travis CI: [![Travis CI](https://travis-ci.org/shadowsocks/shadowsocks-libev.svg?branch=master)](https://travis-ci.org/shadowsocks/shadowsocks-libev)
 
@@ -237,7 +237,7 @@ sudo yum install gettext gcc autoconf libtool automake make asciidoc xmlto udns-
 sudo pacman -S gettext gcc autoconf libtool automake make asciidoc xmlto udns libev
 
 # Installation of Libsodium
-export LIBSODIUM_VER=1.0.12
+export LIBSODIUM_VER=1.0.13
 wget https://download.libsodium.org/libsodium/releases/libsodium-$LIBSODIUM_VER.tar.gz
 tar xvf libsodium-$LIBSODIUM_VER.tar.gz
 pushd libsodium-$LIBSODIUM_VER
@@ -247,7 +247,7 @@ popd
 sudo ldconfig
 
 # Installation of MbedTLS
-export MBEDTLS_VER=2.4.2
+export MBEDTLS_VER=2.5.1
 wget https://tls.mbed.org/download/mbedtls-$MBEDTLS_VER-gpl.tgz
 tar xvf mbedtls-$MBEDTLS_VER-gpl.tgz
 pushd mbedtls-$MBEDTLS_VER
