@@ -1,3 +1,9 @@
+shadowsocks-libev (3.0.8+ds-1) unstable; urgency=medium
+
+  * New upstream release 3.0.8
+
+ -- Roger Shimizu <rogershimizu@gmail.com>  Fri, 28 Jul 2017 00:38:39 +0900
+
 shadowsocks-libev (3.0.7+ds-2~bpo9+1) stretch-backports; urgency=medium
 
   * Rebuild for stretch-backports.
