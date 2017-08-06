@@ -15,6 +15,12 @@ shadowsocks-libev (3.0.8+ds-1) unstable; urgency=medium
 
  -- Roger Shimizu <rogershimizu@gmail.com>  Fri, 28 Jul 2017 00:38:39 +0900
 
+shadowsocks-libev (3.0.7+ds-2~bpo8+1) jessie-backports-sloppy; urgency=medium
+
+  * Rebuild for jessie-backports-sloppy.
+
+ -- Roger Shimizu <rogershimizu@gmail.com>  Sat, 15 Jul 2017 22:49:12 +0900
+
 shadowsocks-libev (3.0.7+ds-2~bpo9+1) stretch-backports; urgency=medium
 
   * Rebuild for stretch-backports.
