@@ -7,13 +7,13 @@ Build-Depends:
  asciidoc-base | asciidoc,
  debhelper (>= 10),
  libbloom-dev,
+ libc-ares-dev,
  libcork-dev (>= 0.15.0+ds-8),
  libcorkipset-dev,
  libev-dev,
  libmbedtls-dev,
  libpcre3-dev,
  libsodium-dev (>= 1.0.12),
- libudns-dev,
  pkg-config,
  xmlto
 Standards-Version: 4.0.0
