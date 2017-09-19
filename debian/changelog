@@ -1,10 +1,10 @@
-shadowsocks-libev (3.1.0+ds-1) UNRELEASED; urgency=medium
+shadowsocks-libev (3.1.0+ds-1~exp1) experimental; urgency=medium
 
   * New upstream release 3.1.0
   * d/control:
     - Note replacing dependency libudns-dev with libc-ares-dev.
 
- -- Roger Shimizu <rogershimizu@gmail.com>  Wed, 20 Sep 2017 01:27:09 +0900
+ -- Roger Shimizu <rogershimizu@gmail.com>  Wed, 20 Sep 2017 01:38:40 +0900
 
 shadowsocks-libev (3.0.8+ds-2~bpo8+1) jessie-backports-sloppy; urgency=medium
 
