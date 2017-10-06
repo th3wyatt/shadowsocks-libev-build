@@ -1,0 +1,75 @@
+From: Max Lv <max.c.lv@gmail.com>
+Date: Tue, 19 Sep 2017 09:09:58 +0800
+Subject: Fix #1693
+
+(cherry picked from commit 10a2d3e3cd76b148d5f5996f06267cc40e62cac5)
+---
+ configure.ac    |  5 +----
+ doc/Makefile.am | 24 ++++++++++--------------
+ 2 files changed, 11 insertions(+), 18 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index e489b0c..33d6650 100755
+--- a/configure.ac
++++ b/configure.ac
+@@ -224,16 +224,13 @@ AC_CHECK_LIB([ev], [ev_loop_destroy], [LIBS="-lev $LIBS"], [AC_MSG_ERROR([Couldn
+ 
+ AC_CONFIG_FILES([shadowsocks-libev.pc
+                  Makefile
++                 doc/Makefile
+                  src/Makefile])
+ 
+ AM_COND_IF([USE_SYSTEM_SHARED_LIB],
+ 		   [AC_DEFINE([USE_SYSTEM_SHARED_LIB], [1], [Define if use system shared lib.])],
+ 		   [AC_CONFIG_FILES([libbloom/Makefile libcork/Makefile libipset/Makefile])])
+ 
+-AM_COND_IF([ENABLE_DOCUMENTATION],
+-  [AC_CONFIG_FILES([doc/Makefile])
+-])
+-
+ AC_ARG_ENABLE(connmarktos,
+ [AS_HELP_STRING(--enable-connmarktos, Enable saved connmark to IP TOS QoS feature)],
+ [
+diff --git a/doc/Makefile.am b/doc/Makefile.am
+index c5e6e80..19b44c8 100644
+--- a/doc/Makefile.am
++++ b/doc/Makefile.am
+@@ -12,21 +12,16 @@ VERSION = `$(SED) -n 's/.*PACKAGE_VERSION "\(.*\)"/\1/p'\
+ 		  ../config.h`
+ 
+ # Guard against environment variables
+-if ENABLE_DOCUMENTATION
+-  MAN1_DOC =
+-  MAN1_DOC += ss-local.1
+-  MAN1_DOC += ss-manager.1
+-  MAN1_DOC += ss-nat.1
+-  MAN1_DOC += ss-redir.1
+-  MAN1_DOC += ss-server.1
+-  MAN1_DOC += ss-tunnel.1
++MAN1_DOC =
++MAN1_DOC += ss-local.1
++MAN1_DOC += ss-manager.1
++MAN1_DOC += ss-nat.1
++MAN1_DOC += ss-redir.1
++MAN1_DOC += ss-server.1
++MAN1_DOC += ss-tunnel.1
+ 
+-  MAN8_DOC =
+-  MAN8_DOC += shadowsocks-libev.8
+-else
+-  MAN1_DOC =
+-  MAN8_DOC =
+-endif
++MAN8_DOC =
++MAN8_DOC += shadowsocks-libev.8
+ 
+ MAN8_XML = $(MAN8_DOC:%.8=%.xml)
+ MAN1_XML = $(MAN1_DOC:%.1=%.xml)
+@@ -59,6 +54,7 @@ html-local: $(MAN_HTML)
+ 		-aversion=$(VERSION) $(ASCIIDOC_EXTRA) -o $@ $<
+ 
+ doc_DATA = $(MAN_HTML)
++
+ CLEANFILES = $(MAN_XML) $(man_MANS) $(MAN_HTML)
+ 
+ EXTRA_DIST = *.asciidoc asciidoc.conf *.xsl

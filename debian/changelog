@@ -1,3 +1,15 @@
+shadowsocks-libev (3.1.0+ds-1) UNRELEASED; urgency=medium
+
+  * d/patches:
+    - Backport a few patches from upstream.
+      + [b721c0f] Update docs for TCP_NODELAY.
+      + [82694c8] properly set recv_ctx->connected.
+      + [da85fa1] Fix scripts/build_deb.sh for debian jessie.
+      + [10a2d3e] Fix make distclean failure when
+        ./configure --disable-documentation
+
+ -- Roger Shimizu <rogershimizu@gmail.com>  Sat, 07 Oct 2017 01:08:50 +0900
+
 shadowsocks-libev (3.1.0+ds-1~exp1) experimental; urgency=medium
 
   * New upstream release 3.1.0
