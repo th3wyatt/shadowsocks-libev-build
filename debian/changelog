@@ -8,7 +8,8 @@ shadowsocks-libev (3.1.0+ds-1) unstable; urgency=medium
       + [da85fa1] Fix scripts/build_deb.sh for debian jessie.
       + [10a2d3e] Fix make distclean failure when
         ./configure --disable-documentation
-  * Remove debian/source.lintian-override, since it's unused.
+  * Remove debian/source.lintian-overrides from
+    debian/source.lintian-override, since it's unused.
 
  -- Roger Shimizu <rogershimizu@gmail.com>  Sat, 07 Oct 2017 01:36:58 +0900
 
