@@ -1,5 +1,6 @@
-shadowsocks-libev (3.1.0+ds-1) UNRELEASED; urgency=medium
+shadowsocks-libev (3.1.0+ds-1) unstable; urgency=medium
 
+  * Release to unstable.
   * d/patches:
     - Backport a few patches from upstream.
       + [b721c0f] Update docs for TCP_NODELAY.
@@ -9,7 +10,7 @@ shadowsocks-libev (3.1.0+ds-1) UNRELEASED; urgency=medium
         ./configure --disable-documentation
   * Remove debian/source.lintian-override, since it's unused.
 
- -- Roger Shimizu <rogershimizu@gmail.com>  Sat, 07 Oct 2017 01:08:50 +0900
+ -- Roger Shimizu <rogershimizu@gmail.com>  Sat, 07 Oct 2017 01:36:58 +0900
 
 shadowsocks-libev (3.1.0+ds-1~exp1) experimental; urgency=medium
 
