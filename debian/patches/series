@@ -3,3 +3,6 @@ backport/0002-Update-docs-for-TCP_NODELAY.patch
 backport/0003-properly-set-recv_ctx-connected.patch
 backport/0004-Fix-scripts-build_deb.sh-for-debian-jessie.patch
 backport/0005-Fix-1693.patch
+backport/0006-Fix-1734.patch
+backport/0007-Fix-1739.patch
+backport/0008-Refine-1739.patch

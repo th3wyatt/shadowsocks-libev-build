@@ -1,3 +1,14 @@
+shadowsocks-libev (3.1.0+ds-2) UNRELEASED; urgency=medium
+
+  * debian/patches:
+    - Backport a few patches from upstream.
+      + [c67d275] Fix potential local exploit issue.
+        Thanks to X41 D-Sec GmbH, Niklas Abel, for the reporting:
+         https://www.x41-dsec.de/lab/advisories/x41-2017-010-shadowsocks-libev/
+      + [b3f3b58] & [f19a96e] Fix two null pointer dereference.
+
+ -- Roger Shimizu <rogershimizu@gmail.com>  Wed, 18 Oct 2017 23:26:53 +0900
+
 shadowsocks-libev (3.1.0+ds-1) unstable; urgency=medium
 
   * Release to unstable.
