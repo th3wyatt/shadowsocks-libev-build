@@ -1,3 +1,13 @@
+shadowsocks-libev (2.6.3+ds-4) UNRELEASED; urgency=medium
+
+  * debian/patches:
+    - Backport a few patches from upstream.
+      + [c67d275] Fix potential local exploit issue.
+        Thanks to X41 D-Sec GmbH, Niklas Abel, for the reporting:
+          https://www.x41-dsec.de/lab/advisories/x41-2017-010-shadowsocks-libev/
+
+ -- Roger Shimizu <rogershimizu@gmail.com>  Sat, 21 Oct 2017 01:29:14 +0900
+
 shadowsocks-libev (2.6.3+ds-3) unstable; urgency=medium
 
   * debian/patches:
