@@ -1,4 +1,4 @@
-shadowsocks-libev (3.1.0+ds-3) UNRELEASED; urgency=medium
+shadowsocks-libev (3.1.0+ds-3) unstable; urgency=medium
 
   * debian/libshadowsocks-libev2.symbols:
     - Add symbols file for libshadowsocks-libev2.
@@ -7,7 +7,7 @@ shadowsocks-libev (3.1.0+ds-3) UNRELEASED; urgency=medium
       extra is the same as optional now.
     - Bump up Standards-Version to 4.1.1
 
- -- Roger Shimizu <rogershimizu@gmail.com>  Wed, 25 Oct 2017 00:08:17 +0900
+ -- Roger Shimizu <rogershimizu@gmail.com>  Wed, 25 Oct 2017 00:24:54 +0900
 
 shadowsocks-libev (3.1.0+ds-2~bpo8+1) jessie-backports-sloppy; urgency=medium
 
