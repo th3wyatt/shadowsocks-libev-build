@@ -1,4 +1,4 @@
-shadowsocks-libev (2.6.3+ds-4) UNRELEASED; urgency=medium
+shadowsocks-libev (2.6.3+ds-3+deb9u1) stretch-security; urgency=high
 
   * debian/patches:
     - Backport a few patches from upstream.
@@ -6,7 +6,7 @@ shadowsocks-libev (2.6.3+ds-4) UNRELEASED; urgency=medium
         Thanks to X41 D-Sec GmbH, Niklas Abel, for the reporting:
           https://www.x41-dsec.de/lab/advisories/x41-2017-010-shadowsocks-libev/
 
- -- Roger Shimizu <rogershimizu@gmail.com>  Sat, 21 Oct 2017 01:29:14 +0900
+ -- Roger Shimizu <rogershimizu@gmail.com>  Wed, 25 Oct 2017 20:49:42 +0900
 
 shadowsocks-libev (2.6.3+ds-3) unstable; urgency=medium
 
