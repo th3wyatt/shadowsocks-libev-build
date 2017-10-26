@@ -85,7 +85,7 @@ libshadowsocks-libev.so.2 libshadowsocks-libev2 #MINVER#
  run_as@Base 3.1.0
  set_nofile@Base 3.1.0
  set_reuseport@Base 3.1.0
- setinterface@Base 3.1.0
+ (arch=!hurd-i386 !kfreebsd-amd64 !kfreebsd-i386)setinterface@Base 3.1.0
  setnonblocking@Base 3.1.0
  sockaddr_cmp@Base 3.1.0
  sockaddr_cmp_addr@Base 3.1.0
