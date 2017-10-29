@@ -1,3 +1,11 @@
+shadowsocks-libev (3.1.0+ds-4~exp2) experimental; urgency=medium
+
+  * debian/libshadowsocks-libev2.symbols:
+    - Update versions in symbols, to it's proper old version in previous
+      debian releases.
+
+ -- Roger Shimizu <rogershimizu@gmail.com>  Sun, 29 Oct 2017 18:51:15 +0900
+
 shadowsocks-libev (3.1.0+ds-4~exp1) experimental; urgency=medium
 
   * debian/libshadowsocks-libev2.symbols:
