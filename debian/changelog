@@ -1,3 +1,9 @@
+shadowsocks-libev (3.1.0+ds-4~bpo8+1) jessie-backports-sloppy; urgency=medium
+
+  * Rebuild for jessie-backports-sloppy.
+
+ -- Roger Shimizu <rogershimizu@gmail.com>  Thu, 09 Nov 2017 00:52:06 +0900
+
 shadowsocks-libev (3.1.0+ds-4~bpo9+1) stretch-backports; urgency=medium
 
   * Rebuild for stretch-backports.
