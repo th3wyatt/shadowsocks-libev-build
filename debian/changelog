@@ -1,4 +1,4 @@
-shadowsocks-libev (3.1.0+ds-4) UNRELEASED; urgency=medium
+shadowsocks-libev (3.1.0+ds-4) unstable; urgency=medium
 
   * Release to unstable.
   * debian/patches:
@@ -6,7 +6,7 @@ shadowsocks-libev (3.1.0+ds-4) UNRELEASED; urgency=medium
       + [26ae365] Fix SOCKS5 connectivity issue.
       + [f35e24f] Support ubuntu artful and bionic for build_deb.sh.
 
- -- Roger Shimizu <rogershimizu@gmail.com>  Thu, 09 Nov 2017 00:11:52 +0900
+ -- Roger Shimizu <rogershimizu@gmail.com>  Thu, 09 Nov 2017 00:17:45 +0900
 
 shadowsocks-libev (3.1.0+ds-4~exp2) experimental; urgency=medium
 
