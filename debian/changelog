@@ -2,6 +2,8 @@ shadowsocks-libev (3.1.0+ds-5) UNRELEASED; urgency=medium
 
   * debian/patches:
     - Backport the tests.
+  * debian/tests:
+    - Add upstream tests.
 
  -- Roger Shimizu <rogershimizu@gmail.com>  Fri, 17 Nov 2017 00:47:27 +0900
 
