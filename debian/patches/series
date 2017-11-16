@@ -8,3 +8,5 @@ backport/0007-Fix-1739.patch
 backport/0008-Refine-1739.patch
 backport/0009-Refine-1756.patch
 backport/0010-scripts-build_deb.sh-Support-ubuntu-artful-and-bioni.patch
+backport/0011-Fix-1782.patch
+backport/0012-tests-Add-param-bin-to-specify-the-binrary-path.patch

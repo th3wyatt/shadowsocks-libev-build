@@ -1,0 +1,349 @@
+From: Max Lv <max.c.lv@gmail.com>
+Date: Mon, 13 Nov 2017 10:40:28 +0800
+Subject: Fix #1782
+
+(cherry picked from commit f3c3080b943ef122c24dc8522efcb60e0d29a627)
+---
+ tests/aes-ctr.json                |  10 +++
+ tests/aes-gcm.json                |  10 +++
+ tests/aes.json                    |  10 +++
+ tests/chacha20-ietf-poly1305.json |  10 +++
+ tests/chacha20-ietf.json          |  10 +++
+ tests/chacha20.json               |  10 +++
+ tests/rc4-md5.json                |  10 +++
+ tests/salsa20.json                |  10 +++
+ tests/test.py                     | 145 ++++++++++++++++++++++++++++++++++++++
+ tests/test.sh                     |  36 ++++++++++
+ 10 files changed, 261 insertions(+)
+ create mode 100644 tests/aes-ctr.json
+ create mode 100644 tests/aes-gcm.json
+ create mode 100644 tests/aes.json
+ create mode 100644 tests/chacha20-ietf-poly1305.json
+ create mode 100644 tests/chacha20-ietf.json
+ create mode 100644 tests/chacha20.json
+ create mode 100644 tests/rc4-md5.json
+ create mode 100644 tests/salsa20.json
+ create mode 100755 tests/test.py
+ create mode 100755 tests/test.sh
+
+diff --git a/tests/aes-ctr.json b/tests/aes-ctr.json
+new file mode 100644
+index 0000000..1f5a1d7
+--- /dev/null
++++ b/tests/aes-ctr.json
+@@ -0,0 +1,10 @@
++{
++    "server":"127.0.0.1",
++    "server_port":8388,
++    "local_port":1081,
++    "password":"aes_password",
++    "timeout":60,
++    "method":"aes-256-ctr",
++    "local_address":"127.0.0.1",
++    "fast_open":false
++}
+diff --git a/tests/aes-gcm.json b/tests/aes-gcm.json
+new file mode 100644
+index 0000000..271d721
+--- /dev/null
++++ b/tests/aes-gcm.json
+@@ -0,0 +1,10 @@
++{
++    "server":"127.0.0.1",
++    "server_port":8388,
++    "local_port":1081,
++    "password":"aes_password",
++    "timeout":60,
++    "method":"aes-256-gcm",
++    "local_address":"127.0.0.1",
++    "fast_open":false
++}
+diff --git a/tests/aes.json b/tests/aes.json
+new file mode 100644
+index 0000000..2fc29f3
+--- /dev/null
++++ b/tests/aes.json
+@@ -0,0 +1,10 @@
++{
++    "server":"127.0.0.1",
++    "server_port":8388,
++    "local_port":1081,
++    "password":"aes_password",
++    "timeout":60,
++    "method":"aes-256-cfb",
++    "local_address":"127.0.0.1",
++    "fast_open":false
++}
+diff --git a/tests/chacha20-ietf-poly1305.json b/tests/chacha20-ietf-poly1305.json
+new file mode 100644
+index 0000000..074dccb
+--- /dev/null
++++ b/tests/chacha20-ietf-poly1305.json
+@@ -0,0 +1,10 @@
++{
++    "server":"127.0.0.1",
++    "server_port":8388,
++    "local_port":1081,
++    "password":"salsa20_password",
++    "timeout":60,
++    "method":"chacha20-ietf-poly1305",
++    "local_address":"127.0.0.1",
++    "fast_open":false
++}
+diff --git a/tests/chacha20-ietf.json b/tests/chacha20-ietf.json
+new file mode 100644
+index 0000000..a27987c
+--- /dev/null
++++ b/tests/chacha20-ietf.json
+@@ -0,0 +1,10 @@
++{
++    "server":"127.0.0.1",
++    "server_port":8388,
++    "local_port":1081,
++    "password":"salsa20_password",
++    "timeout":60,
++    "method":"chacha20-ietf",
++    "local_address":"127.0.0.1",
++    "fast_open":false
++}
+diff --git a/tests/chacha20.json b/tests/chacha20.json
+new file mode 100644
+index 0000000..6def51b
+--- /dev/null
++++ b/tests/chacha20.json
+@@ -0,0 +1,10 @@
++{
++    "server":"127.0.0.1",
++    "server_port":8388,
++    "local_port":1081,
++    "password":"chacha20_password",
++    "timeout":60,
++    "method":"chacha20",
++    "local_address":"127.0.0.1",
++    "fast_open":false
++}
+diff --git a/tests/rc4-md5.json b/tests/rc4-md5.json
+new file mode 100644
+index 0000000..e69b433
+--- /dev/null
++++ b/tests/rc4-md5.json
+@@ -0,0 +1,10 @@
++{
++    "server":"127.0.0.1",
++    "server_port":8388,
++    "local_port":1081,
++    "password":"aes_password",
++    "timeout":60,
++    "method":"rc4-md5",
++    "local_address":"127.0.0.1",
++    "fast_open":false
++}
+diff --git a/tests/salsa20.json b/tests/salsa20.json
+new file mode 100644
+index 0000000..a4a664f
+--- /dev/null
++++ b/tests/salsa20.json
+@@ -0,0 +1,10 @@
++{
++    "server":"127.0.0.1",
++    "server_port":8388,
++    "local_port":1081,
++    "password":"salsa20_password",
++    "timeout":60,
++    "method":"salsa20",
++    "local_address":"127.0.0.1",
++    "fast_open":false
++}
+diff --git a/tests/test.py b/tests/test.py
+new file mode 100755
+index 0000000..823a950
+--- /dev/null
++++ b/tests/test.py
+@@ -0,0 +1,145 @@
++#!/usr/bin/python
++# -*- coding: utf-8 -*-
++#
++# Copyright 2015 clowwindy
++#
++# Licensed under the Apache License, Version 2.0 (the "License"); you may
++# not use this file except in compliance with the License. You may obtain
++# a copy of the License at
++#
++#     http://www.apache.org/licenses/LICENSE-2.0
++#
++# Unless required by applicable law or agreed to in writing, software
++# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
++# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
++# License for the specific language governing permissions and limitations
++# under the License.
++
++from __future__ import absolute_import, division, print_function, \
++    with_statement
++
++import sys
++import os
++import signal
++import select
++import time
++import argparse
++from subprocess import Popen, PIPE
++
++default_url = 'http://www.google.com/'
++
++parser = argparse.ArgumentParser(description='test Shadowsocks')
++parser.add_argument('-c', '--client-conf', type=str, default=None)
++parser.add_argument('-s', '--server-conf', type=str, default=None)
++parser.add_argument('-a', '--client-args', type=str, default=None)
++parser.add_argument('-b', '--server-args', type=str, default=None)
++parser.add_argument('--should-fail', action='store_true', default=None)
++parser.add_argument('--url', type=str, default=default_url)
++parser.add_argument('--dns', type=str, default='8.8.8.8')
++
++config = parser.parse_args()
++
++client_args = ['src/ss-local', '-v']
++server_args = ['src/ss-server', '-v', '-u']
++tunnel_args = ['src/ss-tunnel', '-v', '-u', '-l1082', '-L%s:53' % config.dns]
++
++if config.client_conf:
++    client_args.extend(['-c', config.client_conf])
++    tunnel_args.extend(['-c', config.client_conf])
++    if config.server_conf:
++        server_args.extend(['-c', config.server_conf])
++    else:
++        server_args.extend(['-c', config.client_conf])
++
++if config.client_args:
++    client_args.extend(config.client_args.split())
++    tunnel_args.extend(config.client_args.split())
++    if config.server_args:
++        server_args.extend(config.server_args.split())
++    else:
++        server_args.extend(config.client_args.split())
++
++p1 = Popen(server_args, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
++p2 = Popen(client_args, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
++p5 = Popen(tunnel_args, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
++p3 = None
++p4 = None
++p3_fin = False
++p4_fin = False
++
++# 1 shadowsocks started
++# 2 curl started
++# 3 curl finished
++# 4 dig started
++# 5 dig finished
++stage = 1
++
++try:
++    fdset = []
++    time.sleep(2)
++
++    p3 = Popen(['curl', config.url, '-v', '-L',
++        '--socks5-hostname', '127.0.0.1:1081',
++        '-m', '15', '--connect-timeout', '10'],
++        stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
++    if p3 is not None:
++        fdset.append(p3.stdout)
++        fdset.append(p3.stderr)
++        stage = 2
++    else:
++        sys.exit(1)
++
++    while True:
++        r, w, e = select.select(fdset, [], fdset)
++        if e:
++            break
++
++        for fd in r:
++            line = fd.readline()
++            if not line:
++                if stage == 2 and fd == p3.stdout:
++                    stage = 3
++                if stage == 4 and fd == p4.stdout:
++                    stage = 5
++            if bytes != str:
++                line = str(line, 'utf8')
++            sys.stderr.write(line)
++
++        if stage == 3 and p3 is not None:
++            fdset.remove(p3.stdout)
++            fdset.remove(p3.stderr)
++            r = p3.wait()
++            if config.should_fail:
++                if r == 0:
++                    sys.exit(1)
++            else:
++                if r != 0:
++                    sys.exit(1)
++            p4 = Popen(['dig', '@127.0.0.1', '-p1082',
++                        'www.google.com'],
++                       stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
++            if p4 is not None:
++                fdset.append(p4.stdout)
++                fdset.append(p4.stderr)
++                stage = 4
++            else:
++                sys.exit(1)
++
++        if stage == 5:
++            r = p4.wait()
++            if config.should_fail:
++                if r == 0:
++                    sys.exit(1)
++                print('test passed (expecting failure)')
++            else:
++                if r != 0:
++                    sys.exit(1)
++                print('test passed')
++            break
++finally:
++    for p in [p1, p2, p5]:
++        try:
++            os.kill(p.pid, signal.SIGINT)
++            os.waitpid(p.pid, 0)
++        except OSError:
++            pass
+diff --git a/tests/test.sh b/tests/test.sh
+new file mode 100755
+index 0000000..684e9d4
+--- /dev/null
++++ b/tests/test.sh
+@@ -0,0 +1,36 @@
++#!/bin/bash
++
++result=0
++
++function run_test {
++    printf '\e[0;36m'
++    echo "running test: $command $@"
++    printf '\e[0m'
++
++    $command "$@"
++    status=$?
++    if [ $status -ne 0 ]; then
++        printf '\e[0;31m'
++        echo "test failed: $command $@"
++        printf '\e[0m'
++        echo
++        result=1
++    else
++        printf '\e[0;32m'
++        echo OK
++        printf '\e[0m'
++        echo
++    fi
++    return 0
++}
++
++run_test python tests/test.py  -c tests/aes.json
++run_test python tests/test.py  -c tests/aes-gcm.json
++run_test python tests/test.py  -c tests/aes-ctr.json
++run_test python tests/test.py  -c tests/rc4-md5.json
++run_test python tests/test.py  -c tests/salsa20.json
++run_test python tests/test.py  -c tests/chacha20.json
++run_test python tests/test.py  -c tests/chacha20-ietf.json
++run_test python tests/test.py  -c tests/chacha20-ietf-poly1305.json
++
++exit $result

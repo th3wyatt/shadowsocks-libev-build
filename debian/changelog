@@ -1,3 +1,10 @@
+shadowsocks-libev (3.1.0+ds-5) UNRELEASED; urgency=medium
+
+  * debian/patches:
+    - Backport the tests.
+
+ -- Roger Shimizu <rogershimizu@gmail.com>  Fri, 17 Nov 2017 00:47:27 +0900
+
 shadowsocks-libev (3.1.0+ds-4~bpo8+1) jessie-backports-sloppy; urgency=medium
 
   * Rebuild for jessie-backports-sloppy.
