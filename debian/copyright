@@ -3,12 +3,8 @@ Upstream-Name: shadowsocks-libev
 Upstream-Contact: Max Lv <max.c.lv@gmail.com>
 Source: https://github.com/shadowsocks/shadowsocks-libev
 Files-Excluded:
- .github
  .gitignore
  .gitmodules
- .travis.yml
- .uncrustify.cfg
- autogen.sh
  m4/inet_ntop.m4
  debian
  libbloom
