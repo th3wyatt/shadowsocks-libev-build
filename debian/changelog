@@ -1,4 +1,4 @@
-shadowsocks-libev (3.1.1+ds-1) UNRELEASED; urgency=medium
+shadowsocks-libev (3.1.1+ds-1~exp1) experimental; urgency=medium
 
   * New upstream release 3.1.1
   * debian/copyright:
@@ -8,7 +8,7 @@ shadowsocks-libev (3.1.1+ds-1) UNRELEASED; urgency=medium
   * debian/watch:
     - Change filenamemangle to match with the filename in archive.
 
- -- Roger Shimizu <rogershimizu@gmail.com>  Thu, 23 Nov 2017 17:13:27 +0900
+ -- Roger Shimizu <rogershimizu@gmail.com>  Thu, 23 Nov 2017 17:43:33 +0900
 
 shadowsocks-libev (3.1.0+ds-5) unstable; urgency=medium
 
