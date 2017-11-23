@@ -3,6 +3,8 @@ shadowsocks-libev (3.1.1+ds-1) UNRELEASED; urgency=medium
   * New upstream release 3.1.1
   * debian/copyright:
     - Remove a few items from Files-Excluded list.
+    - Update copyright year for src/uthash.h.
+    - Add file entry for tests/test.py.
   * debian/watch:
     - Change filenamemangle to match with the filename in archive.
 
