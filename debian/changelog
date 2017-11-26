@@ -1,3 +1,9 @@
+shadowsocks-libev (3.1.1+ds-1) unstable; urgency=medium
+
+  * Release to unstable.
+
+ -- Roger Shimizu <rogershimizu@gmail.com>  Sun, 26 Nov 2017 18:45:47 +0900
+
 shadowsocks-libev (3.1.1+ds-1~exp2) experimental; urgency=medium
 
   * debian/patches:
