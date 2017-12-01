@@ -1,3 +1,11 @@
+shadowsocks-libev (3.1.1+ds-2) unstable; urgency=medium
+
+  * debian/tests:
+    - Add isolation-container to Restrictions, since the tests need to
+      open ports. Thanks to James Cowgill for this clue.
+
+ -- Roger Shimizu <rogershimizu@gmail.com>  Fri, 01 Dec 2017 22:29:45 +0900
+
 shadowsocks-libev (3.1.1+ds-1~bpo8+1) jessie-backports-sloppy; urgency=medium
 
   * Rebuild for jessie-backports-sloppy.
