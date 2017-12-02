@@ -1,0 +1,22 @@
+From: Max Lv <max.c.lv@gmail.com>
+Date: Wed, 19 Apr 2017 12:16:41 +0800
+Subject: Fix a potential out of bound access. #1465
+
+---
+ src/server.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/src/server.c b/src/server.c
+index 588fb46..e868504 100644
+--- a/src/server.c
++++ b/src/server.c
+@@ -1129,8 +1129,7 @@ server_resolve_cb(struct sockaddr *addr, void *data)
+ 
+             // XXX: should handle buffer carefully
+             if (server->buf->len > 0) {
+-                memcpy(remote->buf->data, server->buf->data + server->buf->idx,
+-                       server->buf->len);
++                memcpy(remote->buf->data, server->buf->data, server->buf->len);
+                 remote->buf->len = server->buf->len;
+                 remote->buf->idx = 0;
+                 server->buf->len = 0;
