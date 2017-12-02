@@ -1,3 +1,9 @@
+shadowsocks-libev (2.6.3+ds-3+deb9u1~bpo8+1) jessie-backports; urgency=medium
+
+  * Rebuild for jessie-backports.
+
+ -- Roger Shimizu <rogershimizu@gmail.com>  Sat, 02 Dec 2017 14:04:47 +0900
+
 shadowsocks-libev (2.6.3+ds-3+deb9u1) stretch-security; urgency=high
 
   * debian/patches:
