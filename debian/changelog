@@ -1,3 +1,11 @@
+shadowsocks-libev (3.1.1+ds-3) unstable; urgency=medium
+
+  * debian/tests:
+    - Since isolation-container still didn't work, change to
+      "isolation-machine" and have a try.
+
+ -- Roger Shimizu <rogershimizu@gmail.com>  Mon, 04 Dec 2017 22:48:32 +0900
+
 shadowsocks-libev (3.1.1+ds-2) unstable; urgency=medium
 
   * debian/tests:
