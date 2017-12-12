@@ -1,3 +1,11 @@
+shadowsocks-libev (3.1.1+ds-4) UNRELEASED; urgency=medium
+
+  * debian/tests:
+    - Remove isolation-* from Restrictions. Thanks to Antonio Terceiro
+      to confirm there's no need to specify this to open port to listen.
+
+ -- Roger Shimizu <rogershimizu@gmail.com>  Wed, 13 Dec 2017 00:25:49 +0900
+
 shadowsocks-libev (3.1.1+ds-3) unstable; urgency=medium
 
   * debian/tests:
