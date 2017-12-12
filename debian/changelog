@@ -3,6 +3,9 @@ shadowsocks-libev (3.1.1+ds-4) UNRELEASED; urgency=medium
   * debian/tests:
     - Remove isolation-* from Restrictions. Thanks to Antonio Terceiro
       to confirm there's no need to specify this to open port to listen.
+  * debian/patches:
+    - Add patch to change the port of test suite to listen from 8388 to
+      8389, since 8388 is already taken by default config.
 
  -- Roger Shimizu <rogershimizu@gmail.com>  Wed, 13 Dec 2017 00:25:49 +0900
 
