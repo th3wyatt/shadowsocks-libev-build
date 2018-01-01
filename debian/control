@@ -1,7 +1,7 @@
 Source: shadowsocks-libev
 Section: net
 Priority: optional
-Maintainer: Roger Shimizu <rogershimizu@gmail.com>
+Maintainer: Roger Shimizu <rosh@debian.org>
 Uploaders: Max Lv <max.c.lv@gmail.com>, Boyuan Yang <073plan@gmail.com>
 Build-Depends:
  asciidoc-base | asciidoc,

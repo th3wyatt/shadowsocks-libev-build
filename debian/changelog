@@ -1,3 +1,12 @@
+shadowsocks-libev (3.1.2+ds-1) unstable; urgency=medium
+
+  * New upstream release 3.1.2
+  * debian/control:
+    - Update maintainer email.
+  * Update debian/libshadowsocks-libev2.symbols.
+
+ -- Roger Shimizu <rosh@debian.org>  Tue, 02 Jan 2018 01:44:29 +0900
+
 shadowsocks-libev (3.1.1+ds-4) unstable; urgency=medium
 
   * debian/tests:

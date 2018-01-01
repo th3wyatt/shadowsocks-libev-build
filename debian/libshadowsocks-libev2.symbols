@@ -1,6 +1,7 @@
 libshadowsocks-libev.so.2 libshadowsocks-libev2 #MINVER#
  ERROR@Base 2.4.7
  FATAL@Base 2.4.7
+ _start_ss_local_server@Base 3.1.2
  accept_rule_arg@Base 2.5.6
  acl_add_ip@Base 2.4.8
  acl_match_host@Base 2.5.6
@@ -97,6 +98,7 @@ libshadowsocks-libev.so.2 libshadowsocks-libev2 #MINVER#
  ss_strndup@Base 2.4.7
  start_plugin@Base 2.6.3
  start_ss_local_server@Base 2.4.7
+ start_ss_local_server_with_callback@Base 3.1.2
  stop_plugin@Base 2.6.3
  stream_cipher_ctx_init@Base 3.0.2
  stream_ctx_init@Base 3.0.2
