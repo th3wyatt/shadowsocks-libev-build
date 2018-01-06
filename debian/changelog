@@ -2,6 +2,8 @@ shadowsocks-libev (3.1.2+ds-2) UNRELEASED; urgency=medium
 
   * debian/control:
     - Move git repo to salsa.
+  * debian/rules:
+    - Add more clean-up to make dpkg-buildpackage be able to run again.
 
  -- Roger Shimizu <rosh@debian.org>  Sat, 06 Jan 2018 19:57:49 +0900
 
