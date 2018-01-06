@@ -9,10 +9,6 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 # Dummy folder for autotools scripts
 LIBDIR=libbloom libcork libipset
 
-override_dh_auto_install:
-	find src/ -name '*.la' -delete
-	dh_auto_install
-
 override_dh_auto_clean:
 	# dh_auto_clean and dh_autoreconf complains if there're no these folders
 	# they're removed after dh_autoreconf
@@ -36,6 +32,10 @@ override_dh_auto_configure:
 		--enable-shared \
 		--enable-system-shared-lib \
 		--disable-ssp
+
+override_dh_auto_install:
+	find src/ -name '*.la' -delete
+	dh_auto_install
 
 %:
 	dh $@
