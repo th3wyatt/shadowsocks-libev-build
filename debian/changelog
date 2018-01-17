@@ -1,3 +1,18 @@
+shadowsocks-libev (3.1.3+ds-1) unstable; urgency=medium
+
+  * New upstream release 3.1.3
+
+ -- Roger Shimizu <rosh@debian.org>  Wed, 17 Jan 2018 22:04:53 +0900
+
+shadowsocks-libev (3.1.2+ds-2) unstable; urgency=medium
+
+  * debian/control:
+    - Move git repo to salsa.
+  * debian/rules:
+    - Add more clean-up to make dpkg-buildpackage be able to run again.
+
+ -- Roger Shimizu <rosh@debian.org>  Sun, 07 Jan 2018 15:38:11 +0900
+
 shadowsocks-libev (3.1.2+ds-1~bpo8+1) jessie-backports-sloppy; urgency=medium
 
   * Rebuild for jessie-backports-sloppy.

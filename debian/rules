@@ -9,16 +9,19 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 # Dummy folder for autotools scripts
 LIBDIR=libbloom libcork libipset
 
-override_dh_auto_install:
-	find src/ -name '*.la' -delete
-	dh_auto_install
-
-override_dh_autoreconf:
-	# autoreconf script conplains without the two folders
+override_dh_auto_clean:
+	# dh_auto_clean and dh_autoreconf complains if there're no these folders
+	# they're removed after dh_autoreconf
 	for libdir in ${LIBDIR}; do \
 		mkdir -p $$libdir; \
 		touch $$libdir/Makefile.in; \
 	done
+	dh_auto_clean
+	# dpkg-buildpackage complains these files from previous built
+	find -name Makefile -exec rm {} \;
+	rm -f config.h config.log config.status libtool shadowsocks-libev.pc stamp-h1
+
+override_dh_autoreconf:
 	dh_autoreconf
 	rm -rf ${LIBDIR}
 
@@ -29,6 +32,10 @@ override_dh_auto_configure:
 		--enable-shared \
 		--enable-system-shared-lib \
 		--disable-ssp
+
+override_dh_auto_install:
+	find src/ -name '*.la' -delete
+	dh_auto_install
 
 %:
 	dh $@
