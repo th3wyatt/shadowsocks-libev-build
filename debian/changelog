@@ -1,3 +1,14 @@
+shadowsocks-libev (3.1.3+ds-2) UNRELEASED; urgency=medium
+
+  [ Sync from 3.1.3+ds-1ubuntu1 ]
+  * debian/shadowsocks-libev.postinst:
+    - setcap may fail in some contexts (e.g. autopkgtest using LXD).  In
+      that case, issue a warning and carry on.
+  * debian/patches/test-proxy-unsupported.patch:
+    - Skip tests if an upstream HTTP proxy is set.
+
+ -- Roger Shimizu <rosh@debian.org>  Mon, 19 Mar 2018 00:52:15 +0900
+
 shadowsocks-libev (3.1.3+ds-1) unstable; urgency=medium
 
   * New upstream release 3.1.3
