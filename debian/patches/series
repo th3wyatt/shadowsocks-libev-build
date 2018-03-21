@@ -1,1 +1,12 @@
 0001-skip-tests-if-an-upstream-HTTP-proxy-is-set.patch
+backport/0002-Fix-no-parse-fast-open-in-manager-mode.patch
+backport/0003-Support-TCP_NODELAY-in-manager-mode.patch
+backport/0004-Remove-unused-return-value.patch
+backport/0005-Remove-the-return-value-in-traffic-IPC.patch
+backport/0006-Invoke-plugins-direct-instead-of-using-sh.patch
+backport/0007-Documentation-improvements.patch
+backport/0008-Fix-https-github.com-shadowsocks-shadowsocks-libev-i.patch
+backport/0009-Fix-1948.patch
+backport/0010-udprelay-display-mtu-at-least-size.patch
+backport/0011-Fix-1974.patch
+backport/0012-Update-plugin.c.patch

@@ -7,6 +7,23 @@ shadowsocks-libev (3.1.3+ds-2) UNRELEASED; urgency=medium
   * debian/patches/test-proxy-unsupported.patch:
     - Skip tests if an upstream HTTP proxy is set.
 
+  [ Roger Shimizu ]
+  * debian/patches: Backport a few patches from upstream.
+    - [ed508ac] Fix no parse --fast-open in manager mode.
+    - [b6faadf] Support TCP_NODELAY in manager mode.
+    - [b361f75] Remove unused return value.
+    - [1a21989] Remove the return value in traffic IPC.
+    - [7b643dc] Invoke plugins direct instead of using "sh".
+    - [9778ce2] Documentation improvements.
+    - [fb22adc] Fix unsafe stripping of port from hostname in http.c
+                (incompatibility SNI sniffing with IPv6).
+    - [26e06a7] Fix bypassing repeated-salt check.
+    - [e7ad7fc] udprelay: display mtu at least size.
+    - [a377c51] Fix #1974 that ss-server should return a non-zero value
+                if plugin failed to start.
+    - [d61b8f0] Launch plugin with NULL params gives plugin to run in both
+                plugin mode & cli mode.
+
  -- Roger Shimizu <rosh@debian.org>  Mon, 19 Mar 2018 00:52:15 +0900
 
 shadowsocks-libev (3.1.3+ds-1) unstable; urgency=medium

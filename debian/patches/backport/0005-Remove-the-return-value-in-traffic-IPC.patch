@@ -1,0 +1,48 @@
+From: Max Lv <max.c.lv@gmail.com>
+Date: Sun, 4 Feb 2018 23:02:38 -0800
+Subject: Remove the return value in traffic IPC
+
+(cherry picked from commit 1a21989566e778139c489d5f8972979bda9b16c1)
+---
+ src/android.c | 8 +-------
+ src/common.h  | 2 +-
+ 2 files changed, 2 insertions(+), 8 deletions(-)
+
+diff --git a/src/android.c b/src/android.c
+index 26ee6d7..deb8bee 100644
+--- a/src/android.c
++++ b/src/android.c
+@@ -92,7 +92,7 @@ protect_socket(int fd)
+     return ret;
+ }
+ 
+-void
++int
+ send_traffic_stat(uint64_t tx, uint64_t rx)
+ {
+     int sock;
+@@ -129,11 +129,5 @@ send_traffic_stat(uint64_t tx, uint64_t rx)
+         return -1;
+     }
+ 
+-    if (recv(sock, &ret, 1, 0) == -1) {
+-        ERROR("[android] recv");
+-        close(sock);
+-        return -1;
+-    }
+-
+     close(sock);
+ }
+diff --git a/src/common.h b/src/common.h
+index 033f0ad..079c367 100644
+--- a/src/common.h
++++ b/src/common.h
+@@ -47,7 +47,7 @@ void free_udprelay(void);
+ 
+ #ifdef __ANDROID__
+ int protect_socket(int fd);
+-void send_traffic_stat(uint64_t tx, uint64_t rx);
++int send_traffic_stat(uint64_t tx, uint64_t rx);
+ #endif
+ 
+ #define STAGE_ERROR     -1  /* Error detected                   */
