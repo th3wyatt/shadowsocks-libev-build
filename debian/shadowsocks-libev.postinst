@@ -20,11 +20,17 @@ pathfind() {
 
 case "$1" in
 	configure|reconfigure)
-		pathfind setcap && setcap \
-			cap_net_bind_service+ep /usr/bin/ss-local \
-			cap_net_bind_service,cap_net_admin+ep /usr/bin/ss-redir \
-			cap_net_bind_service+ep /usr/bin/ss-server \
-			cap_net_bind_service+ep /usr/bin/ss-tunnel
+		if pathfind setcap; then
+			if ! setcap \
+				cap_net_bind_service+ep /usr/bin/ss-local \
+				cap_net_bind_service,cap_net_admin+ep /usr/bin/ss-redir \
+				cap_net_bind_service+ep /usr/bin/ss-server \
+				cap_net_bind_service+ep /usr/bin/ss-tunnel; then
+				echo "Failed to set capabilities; ss-* will only be runnable by root."
+			fi
+		else
+			echo "setcap not installed; ss-* will only be runnable by root."
+		fi
 		if [ ! -f /etc/shadowsocks-libev/config.json ]; then
 			set +e
 			pathfind apg

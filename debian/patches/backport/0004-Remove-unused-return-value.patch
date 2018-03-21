@@ -1,0 +1,51 @@
+From: Max Lv <max.c.lv@gmail.com>
+Date: Mon, 5 Feb 2018 13:33:14 +0800
+Subject: Remove unused return value
+
+(cherry picked from commit b361f75f317c8c196408e7723170bde7473579ea)
+---
+ src/android.c | 5 +----
+ src/common.h  | 2 +-
+ 2 files changed, 2 insertions(+), 5 deletions(-)
+
+diff --git a/src/android.c b/src/android.c
+index d7bbcf4..26ee6d7 100644
+--- a/src/android.c
++++ b/src/android.c
+@@ -92,7 +92,7 @@ protect_socket(int fd)
+     return ret;
+ }
+ 
+-int
++void
+ send_traffic_stat(uint64_t tx, uint64_t rx)
+ {
+     int sock;
+@@ -129,8 +129,6 @@ send_traffic_stat(uint64_t tx, uint64_t rx)
+         return -1;
+     }
+ 
+-    char ret = 0;
+-
+     if (recv(sock, &ret, 1, 0) == -1) {
+         ERROR("[android] recv");
+         close(sock);
+@@ -138,5 +136,4 @@ send_traffic_stat(uint64_t tx, uint64_t rx)
+     }
+ 
+     close(sock);
+-    return ret;
+ }
+diff --git a/src/common.h b/src/common.h
+index 079c367..033f0ad 100644
+--- a/src/common.h
++++ b/src/common.h
+@@ -47,7 +47,7 @@ void free_udprelay(void);
+ 
+ #ifdef __ANDROID__
+ int protect_socket(int fd);
+-int send_traffic_stat(uint64_t tx, uint64_t rx);
++void send_traffic_stat(uint64_t tx, uint64_t rx);
+ #endif
+ 
+ #define STAGE_ERROR     -1  /* Error detected                   */

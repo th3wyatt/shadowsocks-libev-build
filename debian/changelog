@@ -1,3 +1,34 @@
+shadowsocks-libev (3.1.3+ds-2) unstable; urgency=medium
+
+  [ Sync from 3.1.3+ds-1ubuntu1 ]
+  * debian/shadowsocks-libev.postinst:
+    - setcap may fail in some contexts (e.g. autopkgtest using LXD).  In
+      that case, issue a warning and carry on.
+  * debian/patches/test-proxy-unsupported.patch:
+    - Skip tests if an upstream HTTP proxy is set.
+
+  [ Roger Shimizu ]
+  * debian/patches: Backport a few patches from upstream.
+    - [ed508ac] Fix no parse --fast-open in manager mode.
+    - [b6faadf] Support TCP_NODELAY in manager mode.
+    - [b361f75] Remove unused return value.
+    - [1a21989] Remove the return value in traffic IPC.
+    - [7b643dc] Invoke plugins direct instead of using "sh".
+    - [9778ce2] Documentation improvements.
+    - [fb22adc] Fix unsafe stripping of port from hostname in http.c
+                (incompatibility SNI sniffing with IPv6).
+    - [26e06a7] Fix bypassing repeated-salt check.
+    - [e7ad7fc] udprelay: display mtu at least size.
+    - [a377c51] Fix #1974 that ss-server should return a non-zero value
+                if plugin failed to start.
+    - [d61b8f0] Launch plugin with NULL params gives plugin to run in both
+                plugin mode & cli mode.
+  * A few bits change to comfort lintian:
+    - Amend Vcs-Git field of debian/control.
+    - Move debian/source.lintian-overrides to debian/source/lintian-overrides.
+
+ -- Roger Shimizu <rosh@debian.org>  Wed, 21 Mar 2018 13:15:49 +0900
+
 shadowsocks-libev (3.1.3+ds-1~bpo8+1) jessie-backports-sloppy; urgency=medium
 
   * Rebuild for jessie-backports-sloppy.
