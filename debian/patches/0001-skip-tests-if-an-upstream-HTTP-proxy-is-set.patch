@@ -1,3 +1,5 @@
+From: Roger Shimizu <rosh@debian.org>
+Date: Mon, 19 Mar 2018 00:56:14 +0900
 Subject: skip tests if an upstream HTTP proxy is set
 
 shadowsocks-libev doesn't support connecting through an upstream HTTP

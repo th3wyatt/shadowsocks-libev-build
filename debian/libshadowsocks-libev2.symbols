@@ -52,6 +52,7 @@ libshadowsocks-libev.so.2 libshadowsocks-libev2 #MINVER#
  free_rules@Base 2.5.6
  free_udprelay@Base 2.4.7
  get_acl_mode@Base 2.5.6
+ get_default_conf@Base 3.2.0
  get_local_port@Base 2.6.3
  get_sockaddr@Base 2.4.7
  get_sockaddr_len@Base 2.4.7
