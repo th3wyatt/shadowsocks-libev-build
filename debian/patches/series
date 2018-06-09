@@ -1,2 +1,4 @@
 0001-skip-tests-if-an-upstream-HTTP-proxy-is-set.patch
 backport/0001-Add-winsock.h-to-dist-target.patch
+backport/0003-Use-chacha20-ietf-as-a-default-cipher-instead-of-rc4.patch
+0004-Update-config-under-tests-folder.patch

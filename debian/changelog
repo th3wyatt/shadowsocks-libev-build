@@ -1,3 +1,14 @@
+shadowsocks-libev (3.2.0+ds-2) UNRELEASED; urgency=medium
+
+  * debian/patches:
+    - Cherry-pick patch from upstream that set default cipher to
+      chacha20-ietf-poly1305, which was already debian package's default long
+      before.
+    - Add a patch to fix tests by using "local" setting instead of
+      "local_address" in tests's config.
+
+ -- Roger Shimizu <rosh@debian.org>  Sat, 09 Jun 2018 16:01:19 +0900
+
 shadowsocks-libev (3.2.0+ds-1) unstable; urgency=medium
 
   * New upstream release.
