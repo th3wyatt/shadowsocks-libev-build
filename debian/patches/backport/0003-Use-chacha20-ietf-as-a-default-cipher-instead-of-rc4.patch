@@ -1,0 +1,194 @@
+From: Yegor Ievlev <koops1997+github@gmail.com>
+Date: Thu, 7 Jun 2018 03:58:10 +0300
+Subject: Use chacha20-ietf as a default cipher instead of rc4-md5 (#2080)
+
+* Use chacha20-ietf as a default cipher instead of rc4-md5
+
+* Update tunnel.c
+
+* Update utils.c
+
+* Update ss-local.asciidoc
+
+* Update ss-local.asciidoc
+
+* Update tunnel.c
+
+* Update ss-tunnel.asciidoc
+
+* Update ss-manager.asciidoc
+
+* Update ss-redir.asciidoc
+
+* Update shadowsocks-libev.asciidoc
+
+* Update aead.c
+
+* Update local.c
+
+* Update server.c
+
+* Update utils.c
+
+(cherry picked from commit 8fd83e2686d6655be4f6ee9ae8b25c8f9b4b862d)
+---
+ doc/shadowsocks-libev.asciidoc | 2 +-
+ doc/ss-local.asciidoc          | 2 +-
+ doc/ss-manager.asciidoc        | 2 +-
+ doc/ss-redir.asciidoc          | 2 +-
+ doc/ss-tunnel.asciidoc         | 2 +-
+ src/aead.c                     | 4 ++--
+ src/local.c                    | 2 +-
+ src/server.c                   | 2 +-
+ src/stream.c                   | 4 ++--
+ src/tunnel.c                   | 2 +-
+ src/utils.c                    | 2 +-
+ 11 files changed, 13 insertions(+), 13 deletions(-)
+
+diff --git a/doc/shadowsocks-libev.asciidoc b/doc/shadowsocks-libev.asciidoc
+index 71b6bcc..5f69e45 100644
+--- a/doc/shadowsocks-libev.asciidoc
++++ b/doc/shadowsocks-libev.asciidoc
+@@ -64,7 +64,7 @@ aes-128-ctr, aes-192-ctr, aes-256-ctr, bf-cfb,
+ camellia-128-cfb, camellia-192-cfb, camellia-256-cfb,
+ chacha20-ietf-poly1305, salsa20, chacha20 and chacha20-ietf.
+ +
+-The default cipher is 'rc4-md5'.
++The default cipher is 'chacha20-ietf-poly1305'.
+ +
+ If built with PolarSSL or custom OpenSSL libraries, some of
+ these ciphers may not work.
+diff --git a/doc/ss-local.asciidoc b/doc/ss-local.asciidoc
+index 931fcd5..0c7cbfd 100644
+--- a/doc/ss-local.asciidoc
++++ b/doc/ss-local.asciidoc
+@@ -59,7 +59,7 @@ aes-128-ctr, aes-192-ctr, aes-256-ctr, bf-cfb,
+ camellia-128-cfb, camellia-192-cfb, camellia-256-cfb,
+ chacha20-ietf-poly1305, salsa20, chacha20 and chacha20-ietf.
+ +
+-The default cipher is 'rc4-md5'.
++The default cipher is 'chacha20-ietf-poly1305'.
+ +
+ If built with PolarSSL or custom OpenSSL libraries, some of
+ these ciphers may not work.
+diff --git a/doc/ss-manager.asciidoc b/doc/ss-manager.asciidoc
+index f344cff..505c7d1 100644
+--- a/doc/ss-manager.asciidoc
++++ b/doc/ss-manager.asciidoc
+@@ -51,7 +51,7 @@ aes-128-ctr, aes-192-ctr, aes-256-ctr, bf-cfb,
+ camellia-128-cfb, camellia-192-cfb, camellia-256-cfb,
+ chacha20-ietf-poly1305, salsa20, chacha20 and chacha20-ietf.
+ +
+-The default cipher is 'rc4-md5'.
++The default cipher is 'chacha20-ietf-poly1305'.
+ +
+ If built with PolarSSL or custom OpenSSL libraries, some of
+ these ciphers may not work.
+diff --git a/doc/ss-redir.asciidoc b/doc/ss-redir.asciidoc
+index 9355de1..c03f023 100644
+--- a/doc/ss-redir.asciidoc
++++ b/doc/ss-redir.asciidoc
+@@ -58,7 +58,7 @@ aes-128-ctr, aes-192-ctr, aes-256-ctr, bf-cfb,
+ camellia-128-cfb, camellia-192-cfb, camellia-256-cfb,
+ chacha20-ietf-poly1305, salsa20, chacha20 and chacha20-ietf.
+ +
+-The default cipher is 'rc4-md5'.
++The default cipher is 'chacha20-ietf-poly1305'.
+ +
+ If built with PolarSSL or custom OpenSSL libraries, some of
+ these ciphers may not work.
+diff --git a/doc/ss-tunnel.asciidoc b/doc/ss-tunnel.asciidoc
+index b4b3e6e..1e0e4ff 100644
+--- a/doc/ss-tunnel.asciidoc
++++ b/doc/ss-tunnel.asciidoc
+@@ -58,7 +58,7 @@ aes-128-ctr, aes-192-ctr, aes-256-ctr, bf-cfb,
+ camellia-128-cfb, camellia-192-cfb, camellia-256-cfb,
+ chacha20-ietf-poly1305, salsa20, chacha20 and chacha20-ietf.
+ +
+-The default cipher is 'rc4-md5'.
++The default cipher is 'chacha20-ietf-poly1305'.
+ +
+ If built with PolarSSL or custom OpenSSL libraries, some of
+ these ciphers may not work.
+diff --git a/src/aead.c b/src/aead.c
+index 56cf30a..9e2da72 100644
+--- a/src/aead.c
++++ b/src/aead.c
+@@ -719,8 +719,8 @@ aead_init(const char *pass, const char *key, const char *method)
+                 break;
+             }
+         if (m >= AEAD_CIPHER_NUM) {
+-            LOGE("Invalid cipher name: %s, use aes-256-gcm instead", method);
+-            m = AES256GCM;
++            LOGE("Invalid cipher name: %s, use chacha20-ietf-poly1305 instead", method);
++            m = CHACHA20POLY1305IETF;
+         }
+     }
+     return aead_key_init(m, pass, key);
+diff --git a/src/local.c b/src/local.c
+index 3cff2f7..94dcef3 100644
+--- a/src/local.c
++++ b/src/local.c
+@@ -1697,7 +1697,7 @@ main(int argc, char **argv)
+     }
+ 
+     if (method == NULL) {
+-        method = "rc4-md5";
++        method = "chacha20-ietf-poly1305";
+     }
+ 
+     if (timeout == NULL) {
+diff --git a/src/server.c b/src/server.c
+index 4d7c70b..30c03a4 100644
+--- a/src/server.c
++++ b/src/server.c
+@@ -1860,7 +1860,7 @@ main(int argc, char **argv)
+     }
+ 
+     if (method == NULL) {
+-        method = "rc4-md5";
++        method = "chacha20-ietf-poly1305";
+     }
+ 
+     if (timeout == NULL) {
+diff --git a/src/stream.c b/src/stream.c
+index e6a798d..3817dbb 100644
+--- a/src/stream.c
++++ b/src/stream.c
+@@ -677,8 +677,8 @@ stream_init(const char *pass, const char *key, const char *method)
+                 break;
+             }
+         if (m >= STREAM_CIPHER_NUM) {
+-            LOGE("Invalid cipher name: %s, use rc4-md5 instead", method);
+-            m = RC4_MD5;
++            LOGE("Invalid cipher name: %s, use chacha20-ietf instead", method);
++            m = CHACHA20IETF;
+         }
+     }
+     if (m == TABLE) {
+diff --git a/src/tunnel.c b/src/tunnel.c
+index edd8a98..d6e12fb 100644
+--- a/src/tunnel.c
++++ b/src/tunnel.c
+@@ -1021,7 +1021,7 @@ main(int argc, char **argv)
+     }
+ 
+     if (method == NULL) {
+-        method = "rc4-md5";
++        method = "chacha20-ietf-poly1305";
+     }
+ 
+     if (timeout == NULL) {
+diff --git a/src/utils.c b/src/utils.c
+index 9461afd..ca5763b 100644
+--- a/src/utils.c
++++ b/src/utils.c
+@@ -317,7 +317,7 @@ usage()
+     printf(
+         "                                  salsa20, chacha20 and chacha20-ietf.\n");
+     printf(
+-        "                                  The default cipher is rc4-md5.\n");
++        "                                  The default cipher is chacha20-ietf-poly1305.\n");
+     printf("\n");
+     printf(
+         "       [-a <user>]                Run as another user.\n");

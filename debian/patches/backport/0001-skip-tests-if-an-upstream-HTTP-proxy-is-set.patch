@@ -1,3 +1,5 @@
+From: Colin Watson <cjwatson@ubuntu.com>
+Date: Thu, 1 Feb 2018 13:46:47 +0000
 Subject: skip tests if an upstream HTTP proxy is set
 
 shadowsocks-libev doesn't support connecting through an upstream HTTP

@@ -1,0 +1,115 @@
+From: Roger Shimizu <rosh@debian.org>
+Date: Sat, 9 Jun 2018 15:54:08 +0900
+Subject: Update config under tests/ folder
+
+Fix tests by using "local" setting instead of "local_address" in config.
+
+This is mentioned in:
+- https://github.com/shadowsocks/shadowsocks-libev/issues/247
+---
+ tests/aes-ctr.json                | 2 +-
+ tests/aes-gcm.json                | 2 +-
+ tests/aes.json                    | 2 +-
+ tests/chacha20-ietf-poly1305.json | 2 +-
+ tests/chacha20-ietf.json          | 2 +-
+ tests/chacha20.json               | 2 +-
+ tests/rc4-md5.json                | 2 +-
+ tests/salsa20.json                | 2 +-
+ 8 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/tests/aes-ctr.json b/tests/aes-ctr.json
+index 44ba6a2..417ccb9 100644
+--- a/tests/aes-ctr.json
++++ b/tests/aes-ctr.json
+@@ -5,6 +5,6 @@
+     "password":"aes_password",
+     "timeout":60,
+     "method":"aes-256-ctr",
+-    "local_address":"127.0.0.1",
++    "local":"127.0.0.1",
+     "fast_open":false
+ }
+diff --git a/tests/aes-gcm.json b/tests/aes-gcm.json
+index 2f74baa..2341786 100644
+--- a/tests/aes-gcm.json
++++ b/tests/aes-gcm.json
+@@ -5,6 +5,6 @@
+     "password":"aes_password",
+     "timeout":60,
+     "method":"aes-256-gcm",
+-    "local_address":"127.0.0.1",
++    "local":"127.0.0.1",
+     "fast_open":false
+ }
+diff --git a/tests/aes.json b/tests/aes.json
+index 1b3b738..14bbe22 100644
+--- a/tests/aes.json
++++ b/tests/aes.json
+@@ -5,6 +5,6 @@
+     "password":"aes_password",
+     "timeout":60,
+     "method":"aes-256-cfb",
+-    "local_address":"127.0.0.1",
++    "local":"127.0.0.1",
+     "fast_open":false
+ }
+diff --git a/tests/chacha20-ietf-poly1305.json b/tests/chacha20-ietf-poly1305.json
+index 705393d..bca655c 100644
+--- a/tests/chacha20-ietf-poly1305.json
++++ b/tests/chacha20-ietf-poly1305.json
+@@ -5,6 +5,6 @@
+     "password":"salsa20_password",
+     "timeout":60,
+     "method":"chacha20-ietf-poly1305",
+-    "local_address":"127.0.0.1",
++    "local":"127.0.0.1",
+     "fast_open":false
+ }
+diff --git a/tests/chacha20-ietf.json b/tests/chacha20-ietf.json
+index 2a062a4..45841b9 100644
+--- a/tests/chacha20-ietf.json
++++ b/tests/chacha20-ietf.json
+@@ -5,6 +5,6 @@
+     "password":"salsa20_password",
+     "timeout":60,
+     "method":"chacha20-ietf",
+-    "local_address":"127.0.0.1",
++    "local":"127.0.0.1",
+     "fast_open":false
+ }
+diff --git a/tests/chacha20.json b/tests/chacha20.json
+index 5c31686..35b5f8a 100644
+--- a/tests/chacha20.json
++++ b/tests/chacha20.json
+@@ -5,6 +5,6 @@
+     "password":"chacha20_password",
+     "timeout":60,
+     "method":"chacha20",
+-    "local_address":"127.0.0.1",
++    "local":"127.0.0.1",
+     "fast_open":false
+ }
+diff --git a/tests/rc4-md5.json b/tests/rc4-md5.json
+index eb08bee..3e0a9ab 100644
+--- a/tests/rc4-md5.json
++++ b/tests/rc4-md5.json
+@@ -5,6 +5,6 @@
+     "password":"aes_password",
+     "timeout":60,
+     "method":"rc4-md5",
+-    "local_address":"127.0.0.1",
++    "local":"127.0.0.1",
+     "fast_open":false
+ }
+diff --git a/tests/salsa20.json b/tests/salsa20.json
+index 3729b46..58860b3 100644
+--- a/tests/salsa20.json
++++ b/tests/salsa20.json
+@@ -5,6 +5,6 @@
+     "password":"salsa20_password",
+     "timeout":60,
+     "method":"salsa20",
+-    "local_address":"127.0.0.1",
++    "local":"127.0.0.1",
+     "fast_open":false
+ }

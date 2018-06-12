@@ -1,3 +1,33 @@
+shadowsocks-libev (3.2.0+ds-2) unstable; urgency=medium
+
+  * debian/patches:
+    - Cherry-pick patch from upstream that set default cipher to
+      chacha20-ietf-poly1305, which was already debian package's default long
+      before.
+    - Add a patch to fix tests by using "local" setting instead of
+      "local_address" in tests's config.
+
+ -- Roger Shimizu <rosh@debian.org>  Sat, 09 Jun 2018 16:07:15 +0900
+
+shadowsocks-libev (3.2.0+ds-1) unstable; urgency=medium
+
+  * New upstream release.
+    - Fix FTBFS against GCC 8. Closes: #897858.
+    - Add support for XDG_CONFIG_HOME envvar.
+    - Minor bug fixes.
+  * debian/: Apply "wrap-and-sort -abst" for a uniformed format.
+  * debian/control:
+    - Bump Standards-Version to 4.1.4. (no changes needed)
+  * debian/rules:
+    - Use "dh_missing --fail-missing".
+    - Remove unnecessary extra files before dh_install.
+  * debian/copyright: Update copyright date information.
+  * debian/patches: Refresh patches.
+  * debian/shadowsocks-libev.install:
+    - Also install zsh completions into system.
+
+ -- Boyuan Yang <073plan@gmail.com>  Mon, 04 Jun 2018 17:48:46 +0800
+
 shadowsocks-libev (3.1.3+ds-2~bpo8+1) jessie-backports-sloppy; urgency=medium
 
   * Rebuild for jessie-backports-sloppy.
