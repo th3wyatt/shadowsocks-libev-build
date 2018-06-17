@@ -1,4 +1,4 @@
-shadowsocks-libev (3.2.0+ds-3) UNRELEASED; urgency=medium
+shadowsocks-libev (3.2.0+ds-3) unstable; urgency=medium
 
   * debian/control:
     - Use tracker mail as uploader address.
@@ -9,7 +9,7 @@ shadowsocks-libev (3.2.0+ds-3) UNRELEASED; urgency=medium
     - Drop apg and pwgen from Depends, use perl rand() snippet to
       generate password. Thanks to Shengjing Zhu (Closes: 900258).
 
- -- Roger Shimizu <rosh@debian.org>  Sat, 16 Jun 2018 18:03:23 +0900
+ -- Roger Shimizu <rosh@debian.org>  Sun, 17 Jun 2018 11:19:11 +0900
 
 shadowsocks-libev (3.2.0+ds-2) unstable; urgency=medium
 
