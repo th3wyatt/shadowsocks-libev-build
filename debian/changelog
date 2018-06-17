@@ -5,6 +5,9 @@ shadowsocks-libev (3.2.0+ds-3) UNRELEASED; urgency=medium
   * debian/patches:
     - Add patch to fix of PATH_MAX for GNU/Hurd.
       Upstreamed already as [d88345fa].
+  * debian/shadowsocks-libev.postinst & debian/control:
+    - Drop apg and pwgen from Depends, use perl rand() snippet to
+      generate password. Thanks to Shengjing Zhu (Closes: 900258).
 
  -- Roger Shimizu <rosh@debian.org>  Sat, 16 Jun 2018 18:03:23 +0900
 

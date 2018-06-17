@@ -33,12 +33,7 @@ case "$1" in
 		fi
 		if [ ! -f /etc/shadowsocks-libev/config.json ]; then
 			set +e
-			pathfind apg
-			if [ $? -eq 0 ]; then
-				passwd=$(apg -n 1 -M ncl)
-			else
-				passwd=$(pwgen 12 1)
-			fi
+			passwd=$(perl -e 'print map{("a".."z","A".."Z",0..9)[int(rand(62))]}(1..12)')
 			set -e
 			mkdir -p /etc/shadowsocks-libev
 			sed "s/barfoo!/$passwd/" /usr/share/shadowsocks-libev/config.json \
