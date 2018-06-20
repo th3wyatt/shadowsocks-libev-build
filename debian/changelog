@@ -1,3 +1,9 @@
+shadowsocks-libev (3.2.0+ds-3~bpo9+1) stretch-backports; urgency=medium
+
+  * Rebuild for stretch-backports.
+
+ -- Roger Shimizu <rosh@debian.org>  Wed, 20 Jun 2018 09:52:21 +0900
+
 shadowsocks-libev (3.2.0+ds-3) unstable; urgency=medium
 
   * debian/control:
