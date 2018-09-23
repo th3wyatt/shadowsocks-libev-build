@@ -1,4 +1,4 @@
-shadowsocks-libev (3.2.0+ds-4) UNRELEASED; urgency=medium
+shadowsocks-libev (3.2.0+ds-4) unstable; urgency=medium
 
   * debian/patches:
     - Backport two upstream patches to support IPv6 bind address in
@@ -11,7 +11,7 @@ shadowsocks-libev (3.2.0+ds-4) UNRELEASED; urgency=medium
       addressed after stretch. Guessing ftpmaster shouldn't complain this
       anymore.
 
- -- Roger Shimizu <rosh@debian.org>  Sun, 02 Sep 2018 21:51:14 +0900
+ -- Roger Shimizu <rosh@debian.org>  Mon, 24 Sep 2018 00:32:10 +0900
 
 shadowsocks-libev (3.2.0+ds-3) unstable; urgency=medium
 
