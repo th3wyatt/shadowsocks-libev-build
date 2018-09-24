@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Roger Shimizu <rosh@debian.org>
 Uploaders:
  Max Lv <max.c.lv@gmail.com>,
- Boyuan Yang <byang@debian.org>,
+ Boyuan Yang <073plan@gmail.com>,
  Debian Bridges Team <team+bridges@tracker.debian.org>
 Build-Depends:
  asciidoc-base | asciidoc,
