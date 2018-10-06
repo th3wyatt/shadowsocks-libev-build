@@ -10,6 +10,8 @@ shadowsocks-libev (3.2.0+ds-5) UNRELEASED; urgency=medium
     - Add CapabilityBoundingSet: CAP_NET_BIND_SERVICE
   * debian/shadowsocks-libev*.service (cherry-pick from upstream):
     - Add AmbientCapabilities sames as CapabilityBoundingSet.
+  * Move "tcp_and_udp" mode setting from init script / systemd service
+    to config.json. Also add a NEWS about this change.
 
  -- Roger Shimizu <rosh@debian.org>  Sun, 07 Oct 2018 00:31:40 +0900
 
