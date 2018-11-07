@@ -12,6 +12,9 @@ shadowsocks-libev (3.2.0+ds-5) UNRELEASED; urgency=medium
     - Add AmbientCapabilities sames as CapabilityBoundingSet.
   * Move "tcp_and_udp" mode setting from init script / systemd service
     to config.json. Also add a NEWS about this change.
+  * debian/patches: Backport a few patches from upstream.
+    - [482040a] Fix a potential stackoverflow issue.
+    - [92cab35] Add check for reusing server's nonce/salt.
 
  -- Roger Shimizu <rosh@debian.org>  Sun, 07 Oct 2018 00:31:40 +0900
 

@@ -1,0 +1,112 @@
+From: Max Lv <max.c.lv@gmail.com>
+Date: Fri, 19 Oct 2018 08:52:04 +0800
+Subject: Fix a potential stackoverflow issue
+
+(cherry picked from commit 482040a5ddb6ca5ce0f90850f5c164dcc81ebf88)
+---
+ src/http.c     |  2 --
+ src/local.c    | 23 ++++++++++++-----------
+ src/protocol.h |  2 ++
+ src/tls.c      |  1 -
+ 4 files changed, 14 insertions(+), 14 deletions(-)
+
+diff --git a/src/http.c b/src/http.c
+index aae0f3d..0caeb3a 100644
+--- a/src/http.c
++++ b/src/http.c
+@@ -37,8 +37,6 @@
+ #include "http.h"
+ #include "protocol.h"
+ 
+-#define SERVER_NAME_LEN 256
+-
+ static int parse_http_header(const char *, size_t, char **);
+ static int get_header(const char *, const char *, int, char **);
+ static int next_header(const char **, int *);
+diff --git a/src/local.c b/src/local.c
+index 94dcef3..175b85c 100644
+--- a/src/local.c
++++ b/src/local.c
+@@ -357,7 +357,7 @@ server_handshake(EV_P_ ev_io *w, buffer_t *buf)
+         server->stage = STAGE_PARSE;
+     }
+ 
+-    char host[257], ip[INET6_ADDRSTRLEN], port[16];
++    char host[MAX_HOSTNAME_LEN+1], ip[INET6_ADDRSTRLEN], port[16];
+ 
+     buffer_t *abuf = server->abuf;
+     abuf->idx = 0;
+@@ -423,27 +423,28 @@ server_handshake(EV_P_ ev_io *w, buffer_t *buf)
+ 
+     size_t abuf_len  = abuf->len;
+     int sni_detected = 0;
+-    int ret          = 0;
++    int hostname_len = 0;
+ 
+     char *hostname;
+     uint16_t dst_port = ntohs(*(uint16_t *)(abuf->data + abuf->len - 2));
+ 
+     if (atyp == 1 || atyp == 4) {
+         if (dst_port == http_protocol->default_port)
+-            ret = http_protocol->parse_packet(buf->data + 3 + abuf->len,
++            hostname_len = http_protocol->parse_packet(buf->data + 3 + abuf->len,
+                                               buf->len - 3 - abuf->len, &hostname);
+         else if (dst_port == tls_protocol->default_port)
+-            ret = tls_protocol->parse_packet(buf->data + 3 + abuf->len,
++            hostname_len = tls_protocol->parse_packet(buf->data + 3 + abuf->len,
+                                              buf->len - 3 - abuf->len, &hostname);
+-        if (ret == -1 && buf->len < BUF_SIZE && server->stage != STAGE_SNI) {
++        if (hostname_len == -1 && buf->len < BUF_SIZE && server->stage != STAGE_SNI) {
+             server->stage = STAGE_SNI;
+             ev_timer_start(EV_A_ & server->delayed_connect_watcher);
+             return -1;
+-        } else if (ret > 0) {
++        } else if (hostname_len > 0) {
+             sni_detected = 1;
+             if (acl || verbose) {
+-                memcpy(host, hostname, ret);
+-                host[ret] = '\0';
++                hostname_len = hostname_len > MAX_HOSTNAME_LEN ? MAX_HOSTNAME_LEN : hostname_len;
++                memcpy(host, hostname, hostname_len);
++                host[hostname_len] = '\0';
+             }
+             ss_free(hostname);
+         }
+@@ -560,9 +561,9 @@ server_handshake(EV_P_ ev_io *w, buffer_t *buf)
+             // Reconstruct address buffer
+             abuf->len               = 0;
+             abuf->data[abuf->len++] = 3;
+-            abuf->data[abuf->len++] = ret;
+-            memcpy(abuf->data + abuf->len, host, ret);
+-            abuf->len += ret;
++            abuf->data[abuf->len++] = hostname_len;
++            memcpy(abuf->data + abuf->len, host, hostname_len);
++            abuf->len += hostname_len;
+             dst_port   = htons(dst_port);
+             memcpy(abuf->data + abuf->len, &dst_port, 2);
+             abuf->len += 2;
+diff --git a/src/protocol.h b/src/protocol.h
+index eaa866e..c2d51eb 100644
+--- a/src/protocol.h
++++ b/src/protocol.h
+@@ -26,6 +26,8 @@
+ #ifndef PROTOCOL_H
+ #define PROTOCOL_H
+ 
++#define MAX_HOSTNAME_LEN 256
++
+ typedef struct protocol {
+     const int default_port;
+     int(*const parse_packet)(const char *, size_t, char **);
+diff --git a/src/tls.c b/src/tls.c
+index 863ae9e..8cab683 100644
+--- a/src/tls.c
++++ b/src/tls.c
+@@ -44,7 +44,6 @@
+ #include "protocol.h"
+ #include "utils.h"
+ 
+-#define SERVER_NAME_LEN 256
+ #define TLS_HEADER_LEN 5
+ #define TLS_HANDSHAKE_CONTENT_TYPE 0x16
+ #define TLS_HANDSHAKE_TYPE_CLIENT_HELLO 0x01
