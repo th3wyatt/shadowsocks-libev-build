@@ -3,3 +3,7 @@ backport/0002-Add-winsock.h-to-dist-target.patch
 backport/0003-Use-chacha20-ietf-as-a-default-cipher-instead-of-rc4.patch
 backport/0004-Update-config-under-tests-folder.patch
 backport/0005-Fix-of-PATH_MAX-for-GNU-Hurd.patch
+backport/0006-Fix-2162.patch
+backport/0007-Refine-2162.patch
+backport/0008-Fix-a-potential-stackoverflow-issue.patch
+backport/0009-Add-check-for-reusing-server-s-nonce-salt.patch

@@ -1,3 +1,38 @@
+shadowsocks-libev (3.2.0+ds-5) unstable; urgency=medium
+
+  [ Boyuan Yang ]
+  * debian/control:
+    - Update my email address and use the @debian.org one.
+    - Bump Standards-Version to 4.2.1 (no changes needed).
+
+  [ Roger Shimizu ]
+  * debian/shadowsocks-libev.service (cherry-pick from upstream):
+    - Add CapabilityBoundingSet: CAP_NET_BIND_SERVICE
+  * debian/shadowsocks-libev*.service (cherry-pick from upstream):
+    - Add AmbientCapabilities sames as CapabilityBoundingSet.
+  * Move "tcp_and_udp" mode setting from init script / systemd service
+    to config.json. Also add a NEWS about this change.
+  * debian/patches: Backport a few patches from upstream.
+    - [482040a] Fix a potential stackoverflow issue.
+    - [92cab35] Add check for reusing server's nonce/salt.
+
+ -- Roger Shimizu <rosh@debian.org>  Thu, 08 Nov 2018 02:16:23 +0900
+
+shadowsocks-libev (3.2.0+ds-4) unstable; urgency=medium
+
+  * debian/patches:
+    - Backport two upstream patches to support IPv6 bind address in
+      config, but no actual ipv6 network interface.
+  * debian/config.json:
+    - Add IPv6 loopback address ::1 to bind list. This should be no harm
+      since the above two patches. (Closes: #881847)
+  * Remove debian/source/lintian-overrides:
+    - The only lintian override, license-problem-gfdl-invariants, was
+      addressed after stretch. Guessing ftpmaster shouldn't complain this
+      anymore.
+
+ -- Roger Shimizu <rosh@debian.org>  Mon, 24 Sep 2018 00:32:10 +0900
+
 shadowsocks-libev (3.2.0+ds-3~bpo8+1) jessie-backports-sloppy; urgency=medium
 
   * Rebuild for jessie-backports-sloppy.

@@ -1,0 +1,67 @@
+From: Max Lv <max.c.lv@gmail.com>
+Date: Sun, 2 Sep 2018 17:27:59 -0700
+Subject: Refine #2162
+
+(cherry picked from commit 46ff0a8045f5a3f504294c85f5e5e19c813c3e52)
+---
+ src/server.c   |  9 ++++++++-
+ src/udprelay.c | 10 +++++-----
+ 2 files changed, 13 insertions(+), 6 deletions(-)
+
+diff --git a/src/server.c b/src/server.c
+index a3ecf8d..0813fdc 100644
+--- a/src/server.c
++++ b/src/server.c
+@@ -2048,6 +2048,7 @@ main(int argc, char **argv)
+     }
+ 
+     if (mode != TCP_ONLY) {
++        int num_listen_ctx = 0;
+         for (int i = 0; i < server_num; i++) {
+             const char *host = server_host[i];
+             const char *port = server_port;
+@@ -2059,7 +2060,13 @@ main(int argc, char **argv)
+             else
+                 LOGI("udp server listening at %s:%s", host ? host : "0.0.0.0", port);
+             // Setup UDP
+-            init_udprelay(host, port, mtu, crypto, atoi(timeout), iface);
++            int err = init_udprelay(host, port, mtu, crypto, atoi(timeout), iface);
++            if (err == -1) continue;
++            num_listen_ctx++;
++        }
++
++        if (num_listen_ctx == 0) {
++            FATAL("failed to listen on any address");
+         }
+     }
+ 
+diff --git a/src/udprelay.c b/src/udprelay.c
+index 24d55fd..413ee5a 100644
+--- a/src/udprelay.c
++++ b/src/udprelay.c
+@@ -1352,20 +1352,20 @@ init_udprelay(const char *server_host, const char *server_port,
+         buf_size    = packet_size * 2;
+     }
+ 
+-    // Initialize cache
+-    struct cache *conn_cache;
+-    cache_create(&conn_cache, MAX_UDP_CONN_NUM, free_cb);
+-
+     // ////////////////////////////////////////////////
+     // Setup server context
+ 
+     // Bind to port
+     int serverfd = create_server_socket(server_host, server_port);
+     if (serverfd < 0) {
+-        FATAL("[udp] bind() error");
++        return -1;
+     }
+     setnonblocking(serverfd);
+ 
++    // Initialize cache
++    struct cache *conn_cache;
++    cache_create(&conn_cache, MAX_UDP_CONN_NUM, free_cb);
++
+     server_ctx_t *server_ctx = new_server_ctx(serverfd);
+ #ifdef MODULE_REMOTE
+     server_ctx->loop = loop;
