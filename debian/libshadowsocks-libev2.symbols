@@ -67,7 +67,6 @@ libshadowsocks-libev.so.2 libshadowsocks-libev2 #MINVER#
  json_value_free@Base 2.4.7
  json_value_free_ex@Base 2.4.7
  json_value_none@Base 2.4.7
- keep_resolving@Base 2.4.7
  logfile@Base 2.4.7
  lookup_rule@Base 2.5.6
  new_rule@Base 2.5.6
@@ -92,6 +91,7 @@ libshadowsocks-libev.so.2 libshadowsocks-libev2 #MINVER#
  sockaddr_cmp@Base 2.4.7
  sockaddr_cmp_addr@Base 2.4.7
  ss_align@Base 3.0.2
+ ss_is_ipv6addr@Base 3.2.1
  ss_isnumeric@Base 2.6.3
  ss_itoa@Base 2.4.7
  ss_malloc@Base 2.4.7
