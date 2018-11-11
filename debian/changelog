@@ -1,4 +1,4 @@
-shadowsocks-libev (3.2.1+ds-1) UNRELEASED; urgency=medium
+shadowsocks-libev (3.2.1+ds-1) unstable; urgency=medium
 
   * New upstream release.
     - Add TCP fast open support to ss-tunnel by @PantherJohn.
@@ -7,7 +7,7 @@ shadowsocks-libev (3.2.1+ds-1) UNRELEASED; urgency=medium
     - Remove keep_resolving.
     - Add ss_is_ipv6addr.
 
- -- Roger Shimizu <rosh@debian.org>  Sat, 10 Nov 2018 15:11:09 +0900
+ -- Roger Shimizu <rosh@debian.org>  Mon, 12 Nov 2018 01:44:02 +0900
 
 shadowsocks-libev (3.2.0+ds-5) unstable; urgency=medium
 
