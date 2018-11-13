@@ -1,0 +1,35 @@
+From: Max Lv <max.c.lv@gmail.com>
+Date: Tue, 13 Nov 2018 21:31:34 +0800
+Subject: Fix #2215
+
+(cherry picked from commit 569570cfa97dd87657bc3a04de63ebb0a27f4b42)
+---
+ src/aead.c  | 2 +-
+ src/utils.c | 1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/aead.c b/src/aead.c
+index f4b9c1c..7ea107f 100644
+--- a/src/aead.c
++++ b/src/aead.c
+@@ -331,7 +331,7 @@ aead_cipher_ctx_init(cipher_ctx_t *cipher_ctx, int method, int enc)
+     const cipher_kt_t *cipher = aead_get_cipher_type(method);
+ 
+     if (method == AES256GCM && crypto_aead_aes256gcm_is_available()) {
+-        cipher_ctx->aes256gcm_ctx = ss_malloc(sizeof(aes256gcm_ctx));
++        cipher_ctx->aes256gcm_ctx = ss_align(sizeof(aes256gcm_ctx));
+         memset(cipher_ctx->aes256gcm_ctx, 0, sizeof(aes256gcm_ctx));
+     } else {
+         cipher_ctx->aes256gcm_ctx = NULL;
+diff --git a/src/utils.c b/src/utils.c
+index ca5d9c5..29dea13 100644
+--- a/src/utils.c
++++ b/src/utils.c
+@@ -246,6 +246,7 @@ ss_align(size_t size)
+     int err;
+     void *tmp = NULL;
+ #ifdef HAVE_POSIX_MEMALIGN
++    /* ensure 16 byte alignment */
+     err = posix_memalign(&tmp, sizeof(void *), size);
+ #else
+     err = -1;
