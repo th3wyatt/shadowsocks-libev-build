@@ -1,3 +1,24 @@
+shadowsocks-libev (3.2.1+ds-2) unstable; urgency=medium
+
+  * debian/patches: Backport patch from upstream.
+    - [569570c] Fix memory alignment for AES256GCM on 32-bit system.
+    - [519776c] Relax the nonce check in clients.
+    - [4a51c28] Fix udp relay when tcp only (for use with kcptun).
+    - [910e29a] Make local address 0.0.0.0 work with udp relay.
+
+ -- Roger Shimizu <rosh@debian.org>  Fri, 23 Nov 2018 00:59:18 +0900
+
+shadowsocks-libev (3.2.1+ds-1) unstable; urgency=medium
+
+  * New upstream release.
+    - Add TCP fast open support to ss-tunnel by @PantherJohn.
+    - Fix several security issues.
+  * debian/libshadowsocks-libev2.symbols:
+    - Remove keep_resolving.
+    - Add ss_is_ipv6addr.
+
+ -- Roger Shimizu <rosh@debian.org>  Mon, 12 Nov 2018 01:44:02 +0900
+
 shadowsocks-libev (3.2.0+ds-5~bpo9+1) stretch-backports; urgency=medium
 
   * Rebuild for stretch-backports.
