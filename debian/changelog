@@ -1,3 +1,12 @@
+shadowsocks-libev (3.2.2+ds-1) UNRELEASED; urgency=medium
+
+  * New upstream release: v3.2.2
+    - Fix a bug on 32-bit arch.
+  * debian/libshadowsocks-libev2.symbols:
+    - Add s_port@Base
+
+ -- Roger Shimizu <rosh@debian.org>  Wed, 28 Nov 2018 00:20:09 +0900
+
 shadowsocks-libev (3.2.1+ds-2) unstable; urgency=medium
 
   * debian/patches: Backport patch from upstream.
