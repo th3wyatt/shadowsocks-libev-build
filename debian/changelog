@@ -1,3 +1,12 @@
+shadowsocks-libev (3.2.3+ds-1) unstable; urgency=medium
+
+  * New upstream release: v3.2.3
+    - Fix the alignment issue again.
+  * debian/maint-tools/README: Update packaging repo url.
+  * debian/README.Debian: Update my email address.
+
+ -- Boyuan Yang <byang@debian.org>  Sat, 01 Dec 2018 20:12:36 -0500
+
 shadowsocks-libev (3.2.2+ds-1) unstable; urgency=medium
 
   * New upstream release: v3.2.2
