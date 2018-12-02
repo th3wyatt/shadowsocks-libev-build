@@ -2,7 +2,7 @@ Package Maintenance Tips
 ========================
 
 Clone and add upstream repo:
-  $ gbp clone --pristine-tar https://anonscm.debian.org/git/collab-maint/shadowsocks-libev.git
+  $ gbp clone --pristine-tar https://salsa.debian.org/bridges-team/shadowsocks-libev.git
   $ cd shadowsocks-libev
   $ git remote add github https://github.com/shadowsocks/shadowsocks-libev.git
 
