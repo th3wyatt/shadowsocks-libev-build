@@ -288,7 +288,7 @@ server_handshake_reply(EV_P_ ev_io *w, int udp_assc, struct socks5_response *res
     struct sockaddr_in sock_addr;
     if (udp_assc) {
         socklen_t addr_len = sizeof(sock_addr);
-        if (getsockname(udp_fd, (struct sockaddr *)&sock_addr, &addr_len) < 0) {
+        if (getsockname(server->fd, (struct sockaddr *)&sock_addr, &addr_len) < 0) {
             LOGE("getsockname: %s", strerror(errno));
             response->rep = SOCKS5_REP_CONN_REFUSED;
             send(server->fd, (char *)response, sizeof(struct socks5_response), 0);

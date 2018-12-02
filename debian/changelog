@@ -1,3 +1,27 @@
+shadowsocks-libev (3.2.3+ds-1~bpo9+1) stretch-backports; urgency=medium
+
+  * Rebuild for stretch-backports.
+
+ -- Boyuan Yang <byang@debian.org>  Sat, 01 Dec 2018 20:18:53 -0500
+
+shadowsocks-libev (3.2.3+ds-1) unstable; urgency=medium
+
+  * New upstream release: v3.2.3
+    - Fix the alignment issue again.
+  * debian/maint-tools/README: Update packaging repo url.
+  * debian/README.Debian: Update my email address.
+
+ -- Boyuan Yang <byang@debian.org>  Sat, 01 Dec 2018 20:12:36 -0500
+
+shadowsocks-libev (3.2.2+ds-1) unstable; urgency=medium
+
+  * New upstream release: v3.2.2
+    - Fix a bug on 32-bit arch.
+  * debian/libshadowsocks-libev2.symbols:
+    - Add s_port@Base
+
+ -- Roger Shimizu <rosh@debian.org>  Wed, 28 Nov 2018 01:15:47 +0900
+
 shadowsocks-libev (3.2.1+ds-2~bpo9+1) stretch-backports; urgency=medium
 
   * Rebuild for stretch-backports.
