@@ -1,3 +1,13 @@
+shadowsocks-libev (3.2.4+ds-1) unstable; urgency=medium
+
+  * New upstream release: v3.2.4
+  * debian/control:
+    + Bump Standards-Version to 4.3.0.
+  * debian/shadowsocks-libev.postrm: Make the script more robust to
+    fix the error on package purge.
+
+ -- Boyuan Yang <byang@debian.org>  Fri, 01 Mar 2019 11:31:45 -0500
+
 shadowsocks-libev (3.2.3+ds-1) unstable; urgency=medium
 
   * New upstream release: v3.2.3

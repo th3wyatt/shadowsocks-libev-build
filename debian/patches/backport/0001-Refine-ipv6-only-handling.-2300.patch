@@ -1,0 +1,210 @@
+From: Max Lv <max.c.lv@gmail.com>
+Date: Fri, 1 Mar 2019 07:32:25 +0800
+Subject: Refine ipv6 only handling. #2300
+
+---
+ src/jconf.c    |  1 +
+ src/jconf.h    |  5 -----
+ src/local.c    |  6 +++++-
+ src/manager.c  |  2 +-
+ src/netutils.c | 16 ++++++++++++++++
+ src/netutils.h |  7 +++++++
+ src/redir.c    |  6 +++++-
+ src/server.c   | 15 +++++++++++----
+ src/tunnel.c   |  6 +++++-
+ 9 files changed, 51 insertions(+), 13 deletions(-)
+
+diff --git a/src/jconf.c b/src/jconf.c
+index 5421d18..c03854a 100644
+--- a/src/jconf.c
++++ b/src/jconf.c
+@@ -25,6 +25,7 @@
+ #include <string.h>
+ #include <time.h>
+ 
++#include "netutils.h"
+ #include "utils.h"
+ #include "jconf.h"
+ #include "json.h"
+diff --git a/src/jconf.h b/src/jconf.h
+index bf41b05..06dbf92 100644
+--- a/src/jconf.h
++++ b/src/jconf.h
+@@ -43,11 +43,6 @@
+ #define TCP_AND_UDP  1
+ #define UDP_ONLY     3
+ 
+-typedef struct {
+-    char *host;
+-    char *port;
+-} ss_addr_t;
+-
+ typedef struct {
+     char *port;
+     char *password;
+diff --git a/src/local.c b/src/local.c
+index d882b45..15a583a 100644
+--- a/src/local.c
++++ b/src/local.c
+@@ -1707,7 +1707,11 @@ main(int argc, char **argv)
+             FATAL("failed to find a free port");
+         }
+         snprintf(tmp_port, 8, "%d", port);
+-        plugin_host = "127.0.0.1";
++        if (is_ipv6only(remote_addr, remote_num)) {
++            plugin_host = "::1";
++        } else {
++            plugin_host = "127.0.0.1";
++        }
+         plugin_port = tmp_port;
+ 
+ #ifdef __MINGW32__
+diff --git a/src/manager.c b/src/manager.c
+index 82a5ab2..16af841 100644
+--- a/src/manager.c
++++ b/src/manager.c
+@@ -58,8 +58,8 @@
+ 
+ #include "json.h"
+ #include "utils.h"
+-#include "manager.h"
+ #include "netutils.h"
++#include "manager.h"
+ 
+ #ifndef BUF_SIZE
+ #define BUF_SIZE 65535
+diff --git a/src/netutils.c b/src/netutils.c
+index 9653659..f89e971 100644
+--- a/src/netutils.c
++++ b/src/netutils.c
+@@ -283,3 +283,19 @@ validate_hostname(const char *hostname, const int hostname_len)
+ 
+     return 1;
+ }
++
++int
++is_ipv6only(ss_addr_t *servers, size_t server_num)
++{
++    struct cork_ip ip;
++    int i;
++    for (i = 0; i < server_num; i++)
++    {
++        if (cork_ip_init(&ip, servers[i].host) != -1) {
++            if (ip.version != 6) {
++                return 0;
++            }
++        }
++    }
++    return 1;
++}
+diff --git a/src/netutils.h b/src/netutils.h
+index 1565dcf..f7f6dc6 100644
+--- a/src/netutils.h
++++ b/src/netutils.h
+@@ -52,6 +52,11 @@
+ #endif
+ #endif
+ 
++typedef struct {
++    char *host;
++    char *port;
++} ss_addr_t;
++
+ /* MPTCP_ENABLED setsockopt values for kernel 4 & 3, best behaviour to be independant of kernel version is to test from newest to the latest values */
+ #ifndef MPTCP_ENABLED
+ static const char mptcp_enabled_values[] = { 42, 26, 0 };
+@@ -103,4 +108,6 @@ int sockaddr_cmp_addr(struct sockaddr_storage *addr1,
+ 
+ int validate_hostname(const char *hostname, const int hostname_len);
+ 
++int is_ipv6only(ss_addr_t *servers, size_t server_num);
++
+ #endif
+diff --git a/src/redir.c b/src/redir.c
+index 4133974..be9da07 100644
+--- a/src/redir.c
++++ b/src/redir.c
+@@ -1065,7 +1065,11 @@ main(int argc, char **argv)
+             FATAL("failed to find a free port");
+         }
+         snprintf(tmp_port, 8, "%d", port);
+-        plugin_host = "127.0.0.1";
++        if (is_ipv6only(remote_addr, remote_num)) {
++            plugin_host = "::1";
++        } else {
++            plugin_host = "127.0.0.1";
++        }
+         plugin_port = tmp_port;
+ 
+         LOGI("plugin \"%s\" enabled", plugin);
+diff --git a/src/server.c b/src/server.c
+index 5d80739..eced490 100644
+--- a/src/server.c
++++ b/src/server.c
+@@ -404,8 +404,8 @@ create_and_bind(const char *host, const char *port, int mptcp)
+         }
+ 
+         if (rp->ai_family == AF_INET6) {
+-            int ipv6only = host ? 1 : 0;
+-            setsockopt(listen_sock, IPPROTO_IPV6, IPV6_V6ONLY, &ipv6only, sizeof(ipv6only));
++            int opt = host ? 1 : 0;
++            setsockopt(listen_sock, IPPROTO_IPV6, IPV6_V6ONLY, &opt, sizeof(opt));
+         }
+ 
+         int opt = 1;
+@@ -1607,6 +1607,7 @@ main(int argc, char **argv)
+ 
+     char *server_port = NULL;
+     char *plugin_opts = NULL;
++    char *plugin_host = NULL;
+     char *plugin_port = NULL;
+     char tmp_port[8];
+ 
+@@ -1834,6 +1835,12 @@ main(int argc, char **argv)
+         exit(EXIT_FAILURE);
+     }
+ 
++    if (is_ipv6only(server_addr, server_num)) {
++        plugin_host = "::1";
++    } else {
++        plugin_host = "127.0.0.1";
++    }
++
+     remote_port = server_port;
+ 
+ #ifdef __MINGW32__
+@@ -1991,7 +1998,7 @@ main(int argc, char **argv)
+         }
+ 
+         int err = start_plugin(plugin, plugin_opts, server_str,
+-                               plugin_port, "127.0.0.1", server_port,
++                               plugin_port, plugin_host, server_port,
+ #ifdef __MINGW32__
+                                plugin_watcher.port,
+ #endif
+@@ -2013,7 +2020,7 @@ main(int argc, char **argv)
+             const char *port = server_addr[i].port ? server_addr[i].port : server_port;
+ 
+             if (plugin != NULL) {
+-                host = "127.0.0.1";
++                host = plugin_host;
+             }
+ 
+             if (host && ss_is_ipv6addr(host))
+diff --git a/src/tunnel.c b/src/tunnel.c
+index f6c2a90..7a33d33 100644
+--- a/src/tunnel.c
++++ b/src/tunnel.c
+@@ -1114,7 +1114,11 @@ main(int argc, char **argv)
+             FATAL("failed to find a free port");
+         }
+         snprintf(tmp_port, 8, "%d", port);
+-        plugin_host = "127.0.0.1";
++        if (is_ipv6only(remote_addr, remote_num)) {
++            plugin_host = "::1";
++        } else {
++            plugin_host = "127.0.0.1";
++        }
+         plugin_port = tmp_port;
+ 
+ #ifdef __MINGW32__
