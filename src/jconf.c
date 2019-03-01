@@ -211,8 +211,7 @@ read_jconf(const char *file)
                         conf.remote_num = j + 1;
                     }
                 } else if (value->type == json_string) {
-                    conf.remote_addr[0].host = to_string(value);
-                    conf.remote_addr[0].port = NULL;
+                    parse_addr(to_string(value), conf.remote_addr);
                     conf.remote_num          = 1;
                 }
             } else if (strcmp(name, "port_password") == 0) {
@@ -328,6 +327,10 @@ read_jconf(const char *file)
                     value, json_boolean,
                     "invalid config file: option 'no_delay' must be a boolean");
                 conf.no_delay = value->u.boolean;
+            } else if (strcmp(name, "workdir") == 0) {
+                conf.workdir = to_string(value);
+            } else if (strcmp(name, "acl") == 0) {
+                conf.acl = to_string(value);
             }
         }
     } else {
