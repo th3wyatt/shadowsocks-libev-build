@@ -95,7 +95,7 @@ static int mode      = TCP_ONLY;
 static int nofile = 0;
 #endif
 static int no_delay  = 0;
-static int fast_open = 0;
+       int fast_open = 0;
 static int ret_val   = 0;
 
 static struct ev_signal sigint_watcher;
@@ -664,8 +664,8 @@ new_server(int fd)
     server->send_ctx->server    = server;
     server->send_ctx->connected = 0;
 
-    server->e_ctx = ss_align(sizeof(cipher_ctx_t));
-    server->d_ctx = ss_align(sizeof(cipher_ctx_t));
+    server->e_ctx = ss_malloc(sizeof(cipher_ctx_t));
+    server->d_ctx = ss_malloc(sizeof(cipher_ctx_t));
     crypto->ctx_init(crypto->cipher, server->e_ctx, 1);
     crypto->ctx_init(crypto->cipher, server->d_ctx, 0);
 
@@ -885,12 +885,14 @@ main(int argc, char **argv)
     char *plugin_port = NULL;
     char tmp_port[8];
 
-    int remote_num = 0;
-    ss_addr_t remote_addr[MAX_REMOTE_NUM];
-    char *remote_port = NULL;
-
     ss_addr_t tunnel_addr = { .host = NULL, .port = NULL };
     char *tunnel_addr_str = NULL;
+
+    int remote_num    = 0;
+    char *remote_port = NULL;
+    ss_addr_t remote_addr[MAX_REMOTE_NUM];
+
+    memset(remote_addr, 0, sizeof(ss_addr_t) * MAX_REMOTE_NUM);
 
     static struct option long_options[] = {
         { "fast-open",   no_argument,       NULL, GETOPT_VAL_FAST_OPEN   },
@@ -947,8 +949,7 @@ main(int argc, char **argv)
             break;
         case 's':
             if (remote_num < MAX_REMOTE_NUM) {
-                remote_addr[remote_num].host   = optarg;
-                remote_addr[remote_num++].port = NULL;
+                parse_addr(optarg, &remote_addr[remote_num++]);
             }
             break;
         case 'p':
@@ -1115,7 +1116,11 @@ main(int argc, char **argv)
             FATAL("failed to find a free port");
         }
         snprintf(tmp_port, 8, "%d", port);
-        plugin_host = "127.0.0.1";
+        if (is_ipv6only(remote_addr, remote_num)) {
+            plugin_host = "::1";
+        } else {
+            plugin_host = "127.0.0.1";
+        }
         plugin_port = tmp_port;
 
 #ifdef __MINGW32__

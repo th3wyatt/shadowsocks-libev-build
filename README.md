@@ -9,7 +9,7 @@ It is a port of [Shadowsocks](https://github.com/shadowsocks/shadowsocks)
 created by [@clowwindy](https://github.com/clowwindy), and maintained by
 [@madeye](https://github.com/madeye) and [@linusyang](https://github.com/linusyang).
 
-Current version: 3.2.3 | [Changelog](debian/changelog)
+Current version: 3.2.5 | [Changelog](debian/changelog)
 
 Travis CI: [![Travis CI](https://travis-ci.org/shadowsocks/shadowsocks-libev.svg?branch=master)](https://travis-ci.org/shadowsocks/shadowsocks-libev)
 
@@ -284,7 +284,7 @@ export MBEDTLS_VER=2.6.0
 wget https://tls.mbed.org/download/mbedtls-$MBEDTLS_VER-gpl.tgz
 tar xvf mbedtls-$MBEDTLS_VER-gpl.tgz
 pushd mbedtls-$MBEDTLS_VER
-make SHARED=1 CFLAGS=-fPIC
+make SHARED=1 CFLAGS="-O2 -fPIC"
 sudo make DESTDIR=/usr install
 popd
 sudo ldconfig
@@ -383,7 +383,7 @@ you may refer to the man pages of the applications, respectively.
 
        -k <password>              Password of your remote server.
 
-       -m <encrypt_method>        Encrypt method: rc4-md5, 
+       -m <encrypt_method>        Encrypt method: rc4-md5,
                                   aes-128-gcm, aes-192-gcm, aes-256-gcm,
                                   aes-128-cfb, aes-192-cfb, aes-256-cfb,
                                   aes-128-ctr, aes-192-ctr, aes-256-ctr,
@@ -395,13 +395,13 @@ you may refer to the man pages of the applications, respectively.
                                   The default cipher is chacha20-ietf-poly1305.
 
        [-a <user>]                Run as another user.
-       
+
        [-f <pid_file>]            The file path to store pid.
 
        [-t <timeout>]             Socket timeout in seconds.
 
        [-c <config_file>]         The path to config file.
-       
+
        [-n <number>]              Max number of open files.
 
        [-i <interface>]           Network interface to bind.
@@ -419,43 +419,46 @@ you may refer to the man pages of the applications, respectively.
                                   for local port forwarding.
                                   (only available in tunnel mode)
 
-       [-6]                       Resovle hostname to IPv6 address first.
+       [-6]                       Resolve hostname to IPv6 address first.
 
        [-d <addr>]                Name servers for internal DNS resolver.
                                   (only available in server mode)
-       
+
        [--reuse-port]             Enable port reuse.
-       
+
        [--fast-open]              Enable TCP fast open.
                                   with Linux kernel > 3.7.0.
                                   (only available in local and server mode)
-  
+
        [--acl <acl_file>]         Path to ACL (Access Control List).
                                   (only available in local and server mode)
-       
+
        [--manager-address <addr>] UNIX domain socket address.
                                   (only available in server and manager mode)
 
        [--mtu <MTU>]              MTU of your network interface.
-       
+
        [--mptcp]                  Enable Multipath TCP on MPTCP Kernel.
-       
+
        [--no-delay]               Enable TCP_NODELAY.
 
        [--executable <path>]      Path to the executable of ss-server.
                                   (only available in manager mode)
-       
+
+       [-D <path>]                Path to the working directory of ss-manager.
+                                  (only available in manager mode)
+
        [--key <key_in_base64>]    Key of your remote server.
-       
+
        [--plugin <name>]          Enable SIP003 plugin. (Experimental)
-       
+
        [--plugin-opts <options>]  Set SIP003 plugin options. (Experimental)
 
        [-v]                       Verbose mode.
 
 ## Transparent proxy
 
-The latest shadowsocks-libev has provided a *redir* mode. You can configure your Linux-based box or router to proxy all TCP traffic transparently, which is handy if you use a OpenWRT-powered router.
+The latest shadowsocks-libev has provided a *redir* mode. You can configure your Linux-based box or router to proxy all TCP traffic transparently, which is handy if you use an OpenWRT-powered router.
 
     # Create new chain
     iptables -t nat -N SHADOWSOCKS
@@ -492,28 +495,10 @@ The latest shadowsocks-libev has provided a *redir* mode. You can configure your
     # Start the shadowsocks-redir
     ss-redir -u -c /etc/config/shadowsocks.json -f /var/run/shadowsocks.pid
 
-## Shadowsocks over KCP
-
-It's quite easy to use shadowsocks and [KCP](https://github.com/skywind3000/kcp) together with [kcptun](https://github.com/xtaci/kcptun).
-
-The goal of shadowsocks over KCP is to provide a fully configurable, UDP based protocol to improve poor connections, e.g. a high packet loss 3G network.
-
-### Setup your server
-
-```bash
-server_linux_amd64 -l :21 -t 127.0.0.1:443 --crypt none --mtu 1200 --nocomp --mode normal --dscp 46 &
-ss-server -s 0.0.0.0 -p 443 -k passwd -m chacha20 -u
-```
-
-### Setup your client
-
-```bash
-client_linux_amd64 -l 127.0.0.1:1090 -r <server_ip>:21 --crypt none --mtu 1200 --nocomp --mode normal --dscp 46 &
-ss-local -s 127.0.0.1 -p 1090 -k passwd -m chacha20 -l 1080 -b 0.0.0.0 &
-ss-local -s <server_ip> -p 443 -k passwd -m chacha20 -l 1080 -U -b 0.0.0.0
-```
 
 ## Security Tips
+
+For any public server, to avoid users accessing localhost of your server, please add `--acl acl/server_block_local.acl` to the command line.
 
 Although shadowsocks-libev can handle thousands of concurrent connections nicely, we still recommend
 setting up your server's firewall rules to limit connections from each user:

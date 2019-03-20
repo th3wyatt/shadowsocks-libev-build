@@ -1,4 +1,5 @@
 libshadowsocks-libev.so.2 libshadowsocks-libev2 #MINVER#
+* Build-Depends-Package: libshadowsocks-libev-dev
  ERROR@Base 2.4.7
  FATAL@Base 2.4.7
  _start_ss_local_server@Base 3.1.2
@@ -45,6 +46,7 @@ libshadowsocks-libev.so.2 libshadowsocks-libev2 #MINVER#
  crypto_md5@Base 3.0.2
  crypto_parse_key@Base 3.0.2
  daemonize@Base 2.4.7
+ (arch=!hurd-i386 !kfreebsd-amd64 !kfreebsd-i386)fast_open@Base 3.2.4
  free_acl@Base 2.4.7
  free_addr@Base 2.4.7
  free_block_list@Base 2.6.3
@@ -61,6 +63,7 @@ libshadowsocks-libev.so.2 libshadowsocks-libev2 #MINVER#
  init_block_list@Base 2.5.6
  init_rule@Base 2.5.6
  init_udprelay@Base 2.4.7
+ is_ipv6only@Base 3.2.4
  is_plugin_running@Base 2.6.3
  json_parse@Base 2.4.7
  json_parse_ex@Base 2.4.7
@@ -91,7 +94,7 @@ libshadowsocks-libev.so.2 libshadowsocks-libev2 #MINVER#
  setnonblocking@Base 2.4.7
  sockaddr_cmp@Base 2.4.7
  sockaddr_cmp_addr@Base 2.4.7
- ss_align@Base 3.0.2
+ ss_aligned_malloc@Base 3.2.4
  ss_is_ipv6addr@Base 3.2.1
  ss_isnumeric@Base 2.6.3
  ss_itoa@Base 2.4.7

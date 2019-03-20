@@ -92,7 +92,8 @@ uint64_t tx    = 0;
 uint64_t rx    = 0;
 ev_tstamp last = 0;
 
-int is_remote_dns = 0;
+int is_remote_dns = 1; // resolve hostname remotely
+char *stat_path = NULL;
 #endif
 
 static crypto_t *crypto;
@@ -100,7 +101,7 @@ static crypto_t *crypto;
 static int acl       = 0;
 static int mode      = TCP_ONLY;
 static int ipv6first = 0;
-static int fast_open = 0;
+       int fast_open = 0;
 static int no_delay  = 0;
 static int udp_fd    = 0;
 static int ret_val   = 0;
@@ -141,7 +142,7 @@ static int create_and_bind(const char *addr, const char *port);
 #ifdef HAVE_LAUNCHD
 static int launch_or_create(const char *addr, const char *port);
 #endif
-static remote_t *create_remote(listen_ctx_t *listener, struct sockaddr *addr);
+static remote_t *create_remote(listen_ctx_t *listener, struct sockaddr *addr, int direct);
 static void free_remote(remote_t *remote);
 static void close_and_free_remote(EV_P_ remote_t *remote);
 static void free_server(server_t *server);
@@ -567,9 +568,7 @@ server_handshake(EV_P_ ev_io *w, buffer_t *buf)
             else
                 err = get_sockaddr(ip, port, &storage, 0, ipv6first);
             if (err != -1) {
-                remote = create_remote(server->listener, (struct sockaddr *)&storage);
-                if (remote != NULL)
-                    remote->direct = 1;
+                remote = create_remote(server->listener, (struct sockaddr *)&storage, 1);
             }
         }
     }
@@ -577,11 +576,11 @@ server_handshake(EV_P_ ev_io *w, buffer_t *buf)
 not_bypass:
     // Not bypass
     if (remote == NULL) {
-        remote = create_remote(server->listener, NULL);
+        remote = create_remote(server->listener, NULL, 0);
 
         if (sni_detected && acl
 #ifdef __ANDROID__
-            && !is_remote_dns
+            && is_remote_dns
 #endif
             ) {
             // Reconstruct address buffer
@@ -641,8 +640,6 @@ server_stream(EV_P_ ev_io *w, buffer_t *buf)
         close_and_free_server(EV_A_ server);
         return;
     }
-
-    ev_timer_again(EV_A_ & remote->recv_ctx->watcher);
 
     // insert shadowsocks header
     if (!remote->direct) {
@@ -1009,8 +1006,6 @@ remote_recv_cb(EV_P_ ev_io *w, int revents)
     remote_t *remote              = remote_recv_ctx->remote;
     server_t *server              = remote->server;
 
-    ev_timer_again(EV_A_ & remote->recv_ctx->watcher);
-
     ssize_t r = recv(remote->fd, server->buf->data, BUF_SIZE, 0);
 
     if (r == 0) {
@@ -1124,7 +1119,6 @@ remote_send_cb(EV_P_ ev_io *w, int revents)
         if (r == 0) {
             remote_send_ctx->connected = 1;
             ev_timer_stop(EV_A_ & remote_send_ctx->watcher);
-            ev_timer_start(EV_A_ & remote->recv_ctx->watcher);
             ev_io_start(EV_A_ & remote->recv_ctx->io);
 
             // no need to send any data
@@ -1198,8 +1192,6 @@ new_remote(int fd, int timeout)
     ev_io_init(&remote->send_ctx->io, remote_send_cb, fd, EV_WRITE);
     ev_timer_init(&remote->send_ctx->watcher, remote_timeout_cb,
                   min(MAX_CONNECT_TIMEOUT, timeout), 0);
-    ev_timer_init(&remote->recv_ctx->watcher, remote_timeout_cb,
-                  timeout, timeout);
 
     return remote;
 }
@@ -1224,7 +1216,6 @@ close_and_free_remote(EV_P_ remote_t *remote)
 {
     if (remote != NULL) {
         ev_timer_stop(EV_A_ & remote->send_ctx->watcher);
-        ev_timer_stop(EV_A_ & remote->recv_ctx->watcher);
         ev_io_stop(EV_A_ & remote->send_ctx->io);
         ev_io_stop(EV_A_ & remote->recv_ctx->io);
         close(remote->fd);
@@ -1255,8 +1246,8 @@ new_server(int fd)
     server->recv_ctx->server    = server;
     server->send_ctx->server    = server;
 
-    server->e_ctx = ss_align(sizeof(cipher_ctx_t));
-    server->d_ctx = ss_align(sizeof(cipher_ctx_t));
+    server->e_ctx = ss_malloc(sizeof(cipher_ctx_t));
+    server->d_ctx = ss_malloc(sizeof(cipher_ctx_t));
     crypto->ctx_init(crypto->cipher, server->e_ctx, 1);
     crypto->ctx_init(crypto->cipher, server->d_ctx, 0);
 
@@ -1314,7 +1305,8 @@ close_and_free_server(EV_P_ server_t *server)
 
 static remote_t *
 create_remote(listen_ctx_t *listener,
-              struct sockaddr *addr)
+              struct sockaddr *addr,
+              int direct)
 {
     struct sockaddr *remote_addr;
 
@@ -1366,9 +1358,10 @@ create_remote(listen_ctx_t *listener,
     }
 #endif
 
-    remote_t *remote = new_remote(remotefd, listener->timeout);
+    remote_t *remote = new_remote(remotefd, direct ? MAX_CONNECT_TIMEOUT : listener->timeout);
     remote->addr_len = get_sockaddr_len(remote_addr);
     memcpy(&(remote->addr), remote_addr, remote->addr_len);
+    remote->direct = direct;
 
     return remote;
 }
@@ -1472,11 +1465,12 @@ main(int argc, char **argv)
     char *plugin_port = NULL;
     char tmp_port[8];
 
-    srand(time(NULL));
-
     int remote_num = 0;
     ss_addr_t remote_addr[MAX_REMOTE_NUM];
     char *remote_port = NULL;
+
+    memset(remote_addr, 0, sizeof(ss_addr_t) * MAX_REMOTE_NUM);
+    srand(time(NULL));
 
     static struct option long_options[] = {
         { "reuse-port",  no_argument,       NULL, GETOPT_VAL_REUSE_PORT  },
@@ -1498,7 +1492,7 @@ main(int argc, char **argv)
     USE_TTY();
 
 #ifdef __ANDROID__
-    while ((c = getopt_long(argc, argv, "f:s:p:l:k:t:m:i:c:b:a:n:huUvV6AD",
+    while ((c = getopt_long(argc, argv, "f:s:p:l:k:t:m:i:c:b:a:n:S:huUvV6AD",
                             long_options, NULL)) != -1) {
 #else
     while ((c = getopt_long(argc, argv, "f:s:p:l:k:t:m:i:c:b:a:n:huUv6A",
@@ -1538,8 +1532,7 @@ main(int argc, char **argv)
             break;
         case 's':
             if (remote_num < MAX_REMOTE_NUM) {
-                remote_addr[remote_num].host   = optarg;
-                remote_addr[remote_num++].port = NULL;
+                parse_addr(optarg, &remote_addr[remote_num++]);
             }
             break;
         case 'p':
@@ -1596,8 +1589,11 @@ main(int argc, char **argv)
             ipv6first = 1;
             break;
 #ifdef __ANDROID__
+        case 'S':
+            stat_path = optarg;
+            break;
         case 'D':
-            is_remote_dns = 1;
+            is_remote_dns = 0;
             break;
         case 'V':
             vpn = 1;
@@ -1687,6 +1683,10 @@ main(int argc, char **argv)
         if (ipv6first == 0) {
             ipv6first = conf->ipv6_first;
         }
+        if (acl == 0 && conf->acl != NULL) {
+            LOGI("initializing acl...");
+            acl = !init_acl(conf->acl);
+        }
     }
 
     if (remote_num == 0 || remote_port == NULL ||
@@ -1708,7 +1708,11 @@ main(int argc, char **argv)
             FATAL("failed to find a free port");
         }
         snprintf(tmp_port, 8, "%d", port);
-        plugin_host = "127.0.0.1";
+        if (is_ipv6only(remote_addr, remote_num)) {
+            plugin_host = "::1";
+        } else {
+            plugin_host = "127.0.0.1";
+        }
         plugin_port = tmp_port;
 
 #ifdef __MINGW32__
@@ -2012,6 +2016,7 @@ _start_ss_local_server(profile_t profile, ss_local_callback callback, void *udat
     USE_LOGFILE(log);
 
     if (profile.acl != NULL) {
+        LOGI("initializing acl...");
         acl = !init_acl(profile.acl);
     }
 

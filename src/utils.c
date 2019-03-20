@@ -32,10 +32,13 @@
 #include <errno.h>
 #include <pwd.h>
 #include <grp.h>
+#else
+#include <malloc.h>
 #endif
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 
 #include <sodium.h>
 
@@ -241,13 +244,16 @@ ss_malloc(size_t size)
 }
 
 void *
-ss_align(size_t size)
+ss_aligned_malloc(size_t size)
 {
     int err;
     void *tmp = NULL;
 #ifdef HAVE_POSIX_MEMALIGN
     /* ensure 16 byte alignment */
     err = posix_memalign(&tmp, 16, size);
+#elif __MINGW32__
+    tmp = _aligned_malloc(size, 16);
+    err = tmp == NULL;
 #else
     err = -1;
 #endif
@@ -388,6 +394,8 @@ usage()
 #ifdef MODULE_MANAGER
     printf(
         "       [--executable <path>]      Path to the executable of ss-server.\n");
+    printf(
+        "       [-D <path>]                Path to the working directory of ss-manager.\n");
 #endif
     printf(
         "       [--mtu <MTU>]              MTU of your network interface.\n");
@@ -457,10 +465,19 @@ daemonize(const char *path)
         exit(EXIT_FAILURE);
     }
 
-    /* Close out the standard file descriptors */
+    int dev_null = open("/dev/null", O_WRONLY);
+    if (dev_null) {
+        /* Redirect to null device  */
+        dup2(dev_null, STDOUT_FILENO);
+        dup2(dev_null, STDERR_FILENO);
+    } else {
+        /* Close the standard file descriptors */
+        close(STDOUT_FILENO);
+        close(STDERR_FILENO);
+    }
+
+    /* Close the standard file descriptors */
     close(STDIN_FILENO);
-    close(STDOUT_FILENO);
-    close(STDERR_FILENO);
 #else
     LOGE("daemonize(): not implemented in MinGW port");
 #endif
