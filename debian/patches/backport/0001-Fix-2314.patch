@@ -1,0 +1,23 @@
+From: Max Lv <max.c.lv@gmail.com>
+Date: Sun, 10 Mar 2019 07:21:55 +0800
+Subject: Fix #2314
+
+Applied-Upstream: https://github.com/shadowsocks/shadowsocks-libev/commit/1a77023777e97d34726d7b391c0403f2a21ab6c0
+
+---
+ src/netutils.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/netutils.c b/src/netutils.c
+index f89e971..6bc14c7 100644
+--- a/src/netutils.c
++++ b/src/netutils.c
+@@ -295,6 +295,8 @@ is_ipv6only(ss_addr_t *servers, size_t server_num)
+             if (ip.version != 6) {
+                 return 0;
+             }
++        } else {
++            return 0;
+         }
+     }
+     return 1;

@@ -2,8 +2,12 @@ shadowsocks-libev (3.2.5+ds-1) unstable; urgency=high
 
   * New upstream release: v3.2.5
     + Fix a bug in port parser.
+  * debian/patches: Cherry-pick several important upstream patches:
+    + backport/0001: Fix upstream issue #3214 that make the plugin
+      crash.
+    + backport/0002: Fix and refine ipv6only support.
 
- -- Boyuan Yang <byang@debian.org>  Wed, 20 Mar 2019 11:31:39 -0400
+ -- Boyuan Yang <byang@debian.org>  Wed, 20 Mar 2019 11:35:43 -0400
 
 shadowsocks-libev (3.2.4+ds-1) unstable; urgency=medium
 
