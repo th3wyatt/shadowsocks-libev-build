@@ -854,12 +854,14 @@ main(int argc, char **argv)
     char *plugin_port = NULL;
     char tmp_port[8];
 
-    int remote_num = 0;
-    ss_addr_t remote_addr[MAX_REMOTE_NUM];
-    char *remote_port = NULL;
-
     int dscp_num    = 0;
     ss_dscp_t *dscp = NULL;
+
+    int remote_num    = 0;
+    char *remote_port = NULL;
+    ss_addr_t remote_addr[MAX_REMOTE_NUM];
+
+    memset(remote_addr, 0, sizeof(ss_addr_t) * MAX_REMOTE_NUM);
 
     static struct option long_options[] = {
         { "fast-open",   no_argument,       NULL, GETOPT_VAL_FAST_OPEN   },
@@ -1065,7 +1067,11 @@ main(int argc, char **argv)
             FATAL("failed to find a free port");
         }
         snprintf(tmp_port, 8, "%d", port);
-        plugin_host = "127.0.0.1";
+        if (is_ipv6only(remote_addr, remote_num)) {
+            plugin_host = "::1";
+        } else {
+            plugin_host = "127.0.0.1";
+        }
         plugin_port = tmp_port;
 
         LOGI("plugin \"%s\" enabled", plugin);

@@ -9,7 +9,7 @@ It is a port of [Shadowsocks](https://github.com/shadowsocks/shadowsocks)
 created by [@clowwindy](https://github.com/clowwindy), and maintained by
 [@madeye](https://github.com/madeye) and [@linusyang](https://github.com/linusyang).
 
-Current version: 3.2.4 | [Changelog](debian/changelog)
+Current version: 3.2.5 | [Changelog](debian/changelog)
 
 Travis CI: [![Travis CI](https://travis-ci.org/shadowsocks/shadowsocks-libev.svg?branch=master)](https://travis-ci.org/shadowsocks/shadowsocks-libev)
 
@@ -284,7 +284,7 @@ export MBEDTLS_VER=2.6.0
 wget https://tls.mbed.org/download/mbedtls-$MBEDTLS_VER-gpl.tgz
 tar xvf mbedtls-$MBEDTLS_VER-gpl.tgz
 pushd mbedtls-$MBEDTLS_VER
-make SHARED=1 CFLAGS=-fPIC
+make SHARED=1 CFLAGS="-O2 -fPIC"
 sudo make DESTDIR=/usr install
 popd
 sudo ldconfig
@@ -419,7 +419,7 @@ you may refer to the man pages of the applications, respectively.
                                   for local port forwarding.
                                   (only available in tunnel mode)
 
-       [-6]                       Resovle hostname to IPv6 address first.
+       [-6]                       Resolve hostname to IPv6 address first.
 
        [-d <addr>]                Name servers for internal DNS resolver.
                                   (only available in server mode)
@@ -458,7 +458,7 @@ you may refer to the man pages of the applications, respectively.
 
 ## Transparent proxy
 
-The latest shadowsocks-libev has provided a *redir* mode. You can configure your Linux-based box or router to proxy all TCP traffic transparently, which is handy if you use a OpenWRT-powered router.
+The latest shadowsocks-libev has provided a *redir* mode. You can configure your Linux-based box or router to proxy all TCP traffic transparently, which is handy if you use an OpenWRT-powered router.
 
     # Create new chain
     iptables -t nat -N SHADOWSOCKS
