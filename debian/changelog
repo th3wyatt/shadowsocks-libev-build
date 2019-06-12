@@ -1,3 +1,13 @@
+shadowsocks-libev (3.3.0+ds-1) UNRELEASED; urgency=medium
+
+  * New upstream release: v3.3.0
+    - Enlarge the socket buffer size to 16KB.
+    - Fix the empty list bug in ss-manager.
+    - Fix the IPv6 address parser.
+  * debian/libshadowsocks-libev2.symbols: Update to fix FTBFS.
+
+ -- Roger Shimizu <rosh@debian.org>  Thu, 13 Jun 2019 01:12:36 +0900
+
 shadowsocks-libev (3.2.5+ds-1) unstable; urgency=high
 
   * New upstream release: v3.2.5

@@ -21,7 +21,7 @@ libshadowsocks-libev.so.2 libshadowsocks-libev2 #MINVER#
  base64_decode@Base 3.0.2
  base64_encode@Base 3.0.2
  bfree@Base 2.4.7
- bind_to_address@Base 2.4.7
+ bind_to_addr@Base 3.3.0
  bprepend@Base 3.0.2
  brealloc@Base 2.4.7
  cache_clear@Base 2.5.6
@@ -31,11 +31,9 @@ libshadowsocks-libev.so.2 libshadowsocks-libev2 #MINVER#
  cache_key_exist@Base 2.4.7
  cache_lookup@Base 2.4.7
  cache_remove@Base 2.4.7
- check_block_list@Base 2.5.6
  cipher_ctx_set_nonce@Base 3.0.2
  cipher_key_size@Base 2.4.8
  cipher_nonce_size@Base 3.0.2
- clear_block_list@Base 2.5.6
  create_remote_socket@Base 2.4.7
  create_server_socket@Base 2.4.7
  crypto_derive_key@Base 3.0.2
@@ -49,7 +47,6 @@ libshadowsocks-libev.so.2 libshadowsocks-libev2 #MINVER#
  (arch=!hurd-i386 !kfreebsd-amd64 !kfreebsd-i386)fast_open@Base 3.2.4
  free_acl@Base 2.4.7
  free_addr@Base 2.4.7
- free_block_list@Base 2.6.3
  free_cb@Base 2.4.7
  free_rules@Base 2.5.6
  free_udprelay@Base 2.4.7
@@ -60,7 +57,6 @@ libshadowsocks-libev.so.2 libshadowsocks-libev2 #MINVER#
  get_sockaddr_len@Base 2.4.7
  http_protocol@Base 2.5.6
  init_acl@Base 2.4.7
- init_block_list@Base 2.5.6
  init_rule@Base 2.5.6
  init_udprelay@Base 2.4.7
  is_ipv6only@Base 3.2.4
@@ -76,6 +72,7 @@ libshadowsocks-libev.so.2 libshadowsocks-libev2 #MINVER#
  new_server_ctx@Base 2.4.7
  outbound_block_match_host@Base 2.5.6
  parse_addr@Base 2.4.7
+ parse_local_addr@Base 3.3.0
  plugin_log@Base 2.6.3
  ppbloom_add@Base 3.0.5
  ppbloom_check@Base 3.0.5
@@ -83,7 +80,6 @@ libshadowsocks-libev.so.2 libshadowsocks-libev2 #MINVER#
  ppbloom_init@Base 3.0.5
  rand_bytes@Base 2.4.7
  read_jconf@Base 2.4.7
- remove_from_block_list@Base 2.5.6
  remove_rule@Base 2.5.6
  reuse_port@Base 3.0.2
  run_as@Base 2.4.7
@@ -119,7 +115,6 @@ libshadowsocks-libev.so.2 libshadowsocks-libev2 #MINVER#
  supported_stream_ciphers@Base 3.0.2
  tls_protocol@Base 2.5.6
  trimwhitespace@Base 2.5.6
- update_block_list@Base 2.6.3
  usage@Base 2.4.7
  use_tty@Base 2.4.7
  validate_hostname@Base 2.5.6
