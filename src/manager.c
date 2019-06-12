@@ -1,7 +1,7 @@
 /*
  * server.c - Provide shadowsocks service
  *
- * Copyright (C) 2013 - 2018, Max Lv <max.c.lv@gmail.com>
+ * Copyright (C) 2013 - 2019, Max Lv <max.c.lv@gmail.com>
  *
  * This file is part of the shadowsocks-libev.
  *
@@ -673,7 +673,7 @@ manager_recv_cb(EV_P_ ev_io *w, int revents)
         }
 
         size_t pos = strlen(buf);
-        strcpy(buf + pos - 1, "\n]"); // Remove trailing ","
+        strcpy(buf + max(pos - 1, 1), "\n]"); // Remove trailing ","
         pos = strlen(buf);
         if (sendto(manager->fd, buf, pos, 0, (struct sockaddr *)&claddr, len)
             != pos) {
