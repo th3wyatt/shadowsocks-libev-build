@@ -1,12 +1,18 @@
-shadowsocks-libev (3.3.0+ds-1) UNRELEASED; urgency=medium
+shadowsocks-libev (3.3.0+ds-1) unstable; urgency=medium
 
+  [ Roger Shimizu ]
   * New upstream release: v3.3.0
     - Enlarge the socket buffer size to 16KB.
     - Fix the empty list bug in ss-manager.
     - Fix the IPv6 address parser.
   * debian/libshadowsocks-libev2.symbols: Update to fix FTBFS.
 
- -- Roger Shimizu <rosh@debian.org>  Thu, 13 Jun 2019 01:12:36 +0900
+  [ Boyuan Yang ]
+  * debian/*.service: Sync with upstream and require
+    network-online.target instead of network.target.
+  * debian/control: Bump Standards-Version to 4.4.0.
+
+ -- Boyuan Yang <byang@debian.org>  Sun, 14 Jul 2019 13:31:12 -0400
 
 shadowsocks-libev (3.2.5+ds-1) unstable; urgency=high
 
