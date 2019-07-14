@@ -19,7 +19,7 @@ Build-Depends:
  libsodium-dev (>= 1.0.12),
  pkg-config,
  xmlto,
-Standards-Version: 4.3.0
+Standards-Version: 4.4.0
 Homepage: https://www.shadowsocks.org
 Vcs-Git: https://salsa.debian.org/bridges-team/shadowsocks-libev.git
 Vcs-Browser: https://salsa.debian.org/bridges-team/shadowsocks-libev
