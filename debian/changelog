@@ -11,8 +11,11 @@ shadowsocks-libev (3.3.0+ds-1) unstable; urgency=medium
   * debian/*.service: Sync with upstream and require
     network-online.target instead of network.target.
   * debian/control: Bump Standards-Version to 4.4.0.
+  * debian/shadowsocks-libev.lintian-overrides: Add overrides
+    for systemd service templates that cannot fallback to sysvinit
+    scripts.
 
- -- Boyuan Yang <byang@debian.org>  Sun, 14 Jul 2019 13:31:12 -0400
+ -- Boyuan Yang <byang@debian.org>  Sun, 14 Jul 2019 13:49:01 -0400
 
 shadowsocks-libev (3.2.5+ds-1) unstable; urgency=high
 
