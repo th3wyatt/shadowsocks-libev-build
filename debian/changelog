@@ -1,3 +1,9 @@
+shadowsocks-libev (3.3.0+ds-1~bpo9+1) stretch-backports-sloppy; urgency=medium
+
+  * Rebuild for stretch-backports-sloppy.
+
+ -- Roger Shimizu <rosh@debian.org>  Fri, 26 Jul 2019 23:53:56 -0300
+
 shadowsocks-libev (3.3.0+ds-1~bpo10+1) buster-backports; urgency=medium
 
   * Rebuild for buster-backports.
