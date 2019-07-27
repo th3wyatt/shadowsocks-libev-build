@@ -1,7 +1,7 @@
 /*
  * plugin.c - Manage plugins
  *
- * Copyright (C) 2013 - 2018, Max Lv <max.c.lv@gmail.com>
+ * Copyright (C) 2013 - 2019, Max Lv <max.c.lv@gmail.com>
  *
  * This file is part of the shadowsocks-libev.
  *
@@ -308,7 +308,7 @@ get_local_port()
     }
 
     struct sockaddr_in serv_addr;
-    bzero((char *)&serv_addr, sizeof(serv_addr));
+    memset(&serv_addr, 0, sizeof(serv_addr));
     serv_addr.sin_family      = AF_INET;
     serv_addr.sin_addr.s_addr = INADDR_ANY;
     serv_addr.sin_port        = 0;
