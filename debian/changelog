@@ -1,3 +1,12 @@
+shadowsocks-libev (3.3.1+ds-1) unstable; urgency=medium
+
+  * New upstream release: v3.3.1
+    - Fix a high CPU bug introduced in 3.3.0.
+    - Fix MinGW build.
+    - Minor bug fixes.
+
+ -- Roger Shimizu <rosh@debian.org>  Thu, 15 Aug 2019 01:54:34 +0900
+
 shadowsocks-libev (3.3.0+ds-1~bpo9+1) stretch-backports-sloppy; urgency=medium
 
   * Rebuild for stretch-backports-sloppy.
