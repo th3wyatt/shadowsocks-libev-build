@@ -1,3 +1,13 @@
+shadowsocks-libev (3.3.2+ds-1) unstable; urgency=medium
+
+  * New upstream release: v3.3.2
+    + Refine the handling of fragment request.
+    + Minor bug fixes.
+  * debian/control:
+    + Bump Standards-Version to 4.4.1.
+
+ -- Boyuan Yang <byang@debian.org>  Mon, 14 Oct 2019 14:31:51 -0400
+
 shadowsocks-libev (3.3.1+ds-1) unstable; urgency=medium
 
   * New upstream release: v3.3.1
