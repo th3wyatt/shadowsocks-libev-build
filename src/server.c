@@ -74,6 +74,10 @@
 #define MAX_FRAG 1
 #endif
 
+#ifndef FRAG_TIMEOUT
+#define FRAG_TIMEOUT 0.5f
+#endif
+
 #ifdef USE_NFCONNTRACK_TOS
 
 #ifndef MARK_MAX_PACKET
@@ -704,6 +708,14 @@ server_recv_cb(EV_P_ ev_io *w, int revents)
     if (server->stage == STAGE_STREAM) {
         remote = server->remote;
         buf    = remote->buf;
+
+        // Only timer the watcher if a valid connection is established
+        ev_timer_again(EV_A_ & server->recv_ctx->watcher);
+    } else if (server->stage == STAGE_INIT && server->frag > 0) {
+
+        // reset the timer for fragment request
+        ev_timer_set(&server->recv_ctx->watcher, MAX_REQUEST_TIMEOUT, MAX_REQUEST_TIMEOUT);
+        ev_timer_again(EV_A_ & server->recv_ctx->watcher);
     }
 
     ssize_t r = recv(server->fd, buf->data, SOCKET_BUF_SIZE, 0);
@@ -741,12 +753,16 @@ server_recv_cb(EV_P_ ev_io *w, int revents)
         stop_server(EV_A_ server);
         return;
     } else if (err == CRYPTO_NEED_MORE) {
-        if (server->stage != STAGE_STREAM && server->frag > MAX_FRAG) {
-            report_addr(server->fd, "malicious fragmentation");
-            stop_server(EV_A_ server);
-            return;
+        if (server->stage != STAGE_STREAM) {
+            ev_timer_set(&server->recv_ctx->watcher, FRAG_TIMEOUT, FRAG_TIMEOUT);
+            ev_timer_again(EV_A_ & server->recv_ctx->watcher);
+            if (server->frag > MAX_FRAG) {
+                report_addr(server->fd, "malicious fragmentation");
+                stop_server(EV_A_ server);
+                return;
+            }
+            server->frag++;
         }
-        server->frag++;
         return;
     }
 
@@ -1107,6 +1123,8 @@ remote_recv_cb(EV_P_ ev_io *w, int revents)
         return;
     }
 
+    ev_timer_again(EV_A_ & server->recv_ctx->watcher);
+
     ssize_t r = recv(remote->fd, server->buf->data, SOCKET_BUF_SIZE, 0);
 
     if (r == 0) {
@@ -1229,9 +1247,6 @@ remote_send_cb(EV_P_ ev_io *w, int revents)
         int r = getpeername(remote->fd, (struct sockaddr *)&addr, &len);
 
         if (r == 0) {
-            // connection connected, stop the request timeout timer
-            ev_timer_stop(EV_A_ & server->recv_ctx->watcher);
-
             remote_send_ctx->connected = 1;
 
             if (remote->buf->len == 0) {
@@ -1391,10 +1406,13 @@ new_server(int fd, listen_ctx_t *listener)
     int request_timeout = min(MAX_REQUEST_TIMEOUT, listener->timeout)
                           + rand() % MAX_REQUEST_TIMEOUT;
 
+    int repeat_interval = max(MIN_TCP_IDLE_TIMEOUT, listener->timeout)
+                          + rand() % listener->timeout;
+
     ev_io_init(&server->recv_ctx->io, server_recv_cb, fd, EV_READ);
     ev_io_init(&server->send_ctx->io, server_send_cb, fd, EV_WRITE);
     ev_timer_init(&server->recv_ctx->watcher, server_timeout_cb,
-                  request_timeout, 0);
+                  request_timeout, repeat_interval);
 
     cork_dllist_add(&connections, &server->entries);
 
