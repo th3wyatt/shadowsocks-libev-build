@@ -1,3 +1,20 @@
+shadowsocks-libev (3.3.2+ds-1~bpo10+1) buster-backports; urgency=medium
+
+  * Rebuild for buster-backports.
+
+ -- Boyuan Yang <byang@debian.org>  Fri, 25 Oct 2019 12:24:15 -0400
+
+shadowsocks-libev (3.3.2+ds-1) unstable; urgency=medium
+
+  * New upstream release: v3.3.2
+    + Refine the handling of fragment request.
+    + Minor bug fixes.
+  * debian/control:
+    + Bump Standards-Version to 4.4.1.
+  * debian/libshadowsocks-libev2.symbols: Add new symbol.
+
+ -- Boyuan Yang <byang@debian.org>  Mon, 14 Oct 2019 14:51:22 -0400
+
 shadowsocks-libev (3.3.1+ds-1~bpo9+1) stretch-backports-sloppy; urgency=medium
 
   * Rebuild for stretch-backports-sloppy.

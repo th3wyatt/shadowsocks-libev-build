@@ -11,7 +11,7 @@ It is a port of [Shadowsocks](https://github.com/shadowsocks/shadowsocks)
 created by [@clowwindy](https://github.com/clowwindy), and maintained by
 [@madeye](https://github.com/madeye) and [@linusyang](https://github.com/linusyang).
 
-Current version: 3.3.1 | [Changelog](debian/changelog)
+Current version: 3.3.2 | [Changelog](debian/changelog)
 
 ## Features
 
@@ -21,21 +21,27 @@ to be a lightweight implementation of shadowsocks protocol, in order to keep the
 For a full list of feature comparison between different versions of shadowsocks,
 refer to the [Wiki page](https://github.com/shadowsocks/shadowsocks/wiki/Feature-Comparison-across-Different-Versions).
 
-## Prerequisites
+## Quick Start
 
-### Get the latest source code
+Snap is the recommended way to install the latest binaries.
 
-To get the latest source code, you should also update the submodules as following:
+### Install snap core
+
+https://snapcraft.io/core
+
+### Install from snapcraft.io
+
+Stable channel:
 
 ```bash
-git clone https://github.com/shadowsocks/shadowsocks-libev.git
-cd shadowsocks-libev
-git submodule update --init --recursive
+sudo snap install shadowsocks-libev
 ```
 
-### Build and install with recent libsodium
+Edge channel:
 
-You have to install libsodium at least 1.0.8, but recommended 1.0.12 or later version before building. See [Directly build and install on UNIX-like system](#linux).
+```bash
+sudo snap install shadowsocks-libev --edge
+```
 
 ## Installation
 
@@ -48,7 +54,7 @@ You have to install libsodium at least 1.0.8, but recommended 1.0.12 or later ve
 - [Fedora & RHEL](#fedora--rhel)
     + [Build from source with centos](#build-from-source-with-centos)
     + [Install from repository](#install-from-repository-1)
-- [Archlinux](#archlinux)
+- [Archlinux & Manjaro](#archlinux--manjaro)
 - [NixOS](#nixos)
 - [Nix](#nix)
 - [Directly build and install on UNIX-like system](#linux)
@@ -98,15 +104,6 @@ For more info about backports, you can refer [Debian Backports](https://backport
 sudo sh -c 'printf "deb http://deb.debian.org/debian stretch-backports main" > /etc/apt/sources.list.d/stretch-backports.list'
 sudo apt update
 sudo apt -t stretch-backports install shadowsocks-libev
-```
-
-For **Ubuntu 14.04 and 16.04** users, please install from PPA:
-
-```bash
-sudo apt-get install software-properties-common -y
-sudo add-apt-repository ppa:max-c-lv/shadowsocks-libev -y
-sudo apt-get update
-sudo apt install shadowsocks-libev
 ```
 
 #### Build deb package from source
@@ -216,7 +213,7 @@ su -c 'yum install shadowsocks-libev'
 ```
 The repository is maintained by [@librehat](https://github.com/librehat), any issues, please report [here](https://github.com/librehat/shadowsocks-libev/issues)
 
-### Archlinux
+### Archlinux & Manjaro
 
 ```bash
 sudo pacman -S shadowsocks-libev
