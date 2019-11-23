@@ -1,0 +1,18 @@
+From: Roger Shimizu <rosh@debian.org>
+Date: Sun, 5 May 2019 03:08:22 +0900
+Subject: shadowsocks-libev.pc.in: Remove crypto library dependency
+
+---
+ shadowsocks-libev.pc.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/shadowsocks-libev.pc.in b/shadowsocks-libev.pc.in
+index e72df65..e373876 100644
+--- a/shadowsocks-libev.pc.in
++++ b/shadowsocks-libev.pc.in
+@@ -9,4 +9,4 @@ URL: https://shadowsocks.org
+ Version: @VERSION@
+ Requires:
+ Cflags: -I${includedir}
+-Libs: -L${libdir} -lshadowsocks-libev -lcrypto
++Libs: -L${libdir} -lshadowsocks-libev

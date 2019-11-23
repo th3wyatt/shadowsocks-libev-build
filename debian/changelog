@@ -6,6 +6,9 @@ shadowsocks-libev (3.3.3+ds-1) UNRELEASED; urgency=medium
     - Use tracker mail as maintainer address.
   * debian/copyright:
     - Update copyright year and debian email for my entry.
+  * debian/patches:
+    - Add a patch to amend shadowsocks-libev.pc.in,
+      to remove crypto library dependency. Thanks to lintian.
 
  -- Roger Shimizu <rosh@debian.org>  Sat, 23 Nov 2019 13:51:11 +0900
 
