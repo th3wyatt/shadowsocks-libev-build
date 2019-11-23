@@ -1,11 +1,11 @@
 Source: shadowsocks-libev
 Section: net
 Priority: optional
-Maintainer: Roger Shimizu <rosh@debian.org>
+Maintainer: Debian Bridges Team <team+bridges@tracker.debian.org>
 Uploaders:
  Max Lv <max.c.lv@gmail.com>,
  Boyuan Yang <byang@debian.org>,
- Debian Bridges Team <team+bridges@tracker.debian.org>
+ Roger Shimizu <rosh@debian.org>
 Build-Depends:
  asciidoc-base | asciidoc,
  debhelper (>= 10),
