@@ -1,4 +1,4 @@
-shadowsocks-libev (3.3.3+ds-1) UNRELEASED; urgency=medium
+shadowsocks-libev (3.3.3+ds-1) unstable; urgency=medium
 
   * debian/*.service:
     - Run service in DynamicUser (Closes: #934186).
@@ -10,7 +10,7 @@ shadowsocks-libev (3.3.3+ds-1) UNRELEASED; urgency=medium
     - Add a patch to amend shadowsocks-libev.pc.in,
       to remove crypto library dependency. Thanks to lintian.
 
- -- Roger Shimizu <rosh@debian.org>  Sat, 23 Nov 2019 13:51:11 +0900
+ -- Roger Shimizu <rosh@debian.org>  Sat, 23 Nov 2019 14:29:07 +0900
 
 shadowsocks-libev (3.3.2+ds-1) unstable; urgency=medium
 
