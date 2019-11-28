@@ -3,6 +3,8 @@ shadowsocks-libev (3.3.3+ds-2) UNRELEASED; urgency=medium
   * debian/control:
     - Add Rules-Requires-Root: no
   * Add debian/upstream/metadata.
+  * debian/patches:
+    - Move 0001 patch to backport folder.
 
  -- Roger Shimizu <rosh@debian.org>  Sat, 23 Nov 2019 14:59:48 +0900
 
