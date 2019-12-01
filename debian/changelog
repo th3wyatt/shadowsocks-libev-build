@@ -8,6 +8,15 @@ shadowsocks-libev (3.3.3+ds-2) UNRELEASED; urgency=medium
   * Add debian/upstream/metadata.
   * debian/patches:
     - Move 0001 patch to backport folder.
+    - Cherry pick a few patches from upstream to fix TALOS-2019-0956
+      (CVE-2019-5163), and TALOS-2019-0958.
+      + [1ba753a] Fix #2536, TALOS-2019-0956 (CVE-2019-5163), which is
+        a bug that IPv6 local address is not initialized when binding
+        an IPv6 socket.
+      + [ce71f49][748e6f3] Fix #2537, TALOS-2019-0958.
+        Default listening path of ss-manager has been changed to
+        ~/.ss-manager.socks.
+      + [6d73201] Fix #2539, introduced by #2259.
   * debian/compat: Bump from 10 to 12.
 
  -- Roger Shimizu <rosh@debian.org>  Sat, 23 Nov 2019 14:59:48 +0900

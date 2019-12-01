@@ -1,0 +1,22 @@
+From: Max Lv <max.c.lv@gmail.com>
+Date: Sat, 9 Nov 2019 07:17:06 +0800
+Subject: Fix #2537
+
+(cherry picked from commit ce71f49af84db098ab6610a68df10c6af10e5eba)
+---
+ src/manager.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/manager.c b/src/manager.c
+index 742cdf6..c7726ef 100644
+--- a/src/manager.c
++++ b/src/manager.c
+@@ -1081,7 +1081,7 @@ main(int argc, char **argv)
+     }
+ 
+     if (manager_address == NULL) {
+-        manager_address = "127.0.0.1:8839";
++        manager_address = "/tmp/ss-manager.socks";
+         LOGI("using the default manager address: %s", manager_address);
+     }
+ 
