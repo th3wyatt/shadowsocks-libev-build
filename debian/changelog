@@ -2,9 +2,13 @@ shadowsocks-libev (3.3.3+ds-2) UNRELEASED; urgency=medium
 
   * debian/control:
     - Add Rules-Requires-Root: no
+    - Add to shadowsocks-libev according to lintian:
+      + Pre-Depends: ${misc:Pre-Depends}
+    - Bump DH version from 10 to 12.
   * Add debian/upstream/metadata.
   * debian/patches:
     - Move 0001 patch to backport folder.
+  * debian/compat: Bump from 10 to 12.
 
  -- Roger Shimizu <rosh@debian.org>  Sat, 23 Nov 2019 14:59:48 +0900
 
