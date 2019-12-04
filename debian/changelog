@@ -1,11 +1,11 @@
-shadowsocks-libev (3.3.3+ds-3) UNRELEASED; urgency=medium
+shadowsocks-libev (3.3.3+ds-3) unstable; urgency=medium
 
   * debian/patches:
     - Add 0006 patch to fix FTBFS for Hurd. The patch is already
       accepted by upstream.
     - Cherry-pick 0007 from upstream to fix QoS issue.
 
- -- Roger Shimizu <rosh@debian.org>  Wed, 04 Dec 2019 01:23:39 +0900
+ -- Roger Shimizu <rosh@debian.org>  Thu, 05 Dec 2019 03:12:27 +0900
 
 shadowsocks-libev (3.3.3+ds-2) unstable; urgency=medium
 
