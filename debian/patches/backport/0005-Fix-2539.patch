@@ -1,0 +1,38 @@
+From: Max Lv <max.c.lv@gmail.com>
+Date: Sun, 10 Nov 2019 19:58:21 +0800
+Subject: Fix #2539
+
+(cherry picked from commit 6d73201b9a4e39d5535978a17a8536bd32b9ca27)
+---
+ src/manager.c | 4 ----
+ src/server.c  | 2 --
+ 2 files changed, 6 deletions(-)
+
+diff --git a/src/manager.c b/src/manager.c
+index 677fac4..f8682ae 100644
+--- a/src/manager.c
++++ b/src/manager.c
+@@ -212,10 +212,6 @@ construct_command_line(struct manager_ctx *manager, struct server *server)
+         int len = strlen(cmd);
+         snprintf(cmd + len, BUF_SIZE - len, " -d \"%s\"", manager->nameservers);
+     }
+-    if (manager->workdir) {
+-        int len = strlen(cmd);
+-        snprintf(cmd + len, BUF_SIZE - len, " -D \"%s\"", manager->workdir);
+-    }
+     for (i = 0; i < manager->host_num; i++) {
+         int len = strlen(cmd);
+         snprintf(cmd + len, BUF_SIZE - len, " -s %s", manager->hosts[i]);
+diff --git a/src/server.c b/src/server.c
+index faea13e..49a474c 100644
+--- a/src/server.c
++++ b/src/server.c
+@@ -1767,8 +1767,6 @@ main(int argc, char **argv)
+         }
+         if (is_bind_local_addr == 0) {
+             is_bind_local_addr += parse_local_addr(&local_addr_v4, &local_addr_v6, conf->local_addr_v4);
+-        }
+-        if (is_bind_local_addr == 0) {
+             is_bind_local_addr += parse_local_addr(&local_addr_v4, &local_addr_v6, conf->local_addr_v6);
+         }
+ #ifdef HAVE_SETRLIMIT

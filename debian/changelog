@@ -1,3 +1,35 @@
+shadowsocks-libev (3.3.3+ds-3) unstable; urgency=medium
+
+  * debian/patches:
+    - Add 0006 patch to fix FTBFS for Hurd. The patch is already
+      accepted by upstream.
+    - Cherry-pick 0007 from upstream to fix QoS issue.
+
+ -- Roger Shimizu <rosh@debian.org>  Thu, 05 Dec 2019 03:12:27 +0900
+
+shadowsocks-libev (3.3.3+ds-2) unstable; urgency=medium
+
+  * debian/control:
+    - Add Rules-Requires-Root: no
+    - Add to shadowsocks-libev according to lintian:
+      + Pre-Depends: ${misc:Pre-Depends}
+    - Bump DH version from 10 to 12.
+  * Add debian/upstream/metadata.
+  * debian/patches:
+    - Move 0001 patch to backport folder.
+    - Cherry pick a few patches from upstream to fix TALOS-2019-0956
+      (CVE-2019-5163), and TALOS-2019-0958.
+      + [1ba753a] Fix #2536, TALOS-2019-0956 (CVE-2019-5163), which is
+        a bug that IPv6 local address is not initialized when binding
+        an IPv6 socket.
+      + [ce71f49][748e6f3] Fix #2537, TALOS-2019-0958.
+        Default listening path of ss-manager has been changed to
+        ~/.ss-manager.socks.
+      + [6d73201] Fix #2539, introduced by #2259.
+  * debian/compat: Bump from 10 to 12.
+
+ -- Roger Shimizu <rosh@debian.org>  Sun, 01 Dec 2019 19:38:38 +0900
+
 shadowsocks-libev (3.3.3+ds-1~bpo9+1) stretch-backports-sloppy; urgency=medium
 
   * Rebuild for stretch-backports-sloppy.
