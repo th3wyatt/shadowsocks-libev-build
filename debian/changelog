@@ -1,3 +1,11 @@
+shadowsocks-libev (3.3.4+ds-1) UNRELEASED; urgency=medium
+
+  * New upstream release: v3.3.4
+    - Minor bug fixes. (#2539, #2565, #2566, #2577)
+    - Security bug fixes. (CVE-2019-5163, CVE-2019-5164)
+
+ -- Roger Shimizu <rosh@debian.org>  Sun, 12 Jan 2020 00:59:52 +0900
+
 shadowsocks-libev (3.3.3+ds-3) unstable; urgency=medium
 
   * debian/patches:
