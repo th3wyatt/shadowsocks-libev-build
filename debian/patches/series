@@ -1,7 +1,0 @@
-backport/0001-shadowsocks-libev.pc.in-Remove-crypto-library-depend.patch
-backport/0002-Fix-2536.patch
-backport/0003-Fix-2537.patch
-backport/0004-Refine-2537.patch
-backport/0005-Fix-2539.patch
-backport/0006-Fix-of-PATH_MAX-for-GNU-Hurd.patch
-backport/0007-Fix-QoS.patch
