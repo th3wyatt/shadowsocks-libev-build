@@ -2,8 +2,9 @@ shadowsocks-libev (3.3.4+ds-2) unstable; urgency=medium
 
   * debian/patches/backport/0001: Backport upstream patch in allowing
     the tests to run with python3.
+  * debian/patches/0002: Explicitly run tests with python3.
 
- -- Boyuan Yang <byang@debian.org>  Sun, 23 Feb 2020 14:45:10 -0500
+ -- Boyuan Yang <byang@debian.org>  Sun, 23 Feb 2020 14:48:04 -0500
 
 shadowsocks-libev (3.3.4+ds-1) unstable; urgency=medium
 
