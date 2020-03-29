@@ -1,3 +1,12 @@
+shadowsocks-libev (3.3.4+ds-3) unstable; urgency=medium
+
+  * debian/control:
+    - Fix typo.
+  * debian/config.json:
+    - Change the default timeout value to 24h.
+
+ -- Roger Shimizu <rosh@debian.org>  Sun, 29 Mar 2020 16:38:42 +0900
+
 shadowsocks-libev (3.3.4+ds-2) unstable; urgency=medium
 
   * debian/patches/backport/0001: Backport upstream patch in allowing
