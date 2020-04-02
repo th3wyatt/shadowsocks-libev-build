@@ -38,7 +38,7 @@ Description: lightweight and secure socks5 proxy (development files)
  Shadowsocks-libev is a lightweight and secure socks5 proxy for
  embedded devices and low end boxes.
  .
- Shadowsocks-libev was inspired by Shadowsock (in Python). It's rewritten
+ Shadowsocks-libev was inspired by Shadowsocks (in Python). It's rewritten
  in pure C and only depends on libev, mbedTLS and a few other tiny
  libraries.
  .
@@ -62,7 +62,7 @@ Description: lightweight and secure socks5 proxy (shared library)
  Shadowsocks-libev is a lightweight and secure socks5 proxy for
  embedded devices and low end boxes.
  .
- Shadowsocks-libev was inspired by Shadowsock (in Python). It's rewritten
+ Shadowsocks-libev was inspired by Shadowsocks (in Python). It's rewritten
  in pure C and only depends on libev, mbedTLS and a few other tiny
  libraries.
  .
@@ -89,6 +89,6 @@ Description: lightweight and secure socks5 proxy
  Shadowsocks-libev is a lightweight and secure socks5 proxy for
  embedded devices and low end boxes.
  .
- Shadowsocks-libev was inspired by Shadowsock (in Python). It's rewritten
+ Shadowsocks-libev was inspired by Shadowsocks (in Python). It's rewritten
  in pure C and only depends on libev, mbedTLS and a few other tiny
  libraries.

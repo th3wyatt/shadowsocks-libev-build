@@ -1,0 +1,34 @@
+From: Boyuan Yang <byang@debian.org>
+Date: Sun, 23 Feb 2020 14:47:54 -0500
+Subject: tests/test.sh: Explicitly use python3
+
+---
+ tests/test.sh | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/tests/test.sh b/tests/test.sh
+index b666eb1..0221f10 100755
+--- a/tests/test.sh
++++ b/tests/test.sh
+@@ -32,13 +32,13 @@ if [ "$http_proxy" ]; then
+     exit 0
+ fi
+ 
+-run_test python tests/test.py $BIN -c tests/aes.json
+-run_test python tests/test.py $BIN -c tests/aes-gcm.json
+-run_test python tests/test.py $BIN -c tests/aes-ctr.json
+-run_test python tests/test.py $BIN -c tests/rc4-md5.json
+-run_test python tests/test.py $BIN -c tests/salsa20.json
+-run_test python tests/test.py $BIN -c tests/chacha20.json
+-run_test python tests/test.py $BIN -c tests/chacha20-ietf.json
+-run_test python tests/test.py $BIN -c tests/chacha20-ietf-poly1305.json
++run_test python3 tests/test.py $BIN -c tests/aes.json
++run_test python3 tests/test.py $BIN -c tests/aes-gcm.json
++run_test python3 tests/test.py $BIN -c tests/aes-ctr.json
++run_test python3 tests/test.py $BIN -c tests/rc4-md5.json
++run_test python3 tests/test.py $BIN -c tests/salsa20.json
++run_test python3 tests/test.py $BIN -c tests/chacha20.json
++run_test python3 tests/test.py $BIN -c tests/chacha20-ietf.json
++run_test python3 tests/test.py $BIN -c tests/chacha20-ietf-poly1305.json
+ 
+ exit $result

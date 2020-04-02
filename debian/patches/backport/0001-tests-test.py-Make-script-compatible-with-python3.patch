@@ -1,0 +1,37 @@
+From: Boyuan Yang <byang@debian.org>
+Date: Fri, 31 Jan 2020 16:11:21 -0500
+Subject: tests/test.py: Make script compatible with python3
+
+Currently the test script assumes the returned web page is always encoded in UTF-8, which might not be the case. It is likely that the real encoding is `ISO-8859-1` and that running the script under python3 will raise error:
+
+```
+< 
+{ [11931 bytes data]
+100 11923    0 11923    0     0   184k      0 --:--:-- --:--:-- --:--:--  187k
+Traceback (most recent call last):
+  File "tests/test.py", line 106, in <module>
+    line = str(line, 'utf8')
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xa0 in position 1105: invalid start byte
+```
+This pull request makes no assumption on the returned data and send the raw output to stderr as `bytes`. This should allow the test script to finish successfully when `tests/test.py` is run by python3.
+---
+ tests/test.py | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/tests/test.py b/tests/test.py
+index 0a1297b..6e7cb81 100755
+--- a/tests/test.py
++++ b/tests/test.py
+@@ -103,8 +103,10 @@ try:
+                 if stage == 4 and fd == p4.stdout:
+                     stage = 5
+             if bytes != str:
+-                line = str(line, 'utf8')
+-            sys.stderr.write(line)
++                line = bytes(line)
++                sys.stderr.buffer.write(line)
++            else:
++                sys.stderr.write(line)
+ 
+         if stage == 3 and p3 is not None:
+             fdset.remove(p3.stdout)
